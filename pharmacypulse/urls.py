@@ -1,0 +1,102 @@
+from django.urls import path
+
+from . import auth_views, flows, views, views_extra
+
+urlpatterns = [
+    # ===== SEO + ops =====
+    path("robots.txt", views.robots_txt, name="robots_txt"),
+    path("sitemap.xml", views.sitemap_xml, name="sitemap_xml"),
+    path("healthcheck", views_extra.healthcheck, name="healthcheck"),
+
+    # ===== auth =====
+    path("login", auth_views.login_view, name="login"),
+    path("signup", auth_views.signup_view, name="signup"),
+    path("logout", auth_views.logout_view, name="logout"),
+    path("forgot-password", auth_views.forgot_password_view, name="forgot_password"),
+    path("reset-password/<str:uidb64>/<str:token>", auth_views.reset_password_view, name="reset_password"),
+    path("auth/google/start", auth_views.google_start, name="google_start"),
+    path("auth/google/callback", auth_views.google_callback, name="google_callback"),
+    path("auth/facebook/start", auth_views.facebook_start, name="facebook_start"),
+    path("auth/facebook/callback", auth_views.facebook_callback, name="facebook_callback"),
+
+    # ===== flow endpoints (25 from flows.yaml, paths preserved 1:1) =====
+    path("api/flow/search", flows.search_pharmacies, name="flow_search"),
+    path("api/flow/ccpa-export", flows.ccpa_export, name="flow_ccpa_export"),
+    path("api/flow/ccpa-delete", flows.ccpa_delete, name="flow_ccpa_delete"),
+    path("api/flow/ingest-pharmacies", flows.ingest_pharmacies_by_zip, name="flow_ingest_pharmacies"),
+    path("api/flow/fetch-pharmacy-details/<int:pharmacy_id>", flows.fetch_pharmacy_details, name="flow_fetch_pharmacy_details"),
+    path("api/flow/sync-shortages", flows.sync_fda_shortages, name="flow_sync_shortages"),
+    path("api/flow/add-shortage", flows.add_shortage, name="flow_add_shortage"),
+    path("api/flow/submit-review", flows.submit_review, name="flow_submit_review"),
+    path("api/flow/respond-review/<int:review_id>", flows.respond_to_review, name="flow_respond_review"),
+    path("api/flow/moderate-review/<int:review_id>", flows.moderate_review, name="flow_moderate_review"),
+    path("api/flow/flag-review/<int:review_id>", flows.flag_review, name="flow_flag_review"),
+    path("api/flow/report-pharmacy/<int:pharmacy_id>", flows.report_pharmacy_data, name="flow_report_pharmacy"),
+    path("api/flow/bulk-delete-pharmacies", flows.bulk_delete_pharmacies, name="flow_bulk_delete_pharmacies"),
+    path("api/flow/bulk-delete-chain", flows.bulk_delete_chain, name="flow_bulk_delete_chain"),
+    path("api/flow/edit-pharmacy/<int:pharmacy_id>", flows.edit_pharmacy_publishable, name="flow_edit_pharmacy"),
+    path("newsletter/unsubscribe", flows.newsletter_unsubscribe_public, name="newsletter_unsubscribe_public"),
+    path("api/flow/verify-claim/<int:pharmacy_id>", flows.verify_and_submit_claim, name="flow_verify_claim"),
+    path("api/flow/approve-claim/<int:claim_id>", flows.approve_claim, name="flow_approve_claim"),
+    path("api/flow/reject-claim/<int:claim_id>", flows.reject_claim, name="flow_reject_claim"),
+    path("api/flow/suspend-user/<int:target_user_id>", flows.suspend_user, name="flow_suspend_user"),
+    path("api/flow/unsuspend-user/<int:target_user_id>", flows.unsuspend_user, name="flow_unsuspend_user"),
+    path("api/flow/change-user-role/<int:target_user_id>", flows.change_user_role, name="flow_change_user_role"),
+    path("api/flow/compare/add", flows.add_to_compare, name="flow_compare_add"),
+    path("api/flow/compare/remove", flows.remove_from_compare, name="flow_compare_remove"),
+    path("api/flow/compare/clear", flows.clear_compare, name="flow_compare_clear"),
+    path("api/flow/team/invite", flows.invite_team_member, name="flow_team_invite"),
+    path("api/flow/team/accept", flows.accept_team_invite, name="flow_team_accept"),
+    path("api/flow/team/role/<int:member_id>", flows.update_team_role, name="flow_team_role"),
+    path("api/flow/team/remove/<int:member_id>", flows.remove_team_member, name="flow_team_remove"),
+    path("api/flow/newsletter/subscribe", flows.newsletter_subscribe, name="flow_newsletter_subscribe"),
+    path("api/flow/newsletter/unsubscribe", flows.newsletter_unsubscribe, name="flow_newsletter_unsubscribe"),
+    path("api/flow/update-profile", flows.update_profile, name="flow_update_profile"),
+    path("api/flow/change-password", flows.change_password, name="flow_change_password"),
+    path("api/flow/create-checkout", flows.create_checkout, name="flow_create_checkout"),
+    path("api/flow/billing-portal", flows.billing_portal, name="flow_billing_portal"),
+    path("api/flow/stripe-webhook", flows.stripe_webhook, name="flow_stripe_webhook"),
+    path("api/pharmacy_services", flows.pharmacy_services_add, name="pharmacy_services_add"),
+    path("api/pharmacy_services/<int:service_id>/remove", flows.pharmacy_services_remove, name="pharmacy_services_remove"),
+    path("api/coverage_plans", flows.coverage_plan_add, name="coverage_plan_add"),
+    path("api/coverage_plans/<int:plan_id>/remove", flows.coverage_plan_remove, name="coverage_plan_remove"),
+    path("api/insurance_providers", flows.insurance_provider_add, name="insurance_provider_add"),
+    path("api/insurance_providers/<int:provider_id>/remove", flows.insurance_provider_remove, name="insurance_provider_remove"),
+    path("api/insurance", flows.insurance_plans_add, name="insurance_plans_add"),
+    path("api/pharmacy_hours", flows.pharmacy_hours_save, name="pharmacy_hours_save"),
+
+    # ===== 27 pages (paths match Benmore app.yaml) =====
+    path("", views.index, name="index"),
+    path("home", views.home, name="home"),
+    path("account", views.account, name="account"),
+    path("list", views.pharmacy_list, name="list"),
+    path("map", views.pharmacy_map, name="map"),
+    path("online", views.online_pharmacies, name="online"),
+    path("pharmacy", views.pharmacy_detail, name="pharmacy"),
+    
+    # SEO-friendly pharmacy URLs ('/pharmacy/<id>/<slug>/'); the numeric id is
+    # canonical and the slug is descriptive. The plain /pharmacy route above
+    # still handles the legacy `/pharmacy?id=` links so they never 404.
+    path("pharmacy/<int:pharmacy_id>/<slug:slug>/", views.pharmacy_detail, name="pharmacy_slug"),
+    path("review", views.write_review, name="review"),
+    path("reviews", views.reviews, name="reviews"),
+    path("compare", views.compare, name="compare"),
+    path("claim", views.claim, name="claim"),
+    path("shortages", views.shortages, name="shortages"),
+    path("insights", views.insights, name="insights"),
+    path("for-pharmacies", views.for_pharmacies, name="for_pharmacies"),
+    path("pharmacist-dashboard", views.pharmacist_dashboard, name="pharmacist_dashboard"),
+    path("widget", views.widget, name="widget"),
+    path("privacy", views.privacy, name="privacy"),
+    path("terms", views.terms, name="terms"),
+
+    # admin pages (role=admin)
+    path("admin-dashboard", views.admin_dashboard, name="admin_dashboard"),
+    path("admin-analytics", views.admin_analytics, name="admin_analytics"),
+    path("admin-claims", views.admin_claims, name="admin_claims"),
+    path("admin-moderation", views.admin_moderation, name="admin_moderation"),
+    path("admin-pharmacies", views.admin_pharmacies, name="admin_pharmacies"),
+    path("admin-shortages", views.admin_shortages, name="admin_shortages"),
+    path("admin-users", views.admin_users, name="admin_users"),
+    path("admin-pharmacy-facts", views.admin_pharmacy_facts, name="admin_pharmacy_facts"),
+]

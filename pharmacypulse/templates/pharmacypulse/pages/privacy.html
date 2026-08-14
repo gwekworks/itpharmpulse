@@ -1,0 +1,72 @@
+{% extends "pharmacypulse/layouts/blank.html" %}
+{% load pharmacypulse %}
+{% block title %}Privacy Policy{% endblock %}
+{% block meta_description %}PharmacyPulse privacy policy — how we collect, use, and protect your data, including our commitment to never sell personal information.{% endblock %}
+{% block content %}
+<div class="min-h-screen" style="background: hsl(210 20% 98%)">
+  <div class="max-w-2xl mx-auto px-4 py-12">
+    <a href="/" class="inline-flex items-center gap-1 text-sm mb-6 no-underline" style="color: hsl(215 20% 42%)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+      Back to PharmacyPulse
+    </a>
+
+    <h1 class="font-serif text-3xl mb-2" style="color: hsl(220 50% 10%)">Privacy Policy</h1>
+    <p class="text-sm mb-8" style="color: hsl(215 20% 42%)">Last updated: March 29, 2026</p>
+
+    <div class="prose prose-sm" style="color: hsl(215 20% 30%)">
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">1. Information We Collect</h2>
+      <p class="text-sm mb-3"><strong>Account Information:</strong> Phone number, name (optional). We do not collect email addresses, social security numbers, or financial information.</p>
+      <p class="text-sm mb-3"><strong>Review Data:</strong> Pharmacy ratings (stock availability, wait time, service quality), optional written comments, and caregiver status. Reviews are public and associated with your display name.</p>
+      <p class="text-sm mb-3"><strong>Usage Data:</strong> Pages visited, actions taken within the app, device type, and browser information for analytics and fraud prevention.</p>
+      <p class="text-sm mb-3"><strong>Location Data:</strong> With your permission, approximate location for finding nearby pharmacies. We do not store precise GPS coordinates.</p>
+      <p class="text-sm mb-3"><strong>IP-Based Location:</strong> When you visit our site without signing in, we may use your IP address to estimate your general location (city or ZIP code) so we can show pharmacies near you. We never persist the IP address itself — only the resolved general location, cached for 24 hours and keyed by an opaque hash. IP-derived location is never shared with third parties.</p>
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">2. How We Use Your Information</h2>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li>Verify your identity via phone number (SMS verification)</li>
+        <li>Display pharmacy reviews to the community</li>
+        <li>Calculate stock confidence and service ratings</li>
+        <li>Prevent fraud, fake reviews, and abuse</li>
+        <li>Comply with legal obligations</li>
+      </ul>
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">3. Information Sharing</h2>
+      <p class="text-sm mb-3">We do <strong>not</strong> sell your personal information. We share data only with:</p>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li><strong>Service providers:</strong> SMS verification (Twilio), hosting, analytics</li>
+        <li><strong>Legal requirements:</strong> When required by law, court order, or regulatory authority</li>
+        <li><strong>Public reviews:</strong> Your reviews (with display name) are publicly visible to promote pharmacy transparency</li>
+      </ul>
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">4. Health Information (PHI) Disclaimer</h2>
+      <p class="text-sm mb-3">PharmacyPulse is <strong>not</strong> a healthcare provider and is not subject to HIPAA. However, we take reasonable steps to prevent accidental disclosure of personal health information in reviews. Our content moderation system screens for medication names and medical conditions. <strong>Do not include specific medication names, diagnoses, or other health details in your reviews.</strong></p>
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">5. Your Rights (CCPA/CPRA)</h2>
+      <p class="text-sm mb-3">California residents have the right to:</p>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li><strong>Know</strong> what personal data we collect and how it is used</li>
+        <li><strong>Access</strong> your personal data (export available in Account settings)</li>
+        <li><strong>Delete</strong> your personal data (request via Account settings, processed within 45 days)</li>
+        <li><strong>Opt out</strong> of sale of personal information (we do not sell data)</li>
+        <li><strong>Non-discrimination</strong> for exercising your privacy rights</li>
+      </ul>
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">6. Do Not Sell My Personal Information</h2>
+      <p class="text-sm mb-3">We do not sell, rent, or trade your personal information to third parties for monetary or other valuable consideration. This policy applies to all users regardless of location.</p>
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">7. Data Retention</h2>
+      <p class="text-sm mb-3">We retain your account data for as long as your account is active. Reviews remain public even after account deletion (anonymized as "Deleted User"). You may request full data deletion via the CCPA process.</p>
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">8. Security</h2>
+      <p class="text-sm mb-3">We use industry-standard security measures including encryption in transit (TLS), encrypted sessions, rate limiting, and brute-force protection.</p>
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">9. Contact Us</h2>
+      <p class="text-sm mb-3">For privacy inquiries or to exercise your rights, contact: <strong>privacy@beyondrx.com</strong></p>
+
+    </div>
+  </div>
+</div>
+{% include "pharmacypulse/partials/footer.html" %}
+{% include "pharmacypulse/partials/bottom-nav.html" %}
+{% endblock %}

@@ -1,0 +1,797 @@
+{% load pharmacypulse %}
+<style>
+  .rv-modal-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
+    display: none; align-items: center; justify-content: center; padding: 1rem;
+  }
+  .rv-modal-overlay.open { display: flex; }
+  .rv-modal {
+    background: white; border-radius: 1.25rem; width: 100%; max-width: 420px;
+    max-height: 90vh; overflow-y: auto; position: relative;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.25); animation: rvSlideUp 0.25s ease;
+  }
+  @keyframes rvSlideUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+  .rv-modal-close {
+    position: absolute; top: 1rem; right: 1rem; width: 32px; height: 32px;
+    border-radius: 50%; border: none; background: #f1f5f9; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 1.125rem;
+    color: #64748b; transition: all 0.15s; z-index: 2;
+  }
+  .rv-modal-close:hover { background: #e2e8f0; color: #0f172a; }
+  .rv-modal-body { padding: 1.75rem 1.5rem 1.25rem; }
+  .rv-step-badge {
+    display: inline-flex; align-items: center; gap: 0.375rem;
+    font-size: 0.6875rem; font-weight: 700; color: #008F82;
+    background: #E6F7F5; padding: 0.25rem 0.625rem; border-radius: 9999px;
+    margin-bottom: 0.75rem; letter-spacing: 0.02em;
+  }
+  .rv-step-badge svg { width: 12px; height: 12px; }
+  .rv-subtitle { font-size: 0.8125rem; color: #94a3b8; margin-bottom: 0.25rem; }
+  .rv-title { font-family: 'DM Serif Display', serif; font-size: 1.375rem; color: #0f172a; margin-bottom: 1rem; line-height: 1.2; }
+  .rv-progress { display: flex; gap: 0.375rem; margin-bottom: 1.25rem; }
+  .rv-progress-bar { flex: 1; height: 4px; border-radius: 9999px; background: #e2e8f0; }
+  .rv-progress-bar.active { background: #008F82; }
+  .rv-progress-bar.done { background: #008F82; }
+  .rv-section-label {
+    font-size: 0.75rem; font-weight: 700; color: #0f172a;
+    margin-bottom: 0.625rem; display: flex; align-items: center; gap: 0.375rem;
+  }
+  .rv-section-label .rv-num { color: #008F82; }
+  .rv-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem; }
+  .rv-chip {
+    display: inline-flex; align-items: center; gap: 0.375rem;
+    padding: 0.5rem 0.875rem; border: 1.5px solid #e2e8f0; border-radius: 9999px;
+    font-size: 0.8125rem; font-weight: 500; color: #475569; cursor: pointer;
+    transition: all 0.15s; background: white; user-select: none;
+  }
+  .rv-chip:hover { border-color: #008F82; color: #008F82; }
+  .rv-chip.selected { border-color: #008F82; background: #E6F7F5; color: #006B62; font-weight: 600; }
+  .rv-chip input { display: none; }
+  .rv-hearts { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; }
+  .rv-heart {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+    padding: 0.625rem 0; border: 1.5px solid #e2e8f0; border-radius: 0.75rem;
+    cursor: pointer; transition: all 0.15s; background: white; user-select: none;
+  }
+  .rv-heart:hover { border-color: #ef4444; }
+  .rv-heart.selected { border-color: #ef4444; background: #fff1f2; }
+  .rv-heart-icon { font-size: 1.5rem; }
+  .rv-heart-label { font-size: 0.625rem; font-weight: 600; color: #94a3b8; }
+  .rv-heart.selected .rv-heart-label { color: #be123c; }
+  .rv-rating-text {
+    text-align: right; font-size: 0.75rem; font-weight: 600;
+    color: #008F82; margin-bottom: 0.5rem;
+  }
+  .rv-pharmacy-card {
+    background: #f0fdf9; border: 1.5px solid #bbf7d0; border-radius: 0.75rem;
+    padding: 0.875rem 1rem; margin-bottom: 1.25rem; display: flex;
+    justify-content: space-between; align-items: center;
+  }
+  .rv-pharmacy-card-label { font-size: 0.6875rem; font-weight: 700; color: #006B62; text-transform: uppercase; letter-spacing: 0.04em; }
+  .rv-pharmacy-card-badge {
+    display: inline-block; padding: 0.125rem 0.5rem; background: #008F82;
+    color: white; border-radius: 9999px; font-size: 0.625rem; font-weight: 700;
+    margin-left: 0.375rem;
+  }
+  .rv-pharmacy-card-name { font-weight: 700; color: #0f172a; font-size: 0.9375rem; margin-top: 0.25rem; }
+  .rv-pharmacy-card-addr { font-size: 0.75rem; color: #64748b; margin-top: 0.125rem; display: flex; align-items: center; gap: 0.25rem; }
+  .rv-pharmacy-card-change {
+    font-size: 0.75rem; font-weight: 600; color: #008F82; cursor: pointer;
+    text-decoration: none; flex-shrink: 0;
+  }
+  .rv-input {
+    width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #e2e8f0;
+    border-radius: 0.75rem; font-size: 0.875rem; color: #0f172a;
+    outline: none; box-sizing: border-box; transition: border-color 0.15s;
+  }
+  .rv-input:focus { border-color: #008F82; }
+  .rv-textarea {
+    width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #e2e8f0;
+    border-radius: 0.75rem; font-size: 0.875rem; color: #0f172a;
+    outline: none; box-sizing: border-box; resize: vertical; min-height: 80px;
+    font-family: inherit; transition: border-color 0.15s;
+  }
+  .rv-textarea:focus { border-color: #008F82; }
+  .rv-label { font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem; display: block; }
+  .rv-label-hint { font-size: 0.6875rem; color: #94a3b8; font-weight: 400; }
+  .rv-btn-primary {
+    width: 100%; padding: 0.875rem; background: #008F82; color: white;
+    border: none; border-radius: 9999px; font-size: 0.9375rem; font-weight: 700;
+    cursor: pointer; transition: background 0.15s; display: flex;
+    align-items: center; justify-content: center; gap: 0.5rem;
+  }
+  .rv-btn-primary:hover { background: #006B62; }
+  .rv-btn-primary:disabled { background: #cbd5e1; cursor: not-allowed; }
+  .rv-btn-secondary {
+    width: 100%; padding: 0.875rem; background: white; color: #008F82;
+    border: 1.5px solid #008F82; border-radius: 9999px; font-size: 0.875rem;
+    font-weight: 600; cursor: pointer; transition: all 0.15s; text-align: center;
+    display: block; text-decoration: none;
+  }
+  .rv-btn-secondary:hover { background: #E6F7F5; }
+  .rv-back-link {
+    display: block; text-align: center; font-size: 0.8125rem; font-weight: 500;
+    color: #64748b; text-decoration: none; margin-top: 0.75rem; cursor: pointer;
+  }
+  .rv-back-link:hover { color: #008F82; }
+  .rv-badge-card {
+    background: linear-gradient(135deg, #7c3aed, #008F82);
+    border-radius: 0.875rem; padding: 1.25rem; color: white; margin-bottom: 1.25rem;
+    position: relative; overflow: hidden;
+  }
+  .rv-badge-card::before {
+    content: ''; position: absolute; top: -30px; right: -30px; width: 100px;
+    height: 100px; border-radius: 50%; background: rgba(255,255,255,0.1);
+  }
+  .rv-badge-label { font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.85; margin-bottom: 0.375rem; }
+  .rv-badge-title { font-family: 'DM Serif Display', serif; font-size: 1.25rem; margin-bottom: 0.25rem; }
+  .rv-badge-desc { font-size: 0.75rem; opacity: 0.8; }
+  .rv-social-btn {
+    width: 100%; padding: 0.75rem; background: white; border: 1.5px solid #e2e8f0;
+    border-radius: 9999px; font-size: 0.875rem; font-weight: 600; color: #0f172a;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    gap: 0.5rem; transition: all 0.15s; text-decoration: none;
+  }
+  .rv-social-btn:hover { border-color: #008F82; }
+  .rv-social-row { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+  .rv-social-icon-btn {
+    width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #e2e8f0;
+    background: white; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; transition: all 0.15s; flex-shrink: 0;
+  }
+  .rv-social-icon-btn:hover { border-color: #008F82; }
+  .rv-or-divider {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.75rem; color: #94a3b8; margin: 0.75rem 0;
+  }
+  .rv-or-divider::before, .rv-or-divider::after {
+    content: ''; flex: 1; height: 1px; background: #e2e8f0;
+  }
+  .rv-footer { text-align: center; font-size: 0.625rem; color: #94a3b8; padding: 0.75rem 1.5rem 1.25rem; }
+  .rv-error {
+    display: none; background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c;
+    font-size: 0.75rem; font-weight: 600; border-radius: 0.625rem;
+    padding: 0.5rem 0.75rem; margin-bottom: 1rem; line-height: 1.4;
+  }
+  .rv-error.show { display: block; animation: rvSlideUp 0.2s ease; }
+  .rv-toast {
+    position: fixed; left: 50%; bottom: 1.5rem; transform: translate(-50%, 150%);
+    background: #0f172a; color: white; padding: 0.625rem 1.25rem;
+    border-radius: 9999px; font-size: 0.8125rem; font-weight: 600;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 10000;
+    transition: transform 0.3s ease; display: flex; align-items: center; gap: 0.5rem;
+  }
+  .rv-toast.show { transform: translate(-50%, 0); }
+  .rv-toast svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .rv-picker-list {
+    max-height: 240px; overflow-y: auto; margin-top: 0.625rem;
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  .rv-picker-item {
+    display: flex; flex-direction: column; gap: 0.125rem;
+    padding: 0.75rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 0.75rem;
+    cursor: pointer; background: white; transition: all 0.15s; text-align: left;
+    font-family: inherit; width: 100%;
+  }
+  .rv-picker-item:hover { border-color: #008F82; background: #f0fdf9; }
+  .rv-picker-item-name { font-size: 0.875rem; font-weight: 700; color: #0f172a; }
+  .rv-picker-item-meta { font-size: 0.75rem; color: #64748b; display: flex; gap: 0.25rem; align-items: center; }
+  .rv-picker-empty, .rv-picker-hint {
+    padding: 1rem; text-align: center; font-size: 0.8125rem; color: #94a3b8;
+    border: 1.5px dashed #e2e8f0; border-radius: 0.75rem;
+  }
+  .rv-picker-loading {
+    padding: 1rem; text-align: center; font-size: 0.8125rem; color: #94a3b8;
+  }
+</style>
+
+<div id="rv-modal" class="rv-modal-overlay" data-auth="{{ user.is_authenticated|yesno:'1,0' }}" onclick="if(event.target===this)closeReviewModal()" role="presentation">
+  <div class="rv-modal" role="dialog" aria-modal="true" aria-label="Write a review" tabindex="-1">
+    <button class="rv-modal-close" onclick="closeReviewModal()" aria-label="Close review form">&times;</button>
+    <div id="rv-error" class="rv-error" role="alert"></div>
+
+    <!-- ===== STEP 0: SELECT PHARMACY (used when no pharmacy is pre-chosen) ===== -->
+    <div id="rv-step0" class="rv-modal-body" hidden>
+      <div class="rv-step-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        SELECT A PHARMACY
+      </div>
+      <p class="rv-subtitle">Fast Check-In</p>
+      <h2 class="rv-title">Which pharmacy did you visit?</h2>
+      <div class="rv-progress">
+        <div class="rv-progress-bar"></div>
+        <div class="rv-progress-bar"></div>
+        <div class="rv-progress-bar"></div>
+      </div>
+
+      <label class="rv-label" for="rv-picker-search">SEARCH PHARMACY</label>
+      <input class="rv-input" type="search" id="rv-picker-search" placeholder="Search by pharmacy name, city, or ZIP..." autocomplete="off" aria-label="Search pharmacies">
+      <div class="rv-picker-list" id="rv-picker-list" role="listbox" aria-label="Pharmacy results"></div>
+
+      <button class="rv-btn-secondary" type="button" onclick="closeReviewModal()" style="margin-top:1rem">Cancel</button>
+      <div class="rv-footer">PharmacyPulse Community Network · Free &amp; Privacy Protected</div>
+    </div>
+
+    <!-- ===== STEP 1: VISIT EXPERIENCE ===== -->
+    <div id="rv-step1" class="rv-modal-body" hidden>
+      <div class="rv-step-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        STEP 1 OF 3
+      </div>
+      <p class="rv-subtitle">Fast Check-In</p>
+      <h2 class="rv-title">What was your visit experience?</h2>
+      <div class="rv-progress">
+        <div class="rv-progress-bar active"></div>
+        <div class="rv-progress-bar"></div>
+        <div class="rv-progress-bar"></div>
+      </div>
+
+      <div class="rv-section-label"><span class="rv-num">1.</span> PURPOSE OF VISIT</div>
+      <div class="rv-chips" id="rv-purpose">
+        <label class="rv-chip selected" data-val="refill"><input type="radio" name="visit_purpose" value="refill" checked>🔄 Refill pickup</label>
+        <label class="rv-chip" data-val="new_rx"><input type="radio" name="visit_purpose" value="new_rx">📋 New prescription</label>
+        <label class="rv-chip" data-val="transfer"><input type="radio" name="visit_purpose" value="transfer">🔁 Transfer</label>
+        <label class="rv-chip" data-val="vaccine"><input type="radio" name="visit_purpose" value="vaccine">💉 Vaccine</label>
+        <label class="rv-chip" data-val="consultation"><input type="radio" name="visit_purpose" value="consultation">💬 Consultation</label>
+        <label class="rv-chip" data-val="other"><input type="radio" name="visit_purpose" value="other">••• Other / OTC</label>
+      </div>
+
+      <div class="rv-section-label"><span class="rv-num">2.</span> ESTIMATED WAIT TIME</div>
+      <div class="rv-chips" id="rv-wait">
+        <label class="rv-chip" data-val="1"><input type="radio" name="wait_time" value="1">&lt;5 mins</label>
+        <label class="rv-chip selected" data-val="2"><input type="radio" name="wait_time" value="2" checked>5-10 mins</label>
+        <label class="rv-chip" data-val="3"><input type="radio" name="wait_time" value="3">10-20 mins</label>
+        <label class="rv-chip" data-val="4"><input type="radio" name="wait_time" value="4">20+ mins</label>
+      </div>
+
+      <div class="rv-section-label"><span class="rv-num">3.</span> STOCK CONFIDENCE <span class="rv-label-hint" style="margin-left:auto">Did they have your medication in stock?</span></div>
+      <div class="rv-chips" id="rv-stock">
+        <label class="rv-chip selected" data-val="yes_all"><input type="radio" name="stock_status" value="yes_all">✅ Yes All</label>
+        <label class="rv-chip" data-val="yes_partial"><input type="radio" name="stock_status" value="yes_partial">⚠️ Yes Partial</label>
+        <label class="rv-chip" data-val="none"><input type="radio" name="stock_status" value="none">❌ None</label>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="rv-section-label" style="margin-bottom:0"><span class="rv-num">4.</span> EMPATHETIC CARE EXPERIENCE</div>
+        <div id="rv-care-text" class="rv-rating-text">5/5 (Excellent)</div>
+      </div>
+      <div class="rv-hearts" id="rv-care">
+        <label class="rv-heart" data-val="1"><input type="radio" name="care_rating" value="1"><span class="rv-heart-icon">💔</span><span class="rv-heart-label">Poor</span></label>
+        <label class="rv-heart" data-val="2"><input type="radio" name="care_rating" value="2"><span class="rv-heart-icon">🤍</span><span class="rv-heart-label">Fair</span></label>
+        <label class="rv-heart" data-val="3"><input type="radio" name="care_rating" value="3"><span class="rv-heart-icon">💛</span><span class="rv-heart-label">Good</span></label>
+        <label class="rv-heart" data-val="4"><input type="radio" name="care_rating" value="4"><span class="rv-heart-icon">🧡</span><span class="rv-heart-label">Great</span></label>
+        <label class="rv-heart selected" data-val="5"><input type="radio" name="care_rating" value="5" checked><span class="rv-heart-icon">❤️</span><span class="rv-heart-label">Excellent</span></label>
+      </div>
+
+      <button class="rv-btn-primary" onclick="rvGoStep(2)">Next: Select Pharmacy &amp; Timeframe →</button>
+      <a class="rv-back-link" href="#" id="rv-step1-back" onclick="rvChangePharmacy();return false" hidden style="margin-top:0.5rem">← Change Pharmacy</a>
+      <div class="rv-footer">PharmacyPulse Community Network · Free &amp; Privacy Protected</div>
+    </div>
+
+    <!-- ===== STEP 2: TIMEFRAME + NAME + NOTES ===== -->
+    <div id="rv-step2" class="rv-modal-body" hidden>
+      <div class="rv-step-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        STEP 2 OF 3
+      </div>
+      <p class="rv-subtitle">Fast Check-In</p>
+      <h2 class="rv-title">Select Visit Time &amp; Optional Notes</h2>
+      <div class="rv-progress">
+        <div class="rv-progress-bar done"></div>
+        <div class="rv-progress-bar active"></div>
+        <div class="rv-progress-bar"></div>
+      </div>
+
+      <div class="rv-pharmacy-card">
+        <div>
+          <div class="rv-pharmacy-card-label">SELECTED PHARMACY: <span class="rv-pharmacy-card-badge">Confirmed</span></div>
+          <div class="rv-pharmacy-card-name" id="rv-pharm-name"></div>
+          <div class="rv-pharmacy-card-addr" id="rv-pharm-addr">📍 <span id="rv-pharm-addr-text"></span></div>
+        </div>
+        <a class="rv-pharmacy-card-change" href="#" onclick="rvChangePharmacy();return false">Change</a>
+      </div>
+
+      <div class="rv-section-label"><span class="rv-num">1.</span> VISIT TIMEFRAME</div>
+      <div class="rv-chips" id="rv-timeframe">
+        <label class="rv-chip selected" data-val="today"><input type="radio" name="visit_timeframe" value="today" checked><div><strong>Today</strong><br><span style="font-size:0.6875rem;color:#94a3b8">Within last few hours</span></div></label>
+        <label class="rv-chip" data-val="yesterday"><input type="radio" name="visit_timeframe" value="yesterday"><div><strong>Yesterday</strong><br><span style="font-size:0.6875rem;color:#94a3b8">Visited 1 day ago</span></div></label>
+        <label class="rv-chip" data-val="2-3_days"><input type="radio" name="visit_timeframe" value="2-3_days"><div><strong>2–3 days ago</strong><br><span style="font-size:0.6875rem;color:#94a3b8">Earlier this week</span></div></label>
+        <label class="rv-chip" data-val="this_week"><input type="radio" name="visit_timeframe" value="this_week"><div><strong>Earlier this week</strong><br><span style="font-size:0.6875rem;color:#94a3b8">4–7 days ago</span></div></label>
+      </div>
+
+      <div class="rv-section-label"><span class="rv-num">2.</span> YOUR DISPLAY NAME / INITIAL</div>
+      <input class="rv-input" type="text" name="display_name" id="rv-display-name" placeholder="e.g. Alex M. or Anonymous" maxlength="100">
+
+      <div class="rv-section-label" style="margin-top:1rem">OPTIONAL COMMUNITY NOTES</div>
+      <textarea class="rv-textarea" name="comment" id="rv-comment" placeholder="Share details regarding stock availability or counter speed…" maxlength="500"></textarea>
+
+      <div style="display:flex;gap:0.75rem;margin-top:1.25rem">
+        <a class="rv-back-link" href="#" onclick="rvGoStep(1);return false" style="flex:0;margin:0;padding:0.75rem;flex-shrink:0" aria-label="Back to pharmacy">← Back to Pharmacy</a>
+        <button class="rv-btn-primary" style="flex:1" onclick="rvGoStep(3)">Next: Claim Impact Badge →</button>
+      </div>
+      <div class="rv-footer">PharmacyPulse Community Network · Free &amp; Privacy Protected</div>
+    </div>
+
+    <!-- ===== STEP 3: CLAIM BADGE ===== -->
+    <div id="rv-step3" class="rv-modal-body" hidden>
+      <div class="rv-step-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        STEP 3 OF 3
+      </div>
+      <p class="rv-subtitle">Fast Check-In</p>
+      <h2 class="rv-title">Claim Your Contributor Badge!</h2>
+      <div class="rv-progress">
+        <div class="rv-progress-bar done"></div>
+        <div class="rv-progress-bar done"></div>
+        <div class="rv-progress-bar active"></div>
+      </div>
+
+      <div class="rv-badge-card">
+        <div class="rv-badge-label">🏅 CONTRIBUTION VERIFIED</div>
+        <div class="rv-badge-title">Claim Your Contributor Badge!</div>
+        <div class="rv-badge-desc">Log impact &amp; unlock perks for <strong id="rv-badge-pharm-name"></strong></div>
+      </div>
+
+      {% if user.is_authenticated %}
+      <button class="rv-btn-primary" onclick="rvSubmit()" style="margin-bottom:0.75rem">Submit Review ✓</button>
+      {% else %}
+      <a href="/auth/google/start" class="rv-social-btn" onclick="rvSaveDraft()" style="margin-bottom:0">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A11.96 11.96 0 0 0 0 12c0 1.94.46 3.77 1.28 5.39l3.56-2.84.01-.46z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Sign in with Google to Submit
+      </a>
+      <div class="rv-social-row" style="justify-content:center">
+        <span style="font-size:0.75rem;color:#94a3b8;align-self:center;margin-right:0.25rem">OR:</span>
+        <a href="/auth/facebook/start" class="rv-social-icon-btn" onclick="rvSaveDraft()" title="Continue with Facebook"><svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
+        <button class="rv-social-icon-btn" type="button" title="Continue with Twitter / X" onclick="rvShowEmail()"><svg width="18" height="18" viewBox="0 0 24 24" fill="#0f1419"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg></button>
+        <button class="rv-social-icon-btn" type="button" title="Continue with Email" onclick="rvShowEmail()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></button>
+      </div>
+      <button class="rv-back-link" type="button" onclick="rvShowEmail()" style="border:none;background:none;width:100%;margin-top:0.5rem;font-size:0.8125rem;font-weight:600;color:#008F82;text-align:center;cursor:pointer">Sign up with Email</button>
+      <div id="rv-email-section" style="display:none;margin-top:0.75rem">
+        <input class="rv-input" type="email" placeholder="you@example.com" id="rv-email-input" aria-label="Email address" style="margin-bottom:0.5rem">
+        <button class="rv-btn-primary" type="button" onclick="rvGoSignup()" style="font-size:0.8125rem;padding:0.625rem">Create account &amp; Submit</button>
+      </div>
+      {% endif %}
+
+      <a class="rv-back-link" onclick="rvGoStep(2);return false">Back to Edit Details</a>
+      <div class="rv-footer">PharmacyPulse Community Network · Free &amp; Privacy Protected</div>
+    </div>
+
+    <!-- ===== SUCCESS ===== -->
+    <div id="rv-success" class="rv-modal-body" hidden style="text-align:center">
+      <div style="width:72px;height:72px;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;background:#E6F7F5;border-radius:50%;font-size:2rem">✅</div>
+      <h2 class="rv-title" style="text-align:center">Thank you — you're making a difference</h2>
+      <p style="font-size:0.875rem;color:#64748b;max-width:300px;margin:0 auto 1.5rem;line-height:1.6">Your review for <strong id="rv-success-pharm" style="color:#0f172a"></strong> has been submitted. Because of you, someone will find a pharmacy that cares.</p>
+      <a class="rv-btn-primary" id="rv-success-link" href="/list" style="text-decoration:none">Back to Pharmacy</a>
+      <a class="rv-back-link" href="/list">Browse more pharmacies</a>
+      <div class="rv-footer">PharmacyPulse Community Network · Free &amp; Privacy Protected</div>
+    </div>
+  </div>
+</div>
+
+<div id="rv-toast" class="rv-toast" role="status" aria-live="polite">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+  <span id="rv-toast-text">Review submitted. Thank you!</span>
+</div>
+
+<canvas id="rv-confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10001"></canvas>
+
+<script>
+(function(){
+  var careLabels = ['','Poor','Fair','Good','Great','Excellent'];
+
+  var STEPS = ['rv-step0','rv-step1','rv-step2','rv-step3','rv-success'];
+  var dirty = false;
+  var submitted = false;
+  var lastFocused = null;
+  var selectMode = false;
+  var pickerTimer = null;
+
+  /* --- Inline error + toast helpers --- */
+  function showError(msg) {
+    var el = document.getElementById('rv-error');
+    el.textContent = msg || 'Could not submit review.';
+    el.classList.add('show');
+    el.setAttribute('aria-hidden', 'false');
+  }
+  function hideError() {
+    var el = document.getElementById('rv-error');
+    el.classList.remove('show');
+    el.textContent = '';
+    el.setAttribute('aria-hidden', 'true');
+  }
+  var toastTimer = null;
+  window.rvToast = function(msg) {
+    document.getElementById('rv-toast-text').textContent = msg || 'Review submitted. Thank you!';
+    var el = document.getElementById('rv-toast');
+    el.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() { el.classList.remove('show'); }, 3500);
+  };
+
+  /* --- Step navigation --- */
+  function showStep(id) {
+    STEPS.forEach(function(sid) {
+      var el = document.getElementById(sid);
+      if (el) el.hidden = (sid !== id);
+    });
+    hideError();
+    var target = document.getElementById(id);
+    if (target) {
+      var focusable = target.querySelector('button, a[href], input, textarea, [tabindex]');
+      if (focusable) focusable.focus();
+    }
+  }
+  window.rvGoStep = function(step) {
+    showStep('rv-step' + step);
+    if (step === 0) loadPickerList();
+    if (step === 3) rvConfetti();
+  };
+  window.rvSuccess = function() { showStep('rv-success'); rvConfetti(); };
+
+  /* --- Draft preservation across sign-up/sign-in redirects --- */
+  window.rvSaveDraft = function() {
+    try {
+      var modal = document.getElementById('rv-modal');
+      localStorage.setItem('pp_review_draft', JSON.stringify({
+        pharm_id: modal.getAttribute('data-pharm-id'),
+        pharm_name: modal.getAttribute('data-pharm-name'),
+        pharm_addr: modal.getAttribute('data-pharm-addr'),
+        display_name: document.getElementById('rv-display-name').value,
+        comment: document.getElementById('rv-comment').value,
+      }));
+    } catch (e) {}
+  };
+  function restoreDraft() {
+    var raw = null;
+    try { raw = localStorage.getItem('pp_review_draft'); } catch (e) {}
+    if (!raw) return;
+    localStorage.removeItem('pp_review_draft');
+    var draft = null;
+    try { draft = JSON.parse(raw); } catch (e) {}
+    if (!draft) return;
+    if (draft.pharm_id) setPharmacy(draft.pharm_id, draft.pharm_name, draft.pharm_addr);
+    var dn = document.getElementById('rv-display-name');
+    if (dn && draft.display_name) dn.value = draft.display_name;
+    var cm = document.getElementById('rv-comment');
+    if (cm && draft.comment) cm.value = draft.comment;
+    dirty = true;
+  }
+
+  /* Guests must create an account before the final submission. The email
+  section routes to /signup (email prefilled) after stashing the draft so the
+  review survives the redirect and can be finished once signed in. */
+  window.rvGoSignup = function() {
+    rvSaveDraft();
+    var inp = document.getElementById('rv-email-input');
+    var em = (inp ? inp.value : '').trim();
+    var next = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = '/signup?next=' + next + (em ? '&email=' + encodeURIComponent(em) : '');
+  };
+
+  /* --- Email option reveal (Facebook / X / Use Email) --- */
+  window.rvShowEmail = function() {
+    var es = document.getElementById('rv-email-section');
+    if (es) es.style.display = 'block';
+    var inp = document.getElementById('rv-email-input');
+    if (inp) { inp.focus(); }
+  };
+
+  /* --- Celebration confetti: drops from the top of the screen downward --- */
+  window.rvConfetti = function() {
+    var canvas = document.getElementById('rv-confetti-canvas');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    var colors = ['#008F82','#F5D060','#7c3aed','#3b82f6','#ef4444','#f97316'];
+    var pieces = [];
+    for (var i = 0; i < 160; i++) {
+      pieces.push({
+        x: Math.random() * canvas.width,
+        y: -Math.random() * canvas.height,
+        vy: Math.random() * 2 + 1,
+        sway: Math.random() * 0.02 + 0.006,
+        ph: Math.random() * Math.PI * 2,
+        w: Math.random() * 8 + 4,
+        h: Math.random() * 6 + 2,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rot: Math.random() * 360,
+        rv: (Math.random() - 0.5) * 12,
+        alpha: 1,
+      });
+    }
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      var alive = false;
+      var bottom = canvas.height - 60;
+      pieces.forEach(function(p) {
+        if (p.alpha <= 0) return;
+        alive = true;
+        p.ph += p.sway;
+        p.x += Math.sin(p.ph) * 1.2;
+        p.y += p.vy;
+        p.vy += 0.015;
+        p.rot += p.rv;
+        if (p.y > bottom) p.alpha = Math.max(0, 1 - (p.y - bottom) / 60);
+        if (p.alpha <= 0 || p.y > canvas.height + 30) { p.alpha = 0; return; }
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot * Math.PI / 180);
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      });
+      if (alive) requestAnimationFrame(draw);
+      else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    draw();
+  };
+
+  /* --- Chip/radio selectors --- */
+  function wireChips(containerId) {
+    var el = document.getElementById(containerId);
+    if (!el) return;
+    el.querySelectorAll('.rv-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        el.querySelectorAll('.rv-chip').forEach(function(c){ c.classList.remove('selected'); });
+        chip.classList.add('selected');
+        var radio = chip.querySelector('input[type=radio]');
+        if (radio) radio.checked = true;
+        dirty = true;
+      });
+    });
+  }
+  wireChips('rv-purpose');
+  wireChips('rv-wait');
+  wireChips('rv-stock');
+  wireChips('rv-timeframe');
+
+  /* --- Heart selector (Step 1, Empathetic Care) --- */
+  var careEl = document.getElementById('rv-care');
+  if (careEl) {
+    careEl.querySelectorAll('.rv-heart').forEach(function(h) {
+      h.addEventListener('click', function() {
+        careEl.querySelectorAll('.rv-heart').forEach(function(x){ x.classList.remove('selected'); });
+        h.classList.add('selected');
+        var v = h.getAttribute('data-val');
+        var radio = h.querySelector('input[type=radio]');
+        if (radio) radio.checked = true;
+        document.getElementById('rv-care-text').textContent = v + '/5 (' + careLabels[v] + ')';
+        dirty = true;
+      });
+    });
+  }
+
+  /* --- Dirty tracking for Step 2 fields --- */
+  ['rv-display-name','rv-comment'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', function() { dirty = true; });
+  });
+
+  /* --- CSRF token from the layout's <meta name="csrf-token"> --- */
+  function csrfToken() {
+    var meta = document.querySelector('meta[name=csrf-token]');
+    if (meta && meta.content) return meta.content;
+    var m = document.cookie.match(/csrftoken=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+
+  function selectedValue(scope, name) {
+    var r = scope.querySelector('input[name="' + name + '"]:checked');
+    return r ? r.value : '';
+  }
+
+  /* --- Open / close with focus management --- */
+  function setPharmacy(id, name, addr) {
+    var modal = document.getElementById('rv-modal');
+    document.getElementById('rv-pharm-name').textContent = name || '';
+    document.getElementById('rv-pharm-addr-text').textContent = addr || '';
+    document.getElementById('rv-badge-pharm-name').textContent = name || '';
+    document.getElementById('rv-success-pharm').textContent = name || '';
+    document.getElementById('rv-success-link').href = '/pharmacy/' + id + '/';
+    modal.setAttribute('data-pharm-id', id || '');
+    modal.setAttribute('data-pharm-name', name || '');
+    modal.setAttribute('data-pharm-addr', addr || '');
+  }
+
+  function openModalShell() {
+    lastFocused = document.activeElement;
+    document.getElementById('rv-modal').style.display = 'flex';
+    document.getElementById('rv-modal').setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    var es = document.getElementById('rv-email-section');
+    if (es) es.style.display = 'none';
+    document.getElementById('rv-modal').querySelector('.rv-modal-close').focus();
+  }
+
+  /* Direct mode: pharmacy known from the page context. */
+  window.openReviewModal = function(pharmId, pharmName, pharmAddr) {
+    selectMode = false;
+    document.getElementById('rv-step1-back').hidden = true;
+    setPharmacy(pharmId, pharmName, pharmAddr);
+    dirty = false; submitted = false;
+    openModalShell();
+    restoreDraft();
+    showStep('rv-step1');
+  };
+
+  /* Select mode: user must pick a pharmacy first (e.g. AI Copilot card). */
+  window.openReviewModalSelect = function() {
+    selectMode = true;
+    document.getElementById('rv-step1-back').hidden = false;
+    dirty = false; submitted = false;
+    openModalShell();
+    restoreDraft();
+    showStep('rv-step0');
+  };
+
+  /* Re-open picker to change the pharmacy (Step 1 back + Step 2 Change). */
+  window.rvChangePharmacy = function() {
+    selectMode = true;
+    document.getElementById('rv-step1-back').hidden = false;
+    rvGoStep(0);
+  };
+
+  /* User picked a pharmacy from the picker list. */
+  window.rvPickPharmacy = function(id, name, addr) {
+    if (!id) return;
+    setPharmacy(id, name, addr);
+    dirty = true;
+    rvGoStep(1);
+  };
+
+  /* --- Pharmacy picker (Step 0) --- */
+  function renderPicker(results) {
+    var list = document.getElementById('rv-picker-list');
+    if (!list) return;
+    if (!results.length) {
+      list.innerHTML = '<div class="rv-picker-empty">No pharmacies found. Try a different name, city, or ZIP.</div>';
+      return;
+    }
+    var html = '';
+    results.forEach(function(p) {
+      var addr = (p.city || '') + ' · ' + (p.address || '').replace(/^\s+|\s+$/g, '');
+      if (!addr) addr = (p.city || '') + ', ' + (p.state || '');
+      var nameSafe = (p.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      var addrSafe = addr.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      var meta = '';
+      if (p.total_reviews) meta += p.total_reviews + ' reviews';
+      if (p.total_reviews && p.avg_service_rating) meta += ' · ★ ' + p.avg_service_rating;
+      html += '<button type="button" class="rv-picker-item" role="option" '
+        + 'onclick="rvPickPharmacy(' + p.id + ',\'' + nameSafe + '\',\'' + addrSafe + '\')">'
+        + '<span class="rv-picker-item-name">' + p.name + '</span>'
+        + '<span class="rv-picker-item-meta">📍 ' + addr
+        + (meta ? ' · <span style="color:#008F82;font-weight:600">' + meta + '</span>' : '')
+        + '</span></button>';
+    });
+    list.innerHTML = html;
+  }
+
+  function loadPickerList() {
+    var input = document.getElementById('rv-picker-search');
+    var list = document.getElementById('rv-picker-list');
+    if (!input || !list) return;
+    var q = (input.value || '').trim();
+    list.innerHTML = '<div class="rv-picker-loading">Finding pharmacies…</div>';
+    var url = '/api/flow/search?popular=1';
+    if (q) url = '/api/flow/search?q=' + encodeURIComponent(q);
+    fetch(url)
+      .then(function(r) { return r.json(); })
+      .then(function(data) { renderPicker(data.results || []); })
+      .catch(function() {
+        list.innerHTML = '<div class="rv-picker-empty">Could not load pharmacies. Please try again.</div>';
+      });
+  }
+
+  var pickerInput = document.getElementById('rv-picker-search');
+  if (pickerInput) {
+    pickerInput.addEventListener('input', function() {
+      clearTimeout(pickerTimer);
+      pickerTimer = setTimeout(loadPickerList, 250);
+    });
+    pickerInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); loadPickerList(); }
+    });
+  }
+
+  window.closeReviewModal = function(skipConfirm) {
+    if (!skipConfirm && dirty && !submitted) {
+      if (!window.confirm('You have unsaved changes. Close review anyway?')) return;
+    }
+    document.getElementById('rv-modal').style.display = 'none';
+    document.getElementById('rv-modal').setAttribute('aria-hidden', 'true');
+    var es = document.getElementById('rv-email-section');
+    if (es) es.style.display = 'none';
+    document.body.style.overflow = '';
+    if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+  };
+
+  /* --- Escape + focus trap --- */
+  document.addEventListener('keydown', function(e) {
+    var modal = document.getElementById('rv-modal');
+    if (modal.style.display !== 'flex') return;
+    if (e.key === 'Escape') { closeReviewModal(); return; }
+    if (e.key === 'Tab') {
+      var focusables = modal.querySelectorAll('button, a[href], input, textarea, [tabindex]');
+      if (!focusables.length) return;
+      var first = focusables[0], last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+      else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+    }
+  });
+
+  /* --- Submit review via AJAX (sign-in required — guests must create an
+  account at step 3 before the final submission) --- */
+  window.rvSubmit = function() { doSubmit(); };
+
+  function doSubmit() {
+    var modal = document.getElementById('rv-modal');
+    /* Only signed-in users may submit. If a stale cached copy shows the
+    button to a guest, route them to signup instead of submitting. */
+    if (modal.getAttribute('data-auth') !== '1') {
+      rvSaveDraft();
+      var next = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = '/signup?next=' + next;
+      return;
+    }
+    var pharmId = modal.getAttribute('data-pharm-id');
+    var pharmName = modal.getAttribute('data-pharm-name');
+
+    var purpose = selectedValue(document.getElementById('rv-purpose'), 'visit_purpose') || 'refill';
+    var waitTime = selectedValue(document.getElementById('rv-wait'), 'wait_time') || '3';
+    var stock = selectedValue(document.getElementById('rv-stock'), 'stock_status') || 'yes_all';
+    var care = selectedValue(document.getElementById('rv-care'), 'care_rating') || '5';
+    var timeframe = selectedValue(document.getElementById('rv-timeframe'), 'visit_timeframe') || 'today';
+    var displayName = (document.getElementById('rv-display-name').value || '').trim() || 'Anonymous';
+    var comment = (document.getElementById('rv-comment').value || '').trim();
+
+    if (!pharmId) {
+      showError('Select a pharmacy to review first.');
+      return;
+    }
+
+    /* Map stock to numeric for backend: yes_all=1, yes_partial=2, none=0 */
+    var stockMap = {'yes_all':1,'yes_partial':2,'none':0};
+
+    var body = new FormData();
+    body.append('pharmacy_id', pharmId);
+    body.append('pharmacy_name', pharmName || '');
+    body.append('stock_available', stockMap[stock] || 1);
+    body.append('wait_time_rating', waitTime);
+    body.append('service_rating', care);
+    body.append('comment', ['[' + purpose + ']', '[' + timeframe + ']', comment].filter(Boolean).join(' '));
+    body.append('user_name', displayName);
+    body.append('is_caregiver', '0');
+    body.append('csrfmiddlewaretoken', csrfToken());
+
+    hideError();
+    fetch('/api/flow/submit-review', {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json',
+        'X-CSRFToken': csrfToken()
+      },
+      body: body,
+      credentials: 'same-origin'
+    }).then(function(resp) {
+      return resp.json().then(function(payload) { return {status: resp.status, payload: payload}; });
+    }).then(function(res) {
+      if (res.payload && res.payload.ok) {
+        submitted = true;
+        dirty = false;
+        rvSuccess();
+        rvToast('Review submitted. Thank you!');
+      } else {
+        var msg = (res.payload && res.payload.error) || 'Could not submit review.';
+        showError(msg);
+        if (res.status === 409) rvGoStep(2);
+      }
+    }).catch(function() {
+      showError('Network error — please try again.');
+    });
+  }
+})();
+</script>

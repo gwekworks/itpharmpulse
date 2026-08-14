@@ -1,0 +1,55 @@
+<div class="pp-text-size" id="pp-text-size">
+  <button class="pp-text-size-trigger" id="pp-text-size-trigger" onclick="ppShowTextSizeBar()" aria-label="Text Size">
+    <span class="pp-text-size-trigger-icon">T</span>
+    <span class="pp-text-size-trigger-label">Text Size</span>
+  </button>
+  <div class="pp-text-size-bar pp-text-size--hidden" id="pp-text-size-bar">
+    <button class="pp-text-size-btn" onclick="ppChangeTextSize(-1)" aria-label="Decrease text size">
+      <span class="pp-text-size-icon">A<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </button>
+    <div class="pp-text-size-label">
+      <span class="pp-text-size-pct" id="pp-text-size-pct">100%</span>
+      <span class="pp-text-size-word">SIZE</span>
+    </div>
+    <button class="pp-text-size-btn" onclick="ppChangeTextSize(1)" aria-label="Increase text size">
+      <span class="pp-text-size-icon">A<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
+    </button>
+    <button class="pp-text-size-close" onclick="ppHideTextSizeBar()" aria-label="Close text size control">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+</div>
+<script>
+(function(){
+  var sizes = ['sm','md','lg','xl'];
+  var pcts  = ['75%','100%','112%','125%'];
+  var s = localStorage.getItem('pp_text_size');
+  if (s && sizes.indexOf(s) !== -1) {
+    document.documentElement.classList.add('pp-text-' + s);
+    document.getElementById('pp-text-size-pct').textContent = pcts[sizes.indexOf(s)];
+  }
+})();
+function ppShowTextSizeBar(){
+  document.getElementById('pp-text-size-trigger').classList.add('pp-text-size--hidden');
+  document.getElementById('pp-text-size-bar').classList.remove('pp-text-size--hidden');
+}
+function ppHideTextSizeBar(){
+  document.getElementById('pp-text-size-bar').classList.add('pp-text-size--hidden');
+  document.getElementById('pp-text-size-trigger').classList.remove('pp-text-size--hidden');
+}
+function ppChangeTextSize(dir){
+  var el = document.documentElement;
+  var sizes = ['sm','md','lg','xl'];
+  var pcts  = ['75%','100%','112%','125%'];
+  var cur = 'md';
+  for(var i=0;i<sizes.length;i++){if(el.classList.contains('pp-text-'+sizes[i])){cur=sizes[i];break;}}
+  var idx = sizes.indexOf(cur) + dir;
+  if(idx < 0) idx = 0;
+  if(idx >= sizes.length) idx = sizes.length - 1;
+  var next = sizes[idx];
+  for(var i=0;i<sizes.length;i++) el.classList.remove('pp-text-'+sizes[i]);
+  el.classList.add('pp-text-'+next);
+  localStorage.setItem('pp_text_size', next);
+  document.getElementById('pp-text-size-pct').textContent = pcts[idx];
+}
+</script>

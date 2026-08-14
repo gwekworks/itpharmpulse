@@ -1,0 +1,155 @@
+{% load pharmacypulse %}
+{% load i18n %}
+<nav class="bottom-nav" id="bottom-nav" data-persist>
+  <div class="flex justify-around items-center max-w-lg mx-auto">
+    <a href="/" data-nav="home">
+      <span class="pp-bottom-icon">🏠</span>
+      <span>{% trans "Home" %}</span>
+    </a>
+    <a href="/list" data-nav="list">
+      <span class="pp-bottom-icon">🔍</span>
+      <span>{% trans "Find Your Pharmacy" %}</span>
+    </a>
+    <a href="/reviews" data-nav="reviews">
+      <span class="pp-bottom-icon">💬</span>
+      <span>{% trans "Reviews" %}</span>
+    </a>
+    <a href="/shortages" data-nav="shortages">
+      <span class="pp-bottom-icon">⚠️</span>
+      <span>{% trans "Shortages" %}</span>
+    </a>
+    <a href="/account" data-nav="account" class="relative">
+      <span class="pp-bottom-icon">👤</span>
+      {% if notification_count %}<span class="pp-bottom-badge">{{notification_count}}</span>{% endif %}
+      <span>{% trans "Account" %}</span>
+    </a>
+  </div>
+</nav>
+<script>
+(function(){
+  // Highlight active tab
+  var path = window.location.pathname;
+  var map = {'':'home','/':'home','home':'home','index':'home','list':'list','pharmacy':'list','online':'online',
+    'reviews':'reviews','review':'reviews','shortages':'shortages','compare':'shortages',
+    'account':'account','pharmacist-dashboard':'account','login':'account','signup':'account','forgot-password':'account'};
+  var key = path.replace(/^\//,'').split('?')[0];
+  var active = map[key] || 'home';
+  document.querySelectorAll('#bottom-nav a').forEach(function(a){
+    if(a.getAttribute('data-nav') === active) a.classList.add('active');
+  });
+
+  // Native app mode: intercept ALL link clicks and do AJAX swap
+  var isNative = window.Capacitor || document.documentElement.classList.contains('native-app');
+  if(!isNative) return;
+
+  function getContent(){
+    var els = [];
+    Array.from(document.body.children).forEach(function(el){
+      if(!el.hasAttribute('data-persist') && el.tagName !== 'SCRIPT') els.push(el);
+    });
+    return els;
+  }
+
+  function updateNav(href){
+    var key = href.replace(/^\//,'').split('?')[0];
+    var active = map[key] || 'home';
+    document.querySelectorAll('#bottom-nav a').forEach(function(a){
+      a.classList.toggle('active', a.getAttribute('data-nav') === active);
+    });
+  }
+
+  function navigateTo(href){
+    var nav = document.getElementById('bottom-nav');
+    var content = getContent();
+
+    // Slide out
+    content.forEach(function(el){
+      el.style.transition = 'opacity 0.1s ease, transform 0.1s ease';
+      el.style.opacity = '0';
+      el.style.transform = 'translateX(-12px)';
+    });
+
+    setTimeout(function(){
+      fetch(href, {credentials:'same-origin', headers:{'X-Requested-With':'XMLHttpRequest'}})
+      .then(function(r){ return r.text(); })
+      .then(function(html){
+        // Remove old content
+        content.forEach(function(el){ el.remove(); });
+
+        // Parse new page
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+
+        // Insert new body children (except bottom-nav and persist elements)
+        Array.from(doc.body.children).forEach(function(el){
+          if(el.hasAttribute('data-persist') || el.classList.contains('bottom-nav') || el.id === 'bottom-nav') return;
+          if(el.tagName === 'SCRIPT') return;
+          var clone = document.importNode(el, true);
+          clone.style.opacity = '0';
+          clone.style.transform = 'translateX(12px)';
+          document.body.insertBefore(clone, nav);
+        });
+
+        // Run new page scripts
+        Array.from(doc.body.querySelectorAll('script:not([src])')).forEach(function(s){
+          if(s.closest('#bottom-nav') || s.closest('[data-persist]')) return;
+          var ns = document.createElement('script');
+          ns.textContent = s.textContent;
+          document.body.insertBefore(ns, nav);
+        });
+
+        // Update URL + title
+        history.pushState({href: href}, '', href);
+        if(doc.title) document.title = doc.title;
+        updateNav(href);
+
+        // Slide in
+        requestAnimationFrame(function(){
+          requestAnimationFrame(function(){
+            getContent().forEach(function(el){
+              el.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
+              el.style.opacity = '1';
+              el.style.transform = 'translateX(0)';
+            });
+          });
+        });
+
+        window.scrollTo(0,0);
+      })
+      .catch(function(){ window.location.href = href; });
+    }, 100);
+  }
+
+  // Intercept all clicks
+  document.addEventListener('click', function(e){
+    var link = e.target.closest('a[href]');
+    if(!link) return;
+    var href = link.getAttribute('href');
+    if(!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('javascript') || href.startsWith('/api/')) return;
+    if(link.hasAttribute('download') || link.hasAttribute('target')) return;
+    if(e.metaKey || e.ctrlKey || e.shiftKey) return;
+    // Skip form submits
+    if(link.closest('form')) return;
+
+    e.preventDefault();
+    navigateTo(href);
+  });
+
+  // Handle form submissions — let them do normal submit, but animate out
+  document.addEventListener('submit', function(e){
+    var content = getContent();
+    content.forEach(function(el){
+      el.style.transition = 'opacity 0.1s ease';
+      el.style.opacity = '0';
+    });
+  });
+
+  // Back button
+  window.addEventListener('popstate', function(e){
+    if(e.state && e.state.href) navigateTo(e.state.href);
+    else window.location.reload();
+  });
+
+  // Set initial state
+  history.replaceState({href: window.location.pathname + window.location.search}, '', window.location.href);
+})();
+</script>

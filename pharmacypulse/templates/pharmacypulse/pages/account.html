@@ -1,0 +1,280 @@
+{% extends "pharmacypulse/layouts/app.html" %}
+{% load pharmacypulse %}
+{% block title %}Account{% endblock %}
+{% block content %}
+{% include "pharmacypulse/partials/topbar.html" %}
+<style>
+  .acct-card {
+    background: white; border: 1px solid #e5e7eb; border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 1.25rem; margin-bottom: 1rem;
+  }
+  .acct-h2 { font-weight: 700; color: #0f172a; font-size: 0.875rem; margin-bottom: 0.875rem }
+  .acct-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.625rem 0; border-top: 1px solid #f1f5f9;
+  }
+  .acct-row:first-child { border-top: 0 }
+  .acct-label { font-size: 0.75rem; color: #94a3b8; font-weight: 500 }
+  .acct-value { font-size: 0.875rem; color: #0f172a; font-weight: 500; text-align: right }
+  .acct-value.empty { color: #cbd5e1; font-style: italic; font-weight: 400 }
+
+  details.acct-collapse { border-top: 1px solid #f1f5f9; padding-top: 0.875rem; margin-top: 0.875rem }
+  details.acct-collapse[open] summary { color: #008F82 }
+  details.acct-collapse summary {
+    cursor: pointer; list-style: none; font-size: 0.8125rem; font-weight: 600;
+    color: #0f172a; display: flex; align-items: center; justify-content: space-between;
+  }
+  details.acct-collapse summary::-webkit-details-marker { display: none }
+  details.acct-collapse summary::after { content: "▾"; color: #94a3b8; font-size: 0.75rem; transition: transform 0.15s }
+  details.acct-collapse[open] summary::after { transform: rotate(180deg); color: #008F82 }
+
+  .acct-form { margin-top: 0.875rem; display: grid; gap: 0.625rem }
+  .acct-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.625rem }
+  @media (max-width: 480px) { .acct-grid-2 { grid-template-columns: 1fr } }
+  .acct-input {
+    width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.5rem;
+    font-size: 0.8125rem; color: #0f172a; background: white; outline: none; box-sizing: border-box;
+  }
+  .acct-input:focus { border-color: #008F82 }
+  .acct-input-label { font-size: 0.6875rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.25rem; display: block }
+  .acct-btn-primary {
+    padding: 0.5rem 1rem; background: #008F82; color: white; font-size: 0.8125rem;
+    font-weight: 600; border: none; border-radius: 9999px; cursor: pointer; justify-self: start;
+  }
+  .acct-banner {
+    padding: 0.625rem 0.875rem; border-radius: 0.625rem; font-size: 0.8125rem;
+    margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
+  }
+  .acct-banner.ok    { background: #ecfdf5; color: #065f46; border-left: 3px solid #10b981 }
+  .acct-banner.error { background: #fef2f2; color: #991b1b; border-left: 3px solid #ef4444 }
+
+  .acct-grid {
+    display: grid; gap: 1rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 880px) {
+    .acct-grid { grid-template-columns: minmax(0, 18rem) minmax(0, 1fr); align-items: start }
+  }
+</style>
+<div style="background: #fafbfc; min-height: 100vh; padding-bottom: 4rem">
+  <div style="max-width: 72rem; margin: 0 auto; padding: 1.5rem 1.5rem">
+
+    <div style="margin-bottom: 1.5rem">
+      <h1 style="font-family: 'DM Serif Display', serif; font-size: 1.75rem; color: #0f172a; margin-bottom: 0.25rem">My account</h1>
+      <p style="font-size: 0.875rem; color: #64748b">Manage your profile, password, billing, and privacy.</p>
+    </div>
+
+    {% if param_updated == "profile" %}<div class="acct-banner ok">✓ Profile updated.</div>{% endif %}
+    {% if param_updated == "password" %}<div class="acct-banner ok">✓ Password updated.</div>{% endif %}
+    {% if param_pw_error == "current" %}<div class="acct-banner error">Current password is incorrect.</div>{% endif %}
+    {% if param_pw_error == "length" %}<div class="acct-banner error">New password must be at least 8 characters.</div>{% endif %}
+    {% if param_pw_error == "match" %}<div class="acct-banner error">New password and confirmation don't match.</div>{% endif %}
+    {% if param_pw_error == "weak" %}<div class="acct-banner error">{{ param_pw_msg|default:"New password is too weak. Use a longer, less common password." }}</div>{% endif %}
+
+    <div class="acct-grid">
+
+      <!-- ===== LEFT: identity, billing, logout ===== -->
+      <div class="acct-col-left">
+        <!-- Profile / identity -->
+        <div class="acct-card">
+          <div style="display: flex; align-items: center; gap: 0.875rem; margin-bottom: 1rem">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #008F82; color: white; font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; justify-content: center">{{ user.first_name|initials }}</div>
+            <div style="min-width: 0">
+              <p style="font-weight: 700; color: #0f172a; font-size: 1rem; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{% if user.first_name or user.last_name %}{{ user.first_name }} {{ user.last_name }}{% else %}<span style="color: #94a3b8; font-style: italic; font-weight: 400">No name set</span>{% endif %}</p>
+              <p style="font-size: 0.75rem; color: #64748b; margin: 0.125rem 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ user.email }}</p>
+              {% if user.role != "user" %}<span style="display: inline-block; margin-top: 0.375rem; padding: 0.125rem 0.5rem; background: #E6F7F5; color: #006B62; border-radius: 9999px; font-size: 0.6875rem; font-weight: 600; text-transform: capitalize">{{ user.role }}</span>{% endif %}
+            </div>
+          </div>
+
+          <div class="acct-row"><span class="acct-label">Phone</span><span class="acct-value {% if not user.phone %}empty{% endif %}">{{ user.phone|default:"Not set" }}</span></div>
+          <div class="acct-row"><span class="acct-label">ZIP code</span><span class="acct-value {% if not user.zip_code %}empty{% endif %}">{{ user.zip_code|default:"Not set" }}</span></div>
+
+          <details class="acct-collapse">
+            <summary>Edit profile</summary>
+            <form class="acct-form" method="POST" action="/api/flow/update-profile">
+              {% csrf_token %}
+              <div class="acct-grid-2">
+                <div>
+                  <label class="acct-input-label">First name</label>
+                  <input class="acct-input" type="text" name="first_name" value="{{ user.first_name }}" maxlength="150">
+                </div>
+                <div>
+                  <label class="acct-input-label">Last name</label>
+                  <input class="acct-input" type="text" name="last_name" value="{{ user.last_name }}" maxlength="150">
+                </div>
+              </div>
+              <div>
+                <label class="acct-input-label">Phone</label>
+                <input class="acct-input" type="tel" name="phone" value="{{ user.phone }}" maxlength="32" placeholder="(555) 123-4567">
+              </div>
+              <div>
+                <label class="acct-input-label">ZIP code</label>
+                <input class="acct-input" type="text" name="zip_code" value="{{ user.zip_code }}" maxlength="16" inputmode="numeric" placeholder="19103">
+              </div>
+              <button class="acct-btn-primary" type="submit">Save changes</button>
+            </form>
+          </details>
+
+          <details class="acct-collapse">
+            <summary>Change password</summary>
+            <form class="acct-form" method="POST" action="/api/flow/change-password">
+              {% csrf_token %}
+              <div>
+                <label class="acct-input-label">Current password</label>
+                <input class="acct-input" type="password" name="current_password" autocomplete="current-password" required>
+              </div>
+              <div class="acct-grid-2">
+                <div>
+                  <label class="acct-input-label">New password</label>
+                  <input class="acct-input" type="password" name="new_password" autocomplete="new-password" minlength="8" required>
+                </div>
+                <div>
+                  <label class="acct-input-label">Confirm</label>
+                  <input class="acct-input" type="password" name="confirm_password" autocomplete="new-password" minlength="8" required>
+                </div>
+              </div>
+              <p style="font-size: 0.6875rem; color: #94a3b8; margin: 0">At least 8 characters.</p>
+              <button class="acct-btn-primary" type="submit">Update password</button>
+            </form>
+          </details>
+        </div>
+
+        {% if user.role == "pharmacist" or user.role == "admin" or user.plan != "free" %}
+        <!-- Subscription / billing -->
+        <div class="acct-card">
+          <p class="acct-h2">Subscription</p>
+          <div class="acct-row">
+            <span class="acct-label">Plan</span>
+            <span class="acct-value">
+              {% if user.plan == "pro" %}
+              <span style="display: inline-block; padding: 0.125rem 0.5rem; background: #fef3c7; color: #92400e; border-radius: 9999px; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em">Pro</span>
+              {% else %}
+              Free
+              {% endif %}
+            </span>
+          </div>
+          {% if user.subscription_status %}
+          <div class="acct-row"><span class="acct-label">Status</span><span class="acct-value" style="text-transform: capitalize">{{ user.subscription_status }}</span></div>
+          {% endif %}
+          {% if user.subscription_period_end %}
+          <div class="acct-row"><span class="acct-label">{% if user.subscription_status == "canceled" %}Access ends{% else %}Renews{% endif %}</span><span class="acct-value">{{ user.subscription_period_end|date:"M d, Y" }}</span></div>
+          {% endif %}
+          <div style="margin-top: 0.875rem">
+            {% if user.stripe_customer_id %}
+            <a href="/api/flow/billing-portal" class="acct-btn-primary" style="display: inline-block; text-decoration: none">Manage billing</a>
+            {% else %}
+            <a href="/api/flow/create-checkout" class="acct-btn-primary" style="display: inline-block; text-decoration: none">Upgrade to Pro</a>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Logout -->
+        <form method="POST" action="/logout" style="margin-top: 0.5rem">
+          {% csrf_token %}
+          <button type="submit" style="width: 100%; padding: 0.75rem; background: white; border: 1px solid #e5e7eb; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; color: #64748b; cursor: pointer">Log out</button>
+        </form>
+      </div>
+
+      <!-- ===== RIGHT: reviews + privacy + danger zone ===== -->
+      <div>
+        <!-- My Reviews -->
+        <div class="acct-card">
+          <p class="acct-h2">My reviews <span style="color: #94a3b8; font-weight: 500">· {{ my_reviews|length }}</span></p>
+          {% for item in my_reviews %}
+          <div style="padding: 0.75rem 0; border-top: 1px solid #f1f5f9">
+            <div style="display: flex; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.375rem">
+              <p style="font-weight: 600; color: #0f172a; font-size: 0.8125rem; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ item.pharmacy_full_name }}</p>
+              <span style="font-size: 0.6875rem; color: #94a3b8; flex-shrink: 0">{{ item.created_at|date:"M d, Y" }}</span>
+            </div>
+            <div style="display: flex; gap: 0.625rem; font-size: 0.75rem; margin-bottom: 0.25rem; flex-wrap: wrap">
+              <span><span style="color: #f59e0b">★</span> {{ item.service_rating }}/5</span>
+              <span style="color: #64748b">Wait: {{ item.wait_time_rating }}/5</span>
+              {% if item.stock_available %}<span style="color: #008F82">In stock</span>{% else %}<span style="color: #ef4444">Out of stock</span>{% endif %}
+            </div>
+            {% if item.comment %}<p style="font-size: 0.8125rem; color: #475569; margin: 0">{{ item.comment }}</p>{% endif %}
+          </div>
+          {% endfor %}
+          {% if not my_reviews %}
+          <div style="text-align: center; padding: 1.5rem 0">
+            <p style="font-size: 0.875rem; color: #64748b; margin: 0 0 0.75rem">You haven't left any reviews yet.</p>
+            <a href="/list" style="display: inline-block; padding: 0.5rem 1rem; background: #008F82; color: white; border-radius: 9999px; font-size: 0.8125rem; font-weight: 600; text-decoration: none">Find a pharmacy</a>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Notifications -->
+        <div class="acct-card">
+          <p class="acct-h2">Notifications</p>
+          <div class="acct-row">
+            <div>
+              <p style="font-weight: 500; color: #0f172a; font-size: 0.875rem; margin: 0">Weekly newsletter</p>
+              <p style="font-size: 0.6875rem; color: #94a3b8; margin: 0.125rem 0 0">Pharmacy reviews and updates for your area</p>
+            </div>
+            {% for item in nl_status %}
+              {% if item.subscribed %}
+              <form method="POST" action="/api/flow/newsletter/unsubscribe" style="display: inline">
+                {% csrf_token %}
+                <button type="submit" style="padding: 0.25rem 0.625rem; background: #E6F7F5; color: #006B62; font-size: 0.6875rem; font-weight: 600; border: 1px solid #bbf7d0; border-radius: 9999px; cursor: pointer">Subscribed ✓</button>
+              </form>
+              {% else %}
+              <form method="POST" action="/api/flow/newsletter/subscribe" style="display: inline">
+                {% csrf_token %}
+                <input type="hidden" name="zip_code" value="{{ user.zip_code }}">
+                <button type="submit" style="padding: 0.25rem 0.625rem; background: #f1f5f9; color: #64748b; font-size: 0.6875rem; font-weight: 600; border: 1px solid #e5e7eb; border-radius: 9999px; cursor: pointer">Subscribe</button>
+              </form>
+              {% endif %}
+            {% endfor %}
+            {% if not nl_status %}
+            <form method="POST" action="/api/flow/newsletter/subscribe" style="display: inline">
+              {% csrf_token %}
+              <input type="hidden" name="zip_code" value="{{ user.zip_code }}">
+              <button type="submit" style="padding: 0.25rem 0.625rem; background: #f1f5f9; color: #64748b; font-size: 0.6875rem; font-weight: 600; border: 1px solid #e5e7eb; border-radius: 9999px; cursor: pointer">Subscribe</button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Data & Privacy -->
+        <div class="acct-card">
+          <p class="acct-h2">Data &amp; privacy</p>
+          <div class="acct-row">
+            <div>
+              <p style="font-weight: 500; color: #0f172a; font-size: 0.875rem; margin: 0">Export my data</p>
+              <p style="font-size: 0.6875rem; color: #94a3b8; margin: 0.125rem 0 0">Download all your data (CCPA)</p>
+            </div>
+            <a href="/api/flow/ccpa-export" download="my-data.json" style="padding: 0.375rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; color: #0f172a; text-decoration: none">Export</a>
+          </div>
+          <div class="acct-row">
+            <div>
+              <p style="font-weight: 500; color: #0f172a; font-size: 0.875rem; margin: 0">Do not sell or share</p>
+              <p style="font-size: 0.6875rem; color: #94a3b8; margin: 0.125rem 0 0">CCPA / GDPR opt-out — already on by default</p>
+            </div>
+            <span style="padding: 0.25rem 0.5rem; background: #E6F7F5; color: #006B62; border-radius: 9999px; font-size: 0.6875rem; font-weight: 600">Opted out</span>
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="acct-card" style="border: 1px solid #fecaca">
+          <p class="acct-h2" style="color: #991b1b">Danger zone</p>
+          <div class="acct-row">
+            <div>
+              <p style="font-weight: 500; color: #ef4444; font-size: 0.875rem; margin: 0">Delete account</p>
+              <p style="font-size: 0.6875rem; color: #94a3b8; margin: 0.125rem 0 0">Permanently delete all data</p>
+            </div>
+            <form id="ccpa-delete-form" method="POST" action="/api/flow/ccpa-delete" style="display:inline">
+              {% csrf_token %}
+              <button type="button" onclick="ppModal({title:'Delete your account?',body:'This will permanently delete all your data including reviews, consents, and personal information. This cannot be undone.',actionText:'Delete permanently',actionClass:'pp-modal-btn-danger',action:function(){document.getElementById('ccpa-delete-form').submit();}})" style="padding: 0.375rem 0.75rem; background: #ef4444; color: white; border: none; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; cursor: pointer">Delete</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% include "pharmacypulse/partials/footer.html" %}
+{% include "pharmacypulse/partials/bottom-nav.html" %}
+{% include "pharmacypulse/partials/modal.html" %}
+{% endblock %}

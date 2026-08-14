@@ -1,0 +1,141 @@
+{% extends "pharmacypulse/layouts/app.html" %}
+{% load pharmacypulse %}
+{% block title %}Home{% endblock %}
+{% block content %}
+{% include "pharmacypulse/partials/topbar.html" %}
+<div class="pp-member-page">
+  <div class="pp-member-container">
+
+    <!-- Greeting -->
+    <div class="pp-mb-24">
+      <h1 class="pp-home-title">
+        Hello{% if user.first_name %}, {{user.first_name}}{% endif %}
+      </h1>
+      <p class="pp-home-subtitle">Find your pharmacy, share your experience.</p>
+    </div>
+
+    <!-- Search -->
+    <form action="/list" method="GET" class="search-wrap pp-mb-24">
+      <div class="pp-search-field" onfocusin="this.style.borderColor='#008F82'" onfocusout="this.style.borderColor='#e5e7eb'">
+        <div class="pp-search-icon">
+          🔍
+        </div>
+        <input type="text" name="q" data-autocomplete placeholder="Search pharmacy, city, or ZIP..." class="pp-search-input" autocomplete="off">
+        <button type="submit" class="pp-search-btn">Search</button>
+      </div>
+      <div class="search-dropdown"></div>
+    </form>
+    {% include "pharmacypulse/partials/search-autocomplete.html" %}
+
+    <!-- Pharmacist banner -->
+    {% if user.role == "pharmacist" %}
+    <a href="/pharmacist-dashboard" class="pp-pharm-banner">
+      <div class="pp-banner-left">
+        <div class="pp-banner-icon">
+          📊
+        </div>
+        <div>
+          <p class="pp-banner-title">Pharmacist Dashboard</p>
+          <p class="pp-banner-subtitle">Manage reviews, view analytics, and embed your widget</p>
+        </div>
+      </div>
+      <span class="pp-banner-arrow">→</span>
+    </a>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 pp-mb-24">
+      <a href="/map" class="pp-quick-card" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)'" onmouseout="this.style.boxShadow='none'">
+        <span class="pp-quick-icon">📍</span>
+        <p class="pp-title-sm">Map View</p>
+        <p class="pp-sub-sm">Browse nearby</p>
+      </a>
+      <a href="/online" class="pp-quick-card" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)'" onmouseout="this.style.boxShadow='none'">
+        <span class="pp-quick-icon">🌐</span>
+        <p class="pp-title-sm">Online</p>
+        <p class="pp-sub-sm">Digital pharmacies</p>
+      </a>
+      <a href="/shortages" class="pp-quick-card" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)'" onmouseout="this.style.boxShadow='none'">
+        <span class="pp-quick-icon">⚠️</span>
+        <p class="pp-title-sm">Shortages</p>
+        <p class="pp-sub-sm">Drug shortage tracker</p>
+      </a>
+      <a href="/compare" class="pp-quick-card" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)'" onmouseout="this.style.boxShadow='none'">
+        <span class="pp-quick-icon">📊</span>
+        <p class="pp-title-sm">Compare</p>
+        <p class="pp-sub-sm">Side-by-side</p>
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-3 gap-3 pp-mb-32">
+      
+      <div class="pp-stat-card pp-stat-teal">
+        <p class="pp-stat-num pp-stat-num-teal">{{pharm_count.0.count}}</p>
+        <p class="pp-stat-lbl">Pharmacies</p>
+      </div>
+      
+      
+      <div class="pp-stat-card pp-stat-amber">
+        <p class="pp-stat-num pp-stat-num-amber">{{review_count.0.count}}</p>
+        <p class="pp-stat-lbl">Reviews</p>
+      </div>
+      
+      <div class="pp-stat-card pp-stat-violet">
+        <p class="pp-stat-num pp-stat-num-violet">120+</p>
+        <p class="pp-stat-lbl">Cities</p>
+      </div>
+    </div>
+
+    <!-- Top Rated -->
+    <div class="pp-mb-32">
+      <div class="pp-section-head">
+        <h2 class="pp-section-title">Top Rated Pharmacies</h2>
+        <a href="/list" class="pp-view-all">View all →</a>
+      </div>
+      <div class="pharmacy-grid">
+        
+        {% for item in nearby %}
+        <a href="{{ item.url }}" class="pp-pharmacy-item" onmouseover="this.style.borderColor='#008F82';this.style.boxShadow='0 4px 12px rgba(0,143,130,0.08)'" onmouseout="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
+          <div class="pp-card-row">
+            <div class="pp-card-main">
+              <p class="pp-title-sm">{{ item.name }}{% if item.listing_verified %} <span class="pp-listing-verified-badge" title="Verified — this pharmacy completed its listing setup">&#10003; Verified</span>{% endif %}</p>
+              <p class="pp-meta-xs pp-mt-2">{{ item.address }}</p>
+            </div>
+            <div class="pp-rating-block">
+              {% if item.total_reviews %}
+              <div class="pp-rating-row">
+                <span class="pp-star">★</span>
+                <span class="pp-rating-num">{{ item.avg_service_rating }}</span>
+              </div>
+              <p class="pp-review-count">{{ item.total_reviews }} reviews</p>
+              {% else %}
+              <p class="pp-meta-xs">No reviews</p>
+              {% endif %}
+            </div>
+          </div>
+          {% if item.total_reviews %}
+          <div class="pp-item-footer">
+            <span class="pp-stock-info">{{ item.stock_confidence }}% stock</span>
+            <span class="pp-wait-info">~{{ item.avg_wait_time }} min</span>
+          </div>
+          {% endif %}
+          {% if item.phone %}
+          <p class="pp-meta-xs pp-mt-4">{{ item.phone }}</p>
+          {% endif %}
+        </a>
+        {% endfor %}
+        {% if not nearby %}
+        <div class="pp-empty-state">
+          <p class="pp-empty-text">No pharmacies yet. Import some from the admin panel.</p>
+        </div>
+        {% endif %}
+        
+      </div>
+    </div>
+
+  </div>
+</div>
+{% include "pharmacypulse/partials/footer.html" %}
+{% include "pharmacypulse/partials/bottom-nav.html" %}
+{% endblock %}

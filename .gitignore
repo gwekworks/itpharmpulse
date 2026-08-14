@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+db.sqlite3
+db.sqlite3-journal
+latest.dump
+staticfiles/
+*.egg-info/
+.DS_Store
+.idea/
+.vscode/
+# .mo files: committed because Heroku slug doesn't include msgfmt (gettext binaries).
+# Regenerate locally with `python manage.py compilemessages` after editing .po.
+data.db
+*.bak

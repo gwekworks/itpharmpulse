@@ -1,0 +1,279 @@
+{% extends "pharmacypulse/layouts/blank.html" %}
+{% load pharmacypulse %}
+{% block title %}Pharmacy Insights — PharmacyPulse{% endblock %}
+{% block meta_description %}Data-driven insights into the US pharmacy landscape: pharmacy density by state, chain vs independent breakdown, drug shortages, and pharmacy service trends.{% endblock %}
+{% block content %}
+{% include "pharmacypulse/partials/topbar.html" %}
+
+<div class="pp-page-bg">
+  <div class="pp-container">
+
+    <div class="pp-stat-grid">
+      <div class="pp-stat-card">
+        <p class="pp-stat-label">Pharmacies tracked</p>
+        <p class="font-serif pp-stat-value">{{ stat_pharm.n|intcomma_safe }}</p>
+      </div>
+      <div class="pp-stat-card">
+        <p class="pp-stat-label">States &amp; territories</p>
+        <p class="font-serif pp-stat-value">{{ stat_states.n }}</p>
+        <p class="pp-stat-note">50 states + DC, PR, VI</p>
+      </div>
+      <div class="pp-stat-card">
+        <p class="pp-stat-label">ZIP codes</p>
+        <p class="font-serif pp-stat-value">{{ stat_zips.n|intcomma_safe }}</p>
+      </div>
+      <div class="pp-stat-card">
+        <p class="pp-stat-label">Per 100k Americans</p>
+        <p class="font-serif pp-stat-value">{{ pharm_per_100k }}</p>
+      </div>
+      <div class="pp-stat-card">
+        <p class="pp-stat-label">Active shortages</p>
+        <p class="font-serif pp-stat-value pp-stat-value-amber">{{ stat_short.n }}</p>
+      </div>
+    </div>
+
+    <div class="pp-card-grid-lg">
+
+      <div class="pp-card">
+        <h2 class="font-serif pp-h2">Where pharmacies are</h2>
+        <p class="pp-card-sub">Top 10 states by pharmacy count.</p>
+        {% if top_states %}
+        <div class="pp-stack">
+          {% for s in top_states %}
+          <div>
+            <div class="pp-bar-row">
+              <span class="pp-bar-label">{{ s.name }}</span>
+              <span class="pp-bar-value">{{ s.n|intcomma_safe }}</span>
+            </div>
+            <div class="pp-bar-track">
+              <div class="pp-bar-fill pp-bar-fill-emerald-grad" style="width: {{ s.pct }}%"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="pp-empty-note">No state data yet.</p>
+        {% endif %}
+      </div>
+
+      <div class="pp-card">
+        <h2 class="font-serif pp-h2">Most independent states</h2>
+        <p class="pp-card-sub">Where the corner pharmacy still wins — share of pharmacies that are independents (&lt;5 locations).</p>
+        {% if state_indep %}
+        <div class="pp-stack">
+          {% for s in state_indep %}
+          <div>
+            <div class="pp-bar-row">
+              <span class="pp-bar-label">{{ s.name }}</span>
+              <span class="pp-bar-value">{{ s.pct }}% &middot; {{ s.indep|intcomma_safe }} of {{ s.total|intcomma_safe }}</span>
+            </div>
+            <div class="pp-bar-track">
+              <div class="pp-bar-fill pp-bar-fill-purple-grad" style="width: {{ s.bar }}%"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="pp-empty-note">Not enough state data yet.</p>
+        {% endif %}
+      </div>
+
+      <div class="pp-card">
+        <h2 class="font-serif pp-h2">Chain mix</h2>
+        <p class="pp-card-sub">How the US pharmacy landscape breaks down.</p>
+        <div class="pp-stack-lg">
+          <div>
+            <div class="pp-bar-row">
+              <span class="pp-bar-label">Independent (&lt; 5 locations)</span>
+              <span class="pp-bar-value">{{ chain_breakdown.independent|intcomma_safe }} &middot; {{ chain_pct.independent }}%</span>
+            </div>
+            <div class="pp-bar-track-lg">
+              <div class="pp-bar-fill pp-bar-fill-teal" style="width: {{ chain_pct.independent }}%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="pp-bar-row">
+              <span class="pp-bar-label">Regional chain (5–99)</span>
+              <span class="pp-bar-value">{{ chain_breakdown.regional|intcomma_safe }} &middot; {{ chain_pct.regional }}%</span>
+            </div>
+            <div class="pp-bar-track-lg">
+              <div class="pp-bar-fill pp-bar-fill-emerald" style="width: {{ chain_pct.regional }}%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="pp-bar-row">
+              <span class="pp-bar-label">National chain (100+)</span>
+              <span class="pp-bar-value">{{ chain_breakdown.national|intcomma_safe }} &middot; {{ chain_pct.national }}%</span>
+            </div>
+            <div class="pp-bar-track-lg">
+              <div class="pp-bar-fill pp-bar-fill-purple" style="width: {{ chain_pct.national }}%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="pp-bar-row">
+              <span class="pp-bar-label">Online / mail-order</span>
+              <span class="pp-bar-value">{{ chain_breakdown.online|intcomma_safe }} &middot; {{ chain_pct.online }}%</span>
+            </div>
+            <div class="pp-bar-track-lg">
+              <div class="pp-bar-fill pp-bar-fill-amber" style="width: {{ chain_pct.online }}%"></div>
+            </div>
+          </div>
+        </div>
+        <p class="pp-card-foot-note">{{ claimed_n|intcomma_safe }} pharmacies ({{ claimed_pct }}%) have claimed their PharmacyPulse listing.</p>
+      </div>
+
+      <div class="pp-card">
+        <h2 class="font-serif pp-h2">Biggest pharmacy brands</h2>
+        <p class="pp-card-sub">National chains by number of US locations.</p>
+        {% if brand_rows %}
+        <div class="pp-stack">
+          {% for b in brand_rows %}
+          <div>
+            <div class="pp-bar-row">
+              <span class="pp-bar-label">{{ b.label }}</span>
+              <span class="pp-bar-value">{{ b.n|intcomma_safe }} &middot; {{ b.pct }}%</span>
+            </div>
+            <div class="pp-bar-track">
+              <div class="pp-bar-fill pp-bar-fill-blue-grad" style="width: {{ b.bar }}%"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="pp-empty-note">No brand data yet.</p>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <div class="pp-card-grid-md">
+
+      <div class="pp-card">
+        <h2 class="font-serif pp-h2">Specialty mix</h2>
+        <p class="pp-card-sub">What kind of pharmacy services exist nationally (NPPES taxonomy).</p>
+        {% if tax_rows %}
+        <div class="pp-stack">
+          {% for t in tax_rows %}
+          <div>
+            <div class="pp-bar-row">
+              <span class="pp-bar-label">{{ t.label }}</span>
+              <span class="pp-bar-value">{{ t.n|intcomma_safe }} &middot; {{ t.pct }}%</span>
+            </div>
+            <div class="pp-bar-track">
+              <div class="pp-bar-fill pp-bar-fill-orange-grad" style="width: {{ t.bar }}%"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="pp-empty-note">No taxonomy data yet.</p>
+        {% endif %}
+      </div>
+
+<div class="pp-card">
+        <h2 class="font-serif pp-h2">When pharmacies are open</h2>
+        <p class="pp-card-sub">Hours coverage across {{ pharms_with_hours|intcomma_safe }} pharmacies whose schedules we've imported.</p>
+        <div class="pp-hours-grid">
+          <div class="pp-stat-tile pp-stat-tile-green">
+            <p class="font-serif pp-hours-num pp-hours-num-teal">{{ weekend_pct }}%</p>
+            <p class="pp-hours-caption">Open at least one weekend day</p>
+          </div>
+          <div class="pp-stat-tile pp-stat-tile-amber">
+            <p class="font-serif pp-hours-num pp-hours-num-amber">{{ sunday_pct }}%</p>
+            <p class="pp-hours-caption">Open on Sundays</p>
+          </div>
+          <div class="pp-stat-tile pp-stat-tile-purple">
+            <p class="font-serif pp-hours-num pp-hours-num-purple">{{ seven_pct }}%</p>
+            <p class="pp-hours-caption">Open all 7 days</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pp-card">
+        <h2 class="font-serif pp-h2">FDA drug shortages</h2>
+        <p class="pp-card-sub">Status mix across every shortage the FDA is tracking.</p>
+        <div class="pp-shortage-total-row">
+          <span class="font-serif pp-shortage-total">{{ short_total }}</span>
+          <span class="pp-shortage-total-label">total shortages tracked</span>
+        </div>
+        <div class="pp-bar-track-xl">
+          <div class="pp-bar-fill-flat pp-bar-fill-red" style="width: {{ short_current_pct }}%"></div>
+          <div class="pp-bar-fill-flat pp-bar-fill-green" style="width: {{ short_resolved_pct }}%"></div>
+          <div class="pp-bar-fill-flat pp-bar-fill-slate" style="width: {{ short_disc_pct }}%"></div>
+        </div>
+        <div class="pp-legend">
+          <span><span class="pp-legend-dot pp-legend-dot-red"></span>{{ short_current }} current</span>
+          <span><span class="pp-legend-dot pp-legend-dot-green"></span>{{ short_resolved }} resolved</span>
+          <span><span class="pp-legend-dot pp-legend-dot-slate"></span>{{ short_disc }} discontinued / other</span>
+        </div>
+        {% if top_reasons %}
+        <p class="pp-reasons-heading">Top reported reasons</p>
+        <div class="pp-stack-xs">
+          {% for r in top_reasons %}
+          <div>
+            <div class="pp-bar-row-sm">
+              <span class="pp-bar-label">{{ r.short }}</span>
+              <span class="pp-bar-value">{{ r.n }}</span>
+            </div>
+            <div class="pp-bar-track-xs">
+              <div class="pp-bar-fill pp-bar-fill-brown" style="width: {{ r.pct }}%"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if top_current_shortages %}
+    <div class="pp-card pp-card-spaced">
+      <h2 class="font-serif pp-h2">Active shortages right now</h2>
+      <p class="pp-card-sub">Drugs flagged as currently in short supply.</p>
+      <div class="pp-shortage-grid">
+        {% for s in top_current_shortages %}
+        <div class="pp-shortage-tile">
+          <span class="pp-shortage-name">{{ s.drug_name }}</span>
+          {% if s.generic_name and s.generic_name|lower != s.drug_name|lower %}
+          <span class="pp-shortage-generic">Generic: {{ s.generic_name }}</span>
+          {% endif %}
+          {% if s.manufacturer %}<span class="pp-shortage-meta">{{ s.manufacturer }}</span>{% endif %}
+          {% if s.reason %}<span class="pp-shortage-reason">{{ s.reason|truncatechars:100 }}</span>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <p class="pp-source-note">Source: <a href="https://www.accessdata.fda.gov/scripts/drugshortages/" target="_blank" rel="noopener" class="pp-link-teal">FDA Drug Shortages Database</a>.</p>
+    </div>
+    {% endif %}
+
+    {% if top_reviewed %}
+    <div class="pp-card pp-card-spaced">
+      <h2 class="font-serif pp-h2">Most-reviewed pharmacies</h2>
+      <p class="pp-card-sub">Where PharmacyPulse patients are talking most.</p>
+      <div class="pp-pharmacy-grid">
+        {% for p in top_reviewed %}
+        <a href="{{ p.url }}" class="pp-pharmacy-tile" onmouseover="this.style.borderColor='#008F82'" onmouseout="this.style.borderColor='#E5E7EB'">
+          <span class="pp-pharmacy-name">{{ p.name }}</span>
+          <span class="pp-pharmacy-meta">{{ p.city }}{% if p.state %}, {{ p.state }}{% endif %}</span>
+          <div class="pp-pharmacy-rating">
+            <span class="star-filled">&#9733;</span><span>{{ p.avg_service_rating }}/5</span>
+            <span class="pp-muted">&middot;</span>
+            <span>{{ p.total_reviews }} review{{ p.total_reviews|pluralize }}</span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <p class="pp-footer-source">
+      Sources: NPPES (CMS), FDA openFDA Drug Shortage Database. Aggregates refresh hourly.
+    </p>
+    <p class="pp-footer-disclaimer">
+      These figures are derived from public registry data for informational purposes only and may be incomplete or outdated. They are not medical advice.
+    </p>
+
+  </div>
+</div>
+
+{% include "pharmacypulse/partials/footer.html" %}
+{% endblock %}

@@ -1,0 +1,197 @@
+{% extends "pharmacypulse/layouts/blank.html" %}
+{% load pharmacypulse %}
+{% block title %}User Management{% endblock %}
+{% block content %}
+<div class="flex min-h-screen">
+{% include "pharmacypulse/partials/admin-sidebar.html" %}
+
+<div class="admin-content">
+  <div class="admin-pg-header">
+    <div class="admin-pg-header-left">
+      <h1>User Management</h1>
+      <p>Manage accounts, roles, and access</p>
+    </div>
+  </div>
+  <div class="admin-pg-body">
+    <div class="max-w-6xl mx-auto">
+
+    {% if param_success %}
+    <div class="flex items-center gap-2 p-3 rounded-xl mb-5 text-sm font-medium" style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      {{ param_success }}
+    </div>
+    {% endif %}
+    {% if param_error %}
+    <div class="flex items-center gap-2 p-3 rounded-xl mb-5 text-sm font-medium" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ param_error }}
+    </div>
+    {% endif %}
+
+    <!-- Stats -->
+    <div class="grid grid-cols-3 md:grid-cols-6 gap-3 mb-6">
+      <div class="stat-card p-4 text-center">
+        <p class="stat-lbl mb-2">Total</p>
+        <p class="stat-num" style="font-size: 1.75rem; color: #008F82">{{ stat_total.n }}</p>
+      </div>
+      <div class="stat-card p-4 text-center">
+        <p class="stat-lbl mb-2">Active</p>
+        <p class="stat-num" style="font-size: 1.75rem; color: #15803d">{{ stat_active.n }}</p>
+      </div>
+      <div class="stat-card p-4 text-center">
+        <p class="stat-lbl mb-2">Suspended</p>
+        <p class="stat-num" style="font-size: 1.75rem; color: #b91c1c">{{ stat_suspended.n }}</p>
+      </div>
+      <div class="stat-card p-4 text-center">
+        <p class="stat-lbl mb-2">Pharmacists</p>
+        <p class="stat-num" style="font-size: 1.75rem; color: #7c3aed">{{ stat_pharmacist.n }}</p>
+      </div>
+      <div class="stat-card p-4 text-center">
+        <p class="stat-lbl mb-2">Admins</p>
+        <p class="stat-num" style="font-size: 1.75rem; color: #475569">{{ stat_admin.n }}</p>
+      </div>
+      <div class="stat-card p-4 text-center">
+        <p class="stat-lbl mb-2">New (30d)</p>
+        <p class="stat-num" style="font-size: 1.75rem; color: #d97706">{{ stat_new_month.n }}</p>
+      </div>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="tab-group mb-4">
+      <a href="/admin-users" class="tab-btn {% if not param_role %}active{% endif %} no-underline">All</a>
+      <a href="/admin-users?role=admin" class="tab-btn {% if param_role == 'admin' %}active{% endif %} no-underline">
+        Admins <span class="ml-1 px-1.5 py-0.5 text-xs rounded-full" style="background: #ede9fe; color: #6d28d9">{{ stat_admin.n }}</span>
+      </a>
+      <a href="/admin-users?role=pharmacist" class="tab-btn {% if param_role == 'pharmacist' %}active{% endif %} no-underline">
+        Pharmacists <span class="ml-1 px-1.5 py-0.5 text-xs rounded-full" style="background: #ddf3f1; color: #007a6f">{{ stat_pharmacist.n }}</span>
+      </a>
+      <a href="/admin-users?role=user" class="tab-btn {% if param_role == 'user' %}active{% endif %} no-underline">Patients</a>
+      <a href="/admin-users?role=suspended" class="tab-btn {% if param_role == 'suspended' %}active{% endif %} no-underline">
+        Suspended{% if stat_suspended.n > 0 %} <span class="ml-1 px-1.5 py-0.5 text-xs rounded-full" style="background: #fee2e2; color: #b91c1c">{{ stat_suspended.n }}</span>{% endif %}
+      </a>
+    </div>
+
+    <!-- Search + sort -->
+    <form action="/admin-users" method="GET" class="flex gap-2 mb-4">
+      {% if param_role %}<input type="hidden" name="role" value="{{ param_role }}">{% endif %}
+      <div class="relative flex-1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" class="absolute left-3 top-1/2 -translate-y-1/2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" name="q" placeholder="Search name, email, phone, ZIP…" class="input-field pl-9 text-sm" value="{{ param_q }}">
+      </div>
+      <select name="sort" onchange="this.form.submit()" class="input-field text-sm" style="width:160px; appearance:auto">
+        <option value="newest" {% if param_sort == "newest" or not param_sort %}selected{% endif %}>Newest first</option>
+        <option value="oldest" {% if param_sort == "oldest" %}selected{% endif %}>Oldest first</option>
+        <option value="name"   {% if param_sort == "name" %}selected{% endif %}>Name A–Z</option>
+        <option value="reviews" {% if param_sort == "reviews" %}selected{% endif %}>Most reviews</option>
+      </select>
+      <button type="submit" class="btn-primary text-sm py-2 px-4">Search</button>
+      {% if param_q or param_role or param_sort %}
+      <a href="/admin-users" class="btn-ghost text-sm py-2 px-3 no-underline" style="color: #64748b">Clear</a>
+      {% endif %}
+    </form>
+
+    <p class="text-xs mb-3" style="color: #94a3b8">
+      {{ total_count.total }} user{{ total_count.total|pluralize }}{% if param_q %} matching "{{ param_q }}"{% endif %}
+    </p>
+
+    <!-- Users table -->
+    <div class="glass-card overflow-hidden">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th class="text-center">Reviews</th>
+            <th>Joined</th>
+            <th>Last Active</th>
+            <th class="text-center">Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in users %}
+          <tr>
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                     style="background: {% if item.role == 'admin' %}#7c3aed{% elif item.role == 'pharmacist' %}#008F82{% else %}#64748b{% endif %}">
+                  {{ item.first_name|slice:":1" }}{{ item.last_name|slice:":1" }}
+                </div>
+                <div style="min-width: 0">
+                  <p class="font-semibold text-sm truncate" style="color: #0f172a; max-width: 180px">
+                    {% if item.first_name or item.last_name %}{{ item.first_name }} {{ item.last_name }}{% else %}<span style="color: #94a3b8">—</span>{% endif %}
+                  </p>
+                  <p class="text-xs truncate" style="color: #64748b; max-width: 200px">{{ item.email }}</p>
+                  {% if item.phone %}<p class="text-xs" style="color: #94a3b8">{{ item.phone }}{% if item.zip_code %} · {{ item.zip_code }}{% endif %}</p>
+                  {% elif item.zip_code %}<p class="text-xs" style="color: #94a3b8">{{ item.zip_code }}</p>{% endif %}
+                </div>
+              </div>
+            </td>
+            <td>
+              <form method="POST" action="/api/flow/change-user-role/{{ item.id }}" class="flex items-center gap-1.5">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="/admin-users?role={{ param_role }}&q={{ param_q }}&sort={{ param_sort }}&success=Role+updated">
+                <select name="role" class="text-xs border rounded-lg px-2 py-1 font-semibold"
+                        style="border-color: #dde3ec; color: {% if item.role == 'admin' %}#6d28d9{% elif item.role == 'pharmacist' %}#007a6f{% else %}#475569{% endif %}; background: {% if item.role == 'admin' %}#ede9fe{% elif item.role == 'pharmacist' %}#ddf3f1{% else %}#f8fafc{% endif %}; outline: none; cursor: pointer">
+                  <option value="user"       {% if item.role == 'user' %}selected{% endif %}>Patient</option>
+                  <option value="pharmacist" {% if item.role == 'pharmacist' %}selected{% endif %}>Pharmacist</option>
+                  <option value="admin"      {% if item.role == 'admin' %}selected{% endif %}>Admin</option>
+                </select>
+                <button type="submit" title="Save" style="color: #008F82; background: none; border: none; cursor: pointer; padding: 2px; line-height: 0">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+              </form>
+            </td>
+            <td class="text-center">
+              {% if item.review_count %}<span class="font-bold" style="color: #7c3aed">{{ item.review_count }}</span>
+              {% else %}<span style="color: #cbd5e1">—</span>{% endif %}
+            </td>
+            <td>
+              <p class="text-xs font-medium" style="color: #0f172a">{{ item.created_at|date:"M d, Y" }}</p>
+              <p class="text-xs" style="color: #94a3b8">{{ item.created_at|timesince }} ago</p>
+            </td>
+            <td>
+              {% if item.last_active %}<p class="text-xs" style="color: #64748b">{{ item.last_active|timesince }} ago</p>
+              {% else %}<p class="text-xs" style="color: #cbd5e1">No activity</p>{% endif %}
+            </td>
+            <td class="text-center">
+              {% if item.deactivated_at %}<span class="badge-suspended">Suspended</span>
+              {% else %}<span class="badge-active">Active</span>{% endif %}
+            </td>
+            <td class="text-right">
+              {% if item.deactivated_at %}
+              <form method="POST" action="/api/flow/unsuspend-user/{{ item.id }}" style="display:inline">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="/admin-users?role={{ param_role }}&q={{ param_q }}&sort={{ param_sort }}&success=User+restored">
+                <button type="submit" class="btn-primary text-xs py-1 px-2.5">Restore</button>
+              </form>
+              {% else %}
+              <form method="POST" action="/api/flow/suspend-user/{{ item.id }}" style="display:inline"
+                    onsubmit="return confirm('Suspend {{ item.first_name|default:item.email }}?')">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="/admin-users?role={{ param_role }}&q={{ param_q }}&sort={{ param_sort }}&success=User+suspended">
+                <button type="submit" class="btn-destructive text-xs py-1 px-2.5">Suspend</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if not users %}
+      <div class="text-center py-16">
+        <p class="font-semibold mb-1" style="color: #0f172a">No users found</p>
+        <p class="text-sm" style="color: #94a3b8">
+          {% if param_q %}No results for "{{ param_q }}".
+          {% elif param_role == "suspended" %}No suspended users.
+          {% else %}No users match the current filters.{% endif %}
+        </p>
+      </div>
+      {% endif %}
+    </div>
+
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}

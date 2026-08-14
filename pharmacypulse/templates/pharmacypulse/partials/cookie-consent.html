@@ -1,0 +1,35 @@
+{% comment %}
+Cookie acknowledgement banner. Not a true GDPR-style consent gate (we don't
+serve EU users) — just a transparency notice that meets CCPA/VA/CO disclosure
+requirements when shown alongside the privacy policy. One button dismisses
+forever (cookie set with 1-year max-age).
+{% endcomment %}
+<div id="pp-cookie-banner" class="pp-cookie-banner">
+  <div class="pp-cookie-row">
+    <div class="pp-cookie-body">
+      <p class="pp-cookie-title">We use cookies</p>
+      <p class="pp-cookie-text">
+        We use cookies for sessions, language preferences, saved comparisons, and basic analytics (Google Analytics) to understand how the site is used. We do not use cookies for ads or sell your data.
+        <a href="/privacy">Privacy Policy</a>
+      </p>
+    </div>
+    <div class="pp-cookie-actions">
+      <button type="button" id="pp-cookie-accept" class="pp-cookie-accept">Got it</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  // Only show on the first visit (or after a year). Cookie name: pp_cookie_ack.
+  var has = document.cookie.indexOf('pp_cookie_ack=') !== -1;
+  if (has) return;
+  var banner = document.getElementById('pp-cookie-banner');
+  if (!banner) return;
+  // Defer paint by one frame so the banner doesn't flash before page CSS loads.
+  requestAnimationFrame(function(){ banner.style.display = 'block'; });
+  document.getElementById('pp-cookie-accept').addEventListener('click', function(){
+    document.cookie = 'pp_cookie_ack=1; path=/; max-age=31536000; SameSite=Lax';
+    banner.style.display = 'none';
+  });
+})();
+</script>

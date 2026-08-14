@@ -1,0 +1,788 @@
+{% extends "pharmacypulse/layouts/app.html" %}
+{% load pharmacypulse %}
+{% block title %}Pharmacy Owner Dashboard{% endblock %}
+{% block content %}
+{% include "pharmacypulse/partials/topbar.html" %}
+<div style="background: #fafbfc; min-height: 100vh; padding-bottom: 0">
+  <div style="max-width: 72rem; margin: 0 auto; padding: 1.5rem 1.5rem">
+
+  <!-- Find pharmacy via direct claim OR team membership -->
+  
+  {% for item in my_pharmacy %}
+
+  {% if param_welcome %}
+  <div style="padding: 1rem; background: #E6F7F5; border: 1px solid #bbf7d0; border-radius: 0.75rem; margin-bottom: 1.5rem; font-size: 0.8125rem; color: #006B62">
+    <strong>Welcome!</strong> Your NPI was verified and your claim has been auto-approved. You can now manage your pharmacy listing, respond to reviews, and embed your review widget.
+  </div>
+  {% endif %}
+
+  {% if param_msg %}
+  <div style="padding: 0.75rem 1rem; background: #E6F7F5; border: 1px solid #bbf7d0; border-radius: 0.75rem; margin-bottom: 1.5rem; font-size: 0.8125rem; color: #006B62">
+    {{ param_msg }}
+  </div>
+  {% endif %}
+
+  {% if param_error %}
+  <div style="padding: 0.75rem 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.75rem; margin-bottom: 1.5rem; font-size: 0.8125rem; color: #dc2626">
+    {{ param_error }}
+  </div>
+  {% endif %}
+
+  <!-- Header -->
+  <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem">
+    <div>
+      <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem">
+        <h1 style="font-family: 'DM Serif Display', serif; font-size: 1.5rem; color: #0f172a; margin: 0">{{ item.name }}</h1>
+        {% if item.listing_verified %}
+        <span class="pp-listing-verified-badge" title="Verified — this pharmacy completed its listing setup">&#10003; Verified</span>
+        {% endif %}
+      </div>
+      <p style="font-size: 0.8125rem; color: #64748b">{{ item.address }}, {{ item.city }} {{ item.state }} {{ item.zip }} {% if item.phone %}&middot; {{ item.phone }}{% endif %}</p>
+      
+      {% for item2 in my_membership %}<p style="font-size: 0.6875rem; color: #94a3b8; margin-top: 0.25rem">{{ item2.org_name }} &middot; {{ item2.my_role|title }}</p>{% endfor %}
+      
+    </div>
+    
+    {% for item2 in my_pid %}<a href="/pharmacy?id={{ item2.id }}" style="font-size: 0.75rem; font-weight: 600; color: #3b82f6; text-decoration: none; padding: 0.375rem 0.75rem; border: 1px solid #3b82f6; border-radius: 9999px">View public listing &rarr;</a>{% endfor %}
+    
+  </div>
+
+  <!-- Tabs -->
+  <div style="display: flex; gap: 0; border-bottom: 2px solid #e5e7eb; margin-bottom: 1.5rem; flex-wrap: wrap">
+    <a href="/pharmacist-dashboard" style="padding: 0.625rem 1.25rem; font-size: 0.8125rem; font-weight: 600; text-decoration: none; white-space: nowrap; border-bottom: 2px solid {% if not param_tab %}#0f172a; color: #0f172a; margin-bottom: -2px{% endif %}{% if param_tab %}transparent; color: #64748b{% endif %}">Overview</a>
+    <a href="/pharmacist-dashboard?tab=reviews" style="padding: 0.625rem 1.25rem; font-size: 0.8125rem; font-weight: 600; text-decoration: none; white-space: nowrap; border-bottom: 2px solid {% if param_tab == "reviews" %}#0f172a; color: #0f172a; margin-bottom: -2px{% else %}transparent; color: #64748b{% endif %}">Reviews</a>
+    <a href="/pharmacist-dashboard?tab=team" style="padding: 0.625rem 1.25rem; font-size: 0.8125rem; font-weight: 600; text-decoration: none; white-space: nowrap; border-bottom: 2px solid {% if param_tab == "team" %}#0f172a; color: #0f172a; margin-bottom: -2px{% else %}transparent; color: #64748b{% endif %}">Team</a>
+    <a href="/pharmacist-dashboard?tab=widget" style="padding: 0.625rem 1.25rem; font-size: 0.8125rem; font-weight: 600; text-decoration: none; white-space: nowrap; border-bottom: 2px solid {% if param_tab == "widget" %}#0f172a; color: #0f172a; margin-bottom: -2px{% else %}transparent; color: #64748b{% endif %}">Widget</a>
+    <a href="/pharmacist-dashboard?tab=services" style="padding: 0.625rem 1.25rem; font-size: 0.8125rem; font-weight: 600; text-decoration: none; white-space: nowrap; border-bottom: 2px solid {% if param_tab == "services" %}#0f172a; color: #0f172a; margin-bottom: -2px{% else %}transparent; color: #64748b{% endif %}">Services</a>
+    <a href="/pharmacist-dashboard?tab=insurance" style="padding: 0.625rem 1.25rem; font-size: 0.8125rem; font-weight: 600; text-decoration: none; white-space: nowrap; border-bottom: 2px solid {% if param_tab == "insurance" %}#0f172a; color: #0f172a; margin-bottom: -2px{% else %}transparent; color: #64748b{% endif %}">Insurance</a>
+    <a href="/pharmacist-dashboard?tab=hours" style="padding: 0.625rem 1.25rem; font-size: 0.8125rem; font-weight: 600; text-decoration: none; white-space: nowrap; border-bottom: 2px solid {% if param_tab == "hours" %}#0f172a; color: #0f172a; margin-bottom: -2px{% else %}transparent; color: #64748b{% endif %}">Hours</a>
+    <a href="/pharmacist-dashboard?tab=upgrade" style="padding: 0.625rem 1.25rem; font-size: 0.8125rem; font-weight: 600; text-decoration: none; white-space: nowrap; border-bottom: 2px solid {% if param_tab == "upgrade" %}#008F82; color: #008F82; margin-bottom: -2px{% else %}transparent; color: #64748b{% endif %}">
+      <span style="display: inline-flex; align-items: center; gap: 0.25rem">Upgrade <span style="font-size: 0.5625rem; padding: 0.0625rem 0.375rem; background: #E6F7F5; color: #008F82; border-radius: 9999px; font-weight: 700">PRO</span></span>
+    </a>
+  </div>
+
+  <!-- Listing-completeness stepper: sticky bottom-right, visible until 100% -->
+  {% if pharmacies and setup_pct.total < 100 %}
+  <div style="position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 60; width: 300px; max-width: calc(100vw - 2.5rem); background: #ffffff; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 12px 32px rgba(15,23,42,0.14), 0 2px 8px rgba(0,0,0,0.06); padding: 1rem 1.25rem 0.5rem; max-height: 80vh; overflow-y: auto">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.875rem; flex-wrap: wrap; gap: 0.25rem">
+      <p style="font-size: 0.6875rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin: 0">Complete your listing</p>
+      <span style="font-size: 0.8125rem; font-weight: 800; color: #008F82">{{ setup_pct.total }}% complete</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column">
+      {% for item2 in setup_steps %}
+      <div style="display: flex; align-items: stretch">
+        <div style="display: flex; flex-direction: column; align-items: center; width: 1.75rem; flex-shrink: 0">
+          {% if not forloop.first %}
+          <span style="flex: 1; min-height: 0.875rem; width: 2px; background: {% if item2.prev_done %}#008F82{% else %}#e5e7eb{% endif %}; margin-bottom: 0.25rem"></span>
+          {% endif %}
+          <a href="{{ item2.url }}" aria-label="{{ item2.label }}" style="text-decoration: none; display: inline-flex">
+            <span style="width: 1.75rem; height: 1.75rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: #ffffff; background: {% if item2.done %}#008F82{% elif setup_next and item2.key == setup_next.key %}#3b82f6{% else %}#cbd5e1{% endif %}; {% if setup_next and item2.key == setup_next.key %}box-shadow: 0 0 0 3px rgba(59,130,246,0.25){% endif %}">{% if item2.done %}&#10003;{% else %}{{ forloop.counter }}{% endif %}</span>
+          </a>
+        </div>
+        <div style="flex: 1; padding: 0 0 1.125rem 0.75rem">
+          <a href="{{ item2.url }}" style="text-decoration: none; display: block; font-size: 0.8125rem; font-weight: 600; color: {% if item2.done %}#065f46{% elif setup_next and item2.key == setup_next.key %}#2563eb{% else %}#94a3b8{% endif %}">{{ item2.label }}</a>
+          <p style="font-size: 0.6875rem; color: #94a3b8; margin: 0.125rem 0 0">{{ item2.desc }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Corner-confetti celebration: fires once when "Complete your listing" hits 100%. -->
+  {% if setup_confetti %}
+  <div id="pp-confetti-celebration" role="dialog" aria-modal="true" aria-label="Listing complete">
+    <div id="pp-confetti-field" style="position: fixed; inset: 0; z-index: 100; pointer-events: none; overflow: hidden"></div>
+    <div style="position: fixed; inset: 0; z-index: 101; display: flex; align-items: center; justify-content: center; padding: 1rem; box-sizing: border-box">
+      <div style="position: absolute; inset: 0; background: rgba(15,23,42,0.45);"></div>
+      <div style="position: relative; max-width: 26rem; width: 100%; background: #ffffff; border-radius: 1.25rem; box-shadow: 0 24px 60px rgba(0,0,0,0.25); padding: 2rem 1.5rem 1.5rem; text-align: center; box-sizing: border-box">
+        <div style="width: 4rem; height: 4rem; margin: 0 auto 1rem; border-radius: 9999px; background: #E6F7F5; border: 2px solid #008F82; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; font-weight: 800; color: #008F82">&#10003;</div>
+        <h2 style="font-family: 'DM Serif Display', serif; font-size: 1.5rem; color: #0f172a; margin: 0 0 0.5rem">Congratulations!</h2>
+        <p style="font-size: 0.875rem; color: #64748b; line-height: 1.6; margin: 0 0 1.25rem">Your listing is 100% complete. You&rsquo;ve earned the <strong style="color: #006B62">Verified</strong> badge &mdash; it now appears next to your pharmacy&rsquo;s name on your listing and across PharmacyPulse.</p>
+        <button type="button" onclick="document.getElementById('pp-confetti-celebration').remove()" style="padding: 0.625rem 1.5rem; background: #008F82; color: #ffffff; border: none; border-radius: 9999px; font-size: 0.875rem; font-weight: 700; cursor: pointer">Awesome!</button>
+      </div>
+    </div>
+  </div>
+  <script>
+  (function(){
+    var colors = ['#008F82','#7c3aed','#3b82f6','#f59e0b','#ef4444','#06b6d4','#10b981'];
+    var field = document.getElementById('pp-confetti-field');
+    if (!field) return;
+    var style = document.createElement('style');
+    style.textContent = '@keyframes ppConfettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}85%{opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}';
+    document.head.appendChild(style);
+    for (var i = 0; i < 120; i++) {
+      var el = document.createElement('span');
+      var size = 6 + Math.random() * 8;
+      var dur = 2.5 + Math.random() * 2.5;
+      el.style.cssText = 'position:absolute;top:-20px;left:' + (Math.random() * 100) + 'vw;width:' + size + 'px;height:' + (size * (0.5 + Math.random())) + 'px;background:' + colors[i % colors.length] + ';border-radius:' + (Math.random() > 0.5 ? '50%' : '2px') + ';opacity:0;will-change:transform,opacity;animation:ppConfettiFall ' + dur + 's ease-in ' + (Math.random() * 0.8) + 's forwards';
+      field.appendChild(el);
+    }
+    setTimeout(function(){ if (field) field.remove(); }, 7500);
+  })();
+  </script>
+  {% endif %}
+
+  <!-- ===== OVERVIEW TAB ===== -->
+  {% if not param_tab %}
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3" style="margin-bottom: 1.5rem">
+    <div style="padding: 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+      <p style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem">Total Reviews</p>
+      <p style="font-size: 1.75rem; font-weight: 800; color: #7c3aed">{{ item.total_reviews }}</p>
+    </div>
+    <div style="padding: 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+      <p style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem">Avg Rating</p>
+      <p style="font-size: 1.75rem; font-weight: 800; color: #0f172a"><span style="color: #f59e0b">&#9733;</span> {{ item.avg_service_rating }}</p>
+    </div>
+    <div style="padding: 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+      <p style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem">Wait Time</p>
+      <p style="font-size: 1.75rem; font-weight: 800; color: #0f172a">~{{ item.avg_wait_time }}<span style="font-size: 0.875rem; font-weight: 500">min</span></p>
+    </div>
+    <div style="padding: 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+      <p style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem">Stock Confidence</p>
+      <p style="font-size: 1.75rem; font-weight: 800; color: #008F82">{{ item.stock_confidence }}%</p>
+    </div>
+  </div>
+
+  <!-- Second row: response rate + review trend -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-3" style="margin-bottom: 1.5rem">
+    
+    <div style="padding: 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+      <p style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem">Response Rate</p>
+      {% for item2 in resp_stats %}
+      <p style="font-size: 1.75rem; font-weight: 800; color: #3b82f6">{{ item2.responded }}/{{ item2.total }}</p>
+      <p style="font-size: 0.6875rem; color: #64748b; margin-top: 0.125rem">reviews responded to</p>
+      {% endfor %}
+    </div>
+
+    <div style="padding: 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+      <p style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem">This Week</p>
+      {% for item2 in week_reviews %}<p style="font-size: 1.75rem; font-weight: 800; color: #0f172a">{{ item2.cnt }}</p>{% endfor %}
+      <p style="font-size: 0.6875rem; color: #64748b; margin-top: 0.125rem">new reviews</p>
+    </div>
+
+    <div style="padding: 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+      <p style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem">This Month</p>
+      {% for item2 in month_reviews %}<p style="font-size: 1.75rem; font-weight: 800; color: #0f172a">{{ item2.cnt }}</p>{% endfor %}
+      <p style="font-size: 0.6875rem; color: #64748b; margin-top: 0.125rem">new reviews</p>
+    </div>
+    
+  </div>
+
+  <!-- Rating breakdown + Review trend chart -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-3" style="margin-bottom: 1.5rem">
+    <div style="padding: 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+      <h3 style="font-weight: 700; color: #0f172a; font-size: 0.875rem; margin-bottom: 0.75rem">Rating Distribution</h3>
+      
+      {% for item2 in dist %}
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.375rem">
+        <span style="font-size: 0.75rem; font-weight: 600; color: #0f172a; width: 1.5rem; text-align: right">{{ item2.rating }}&#9733;</span>
+        <div style="flex: 1; height: 8px; background: #f1f5f9"><div style="height: 100%; background: #f59e0b; width: calc({{ item2.cnt }} * 10%); max-width: 100%"></div></div>
+        <span style="font-size: 0.6875rem; color: #94a3b8; width: 1.5rem">{{ item2.cnt }}</span>
+      </div>
+      {% endfor %}
+      {% if not dist %}<p style="font-size: 0.8125rem; color: #94a3b8">No reviews yet.</p>{% endif %}
+      
+    </div>
+
+    <!-- Review trend by month (last 6 months) -->
+    <div style="padding: 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+      <h3 style="font-weight: 700; color: #0f172a; font-size: 0.875rem; margin-bottom: 0.75rem">Review Trend (6 months)</h3>
+      
+      <div style="display: flex; align-items: flex-end; gap: 0.375rem; height: 120px; padding-top: 0.5rem">
+        {% for item2 in trend %}
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%">
+          <span style="font-size: 0.625rem; font-weight: 700; color: #0f172a; margin-bottom: 0.25rem">{{ item2.cnt }}</span>
+          <div style="width: 100%; background: {% if item2.cnt %}#7c3aed{% else %}#f1f5f9{% endif %}; height: calc({{ item2.cnt }} * 15% + 4px); min-height: 4px; max-height: 100%"></div>
+          <span style="font-size: 0.5625rem; color: #94a3b8; margin-top: 0.375rem">{{ item2.month_label }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% if not trend %}<p style="font-size: 0.8125rem; color: #94a3b8">No data yet.</p>{% endif %}
+      
+    </div>
+  </div>
+
+  <!-- Latest reviews + stock confidence breakdown -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-3" style="margin-bottom: 1.5rem">
+    <div style="padding: 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+      <h3 style="font-weight: 700; color: #0f172a; font-size: 0.875rem; margin-bottom: 0.75rem">Latest Reviews</h3>
+      
+      {% for item2 in latest %}
+      <div style="padding: 0.5rem 0; border-bottom: 1px solid #f8fafc">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <span style="font-weight: 600; color: #0f172a; font-size: 0.75rem">{{ item2.user_name }}</span>
+          <span style="font-size: 0.6875rem; color: #94a3b8">{{ item2.created_at|timesince }}</span>
+        </div>
+        <div style="font-size: 0.6875rem; color: #f59e0b">&#9733; {{ item2.service_rating }}/5</div>
+        {% if item2.comment %}<p style="font-size: 0.75rem; color: #64748b; margin-top: 0.125rem; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden">{{ item2.comment }}</p>{% endif %}
+      </div>
+      {% endfor %}
+      {% if not latest %}<p style="font-size: 0.8125rem; color: #94a3b8">No reviews yet.</p>{% endif %}
+      
+    </div>
+
+    <!-- Stock confidence breakdown -->
+    <div style="padding: 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+      <h3 style="font-weight: 700; color: #0f172a; font-size: 0.875rem; margin-bottom: 0.75rem">Stock Reports (30 days)</h3>
+
+      {% for item2 in stock %}
+      <div style="display: flex; gap: 1rem; margin-bottom: 0.75rem">
+        <div style="flex: 1; padding: 0.75rem; background: #f0fdf4; text-align: center">
+          <p style="font-size: 1.25rem; font-weight: 800; color: #008F82">{{ item2.in_stock }}</p>
+          <p style="font-size: 0.625rem; font-weight: 600; color: #006B62; text-transform: uppercase">In Stock</p>
+        </div>
+        <div style="flex: 1; padding: 0.75rem; background: #fef2f2; text-align: center">
+          <p style="font-size: 1.25rem; font-weight: 800; color: #ef4444">{{ item2.out_of_stock }}</p>
+          <p style="font-size: 0.625rem; font-weight: 600; color: #dc2626; text-transform: uppercase">Out of Stock</p>
+        </div>
+      </div>
+      {% if item2.total %}
+      <div style="height: 8px; background: #fecaca; display: flex">
+        <div style="height: 100%; background: #008F82; width: calc({{ item2.in_stock }} * 100 / {{ item2.total }} * 1%)"></div>
+      </div>
+      <p style="font-size: 0.6875rem; color: #64748b; margin-top: 0.5rem; text-align: center">Based on {{ item2.total }} reports in the last 30 days</p>
+      {% endif %}
+      {% endfor %}
+      
+    </div>
+  </div>
+
+  <!-- Response count -->
+  
+  {% for item2 in resp_count %}
+  <div style="padding: 1rem; background: {% if item2.total >= 10 %}#fef2f2; border: 1px solid #fecaca{% else %}#eff6ff; border: 1px solid #bfdbfe{% endif %}; border-radius: 1rem; font-size: 0.8125rem; color: {% if item2.total >= 10 %}#dc2626{% else %}#1e40af{% endif %}; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem">
+    <span><strong>{{ item2.total }}</strong> of 10 free responses used this month.</span>
+    {% if item2.total >= 10 %}
+    <a href="/pharmacist-dashboard?tab=upgrade" style="display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.375rem 1rem; background: #008F82; color: white; font-weight: 600; font-size: 0.75rem; text-decoration: none; border-radius: 9999px">Upgrade plan →</a>
+    {% else %}
+    <a href="/pharmacist-dashboard?tab=reviews" style="color: #2563eb; font-weight: 600; text-decoration: none; font-size: 0.75rem">Respond to reviews &rarr;</a>
+    {% endif %}
+  </div>
+  {% endfor %}
+  
+  {% endif %}
+
+  <!-- ===== REVIEWS TAB ===== -->
+  {% if param_tab == "reviews" %}
+  
+  <div style="display: grid; gap: 0; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); background: white; overflow: hidden">
+    {% for item2 in pharm_reviews %}
+    <div style="padding: 1.25rem; border-bottom: 1px solid #f1f5f9">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem">
+        <div>
+          <span style="font-weight: 600; color: #0f172a; font-size: 0.875rem">{{ item2.user_name }}</span>
+          {% if item2.is_caregiver %}<span style="font-size: 0.5625rem; font-weight: 700; text-transform: uppercase; padding: 0.125rem 0.375rem; border-radius: 9999px; background: #f3f0ff; color: #7c3aed; margin-left: 0.375rem">Caregiver</span>{% endif %}
+        </div>
+        <span style="font-size: 0.6875rem; color: #94a3b8">{{ item2.created_at|timesince }}</span>
+      </div>
+      <div style="display: flex; gap: 0.75rem; font-size: 0.75rem; margin-bottom: 0.5rem">
+        <span><span style="color: #f59e0b">&#9733;</span> <strong>{{ item2.service_rating }}</strong>/5</span>
+        {% if item2.stock_available %}<span style="color: #008F82; font-weight: 600">In stock</span>{% else %}<span style="color: #ef4444; font-weight: 600">Out of stock</span>{% endif %}
+        <span style="color: #64748b">Wait: {{ item2.wait_time_rating }}/5</span>
+      </div>
+      {% if item2.comment %}<p style="font-size: 0.8125rem; color: #475569; line-height: 1.6; margin-bottom: 0.75rem">{{ item2.comment }}</p>{% endif %}
+
+      {% if item2.response_text %}
+      <div style="padding: 0.75rem; background: #f0fdf4; border-left: 3px solid #008F82; border-radius: 0.5rem">
+        <p style="font-size: 0.6875rem; font-weight: 700; color: #006B62; margin-bottom: 0.25rem">Your Response</p>
+        <p style="font-size: 0.8125rem; color: #374151">{{ item2.response_text }}</p>
+      </div>
+      {% else %}
+      <details style="margin-top: 0.5rem" class="review-reply-details">
+        <summary style="font-size: 0.75rem; font-weight: 600; color: #3b82f6; cursor: pointer; list-style: none">Reply to this review</summary>
+        <!-- HIPAA Compliance Acknowledgment -->
+        <div class="hipaa-gate" style="margin-top: 0.5rem; padding: 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.75rem">
+          <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.75rem">
+            <span style="font-size: 1.25rem; flex-shrink: 0; margin-top: 0.125rem; line-height: 1">⚠️</span>
+            <div>
+              <p style="font-weight: 700; color: #dc2626; font-size: 0.8125rem; margin-bottom: 0.25rem">HIPAA Compliance Required</p>
+              <p style="font-size: 0.75rem; color: #7f1d1d; line-height: 1.6">Before responding, you must acknowledge the following:</p>
+            </div>
+          </div>
+          <ul style="font-size: 0.6875rem; color: #991b1b; line-height: 1.8; padding-left: 1.25rem; margin-bottom: 0.75rem">
+            <li>Do <strong>not</strong> confirm or deny that any individual is or was a patient</li>
+            <li>Do <strong>not</strong> reference prescriptions, diagnoses, or health conditions</li>
+            <li>Do <strong>not</strong> include medication names or treatment details</li>
+            <li>Your response is <strong>public</strong> and may be viewed by anyone</li>
+          </ul>
+          <label style="display: flex; align-items: flex-start; gap: 0.5rem; cursor: pointer; margin-bottom: 0.5rem">
+            <input type="checkbox" onchange="this.closest('.review-reply-details').querySelector('.reply-form').style.display=this.checked?'block':'none'; this.closest('.hipaa-gate').style.display=this.checked?'none':'block'" style="margin-top: 0.25rem">
+            <span style="font-size: 0.6875rem; font-weight: 600; color: #991b1b">I acknowledge these HIPAA requirements and confirm my response will comply.</span>
+          </label>
+        </div>
+        <form method="POST" action="/api/flow/respond-review/{{ item2.id }}" class="reply-form" style="display: none; margin-top: 0.5rem">
+          {% csrf_token %}
+          <textarea name="response_text" required placeholder="Write your response (no medication names or health details)..." rows="2" style="width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; outline: none; box-sizing: border-box; margin-bottom: 0.5rem; color: #0f172a" onfocus="this.style.borderColor='#008F82'" onblur="this.style.borderColor='#e5e7eb'"></textarea>
+          <button type="submit" style="padding: 0.375rem 1rem; background: #008F82; color: white; border: none; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; cursor: pointer">Send Response</button>
+        </form>
+      </details>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% if not pharm_reviews %}
+  <div style="text-align: center; padding: 3rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+    <p style="font-weight: 600; color: #0f172a; margin-bottom: 0.25rem">No reviews yet</p>
+    <p style="font-size: 0.8125rem; color: #64748b">Reviews will appear here as patients share their experiences.</p>
+  </div>
+  {% endif %}
+  
+  {% endif %}
+
+  <!-- ===== TEAM TAB ===== -->
+  {% if param_tab == "team" %}
+  
+  {% for item2 in my_org %}
+
+  <!-- Org header -->
+  <div style="padding: 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 1rem">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem">
+      <div>
+        <h3 style="font-weight: 700; color: #0f172a; font-size: 0.9375rem">{{ item2.name }}</h3>
+        <p style="font-size: 0.6875rem; color: #94a3b8; margin-top: 0.125rem">Your role: <strong style="color: #0f172a">{{ item2.my_role|title }}</strong></p>
+      </div>
+      
+      {% for item3 in member_count %}<span style="font-size: 0.6875rem; font-weight: 600; color: #64748b; padding: 0.25rem 0.75rem; border-radius: 9999px; background: #f1f5f9">{{ item3.cnt }} members</span>{% endfor %}
+      
+    </div>
+  </div>
+
+  <!-- Invite form (owner only) -->
+  {% if item2.my_role == "owner" %}
+  <div style="padding: 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 1rem">
+    <h3 style="font-weight: 700; color: #0f172a; font-size: 0.875rem; margin-bottom: 0.75rem">Invite Team Member</h3>
+    <form method="POST" action="/api/flow/team/invite" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: flex-end">
+      {% csrf_token %}
+      <div style="flex: 1; min-width: 200px">
+        <label style="display: block; font-size: 0.6875rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem">Email or Phone</label>
+        <input type="text" name="invite_email" required placeholder="team@example.com" style="width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; outline: none; box-sizing: border-box; color: #0f172a" onfocus="this.style.borderColor='#008F82'" onblur="this.style.borderColor='#e5e7eb'">
+      </div>
+      <div>
+        <label style="display: block; font-size: 0.6875rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem">Role</label>
+        <select name="invite_role" style="padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; outline: none; color: #0f172a; background: white">
+          <option value="member">Member</option>
+          <option value="manager">Manager</option>
+        </select>
+      </div>
+      <button type="submit" style="padding: 0.5rem 1.25rem; background: #008F82; color: white; border: none; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; cursor: pointer">Send Invite</button>
+    </form>
+    <p style="font-size: 0.6875rem; color: #94a3b8; margin-top: 0.5rem">Team members can view the dashboard and respond to reviews on behalf of your pharmacy.</p>
+  </div>
+  {% endif %}
+
+  <!-- Member list -->
+  <div style="background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden">
+    <div style="padding: 0.75rem 1.25rem; border-bottom: 1px solid #e5e7eb; display: flex; gap: 1rem; font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em">
+      <span style="flex: 1">Member</span>
+      <span style="width: 80px">Role</span>
+      <span style="width: 100px">Joined</span>
+      {% if item2.my_role == "owner" %}<span style="width: 60px">Actions</span>{% endif %}
+    </div>
+
+    
+    {% for item3 in members %}
+    <div style="padding: 0.75rem 1.25rem; border-bottom: 1px solid #f8fafc; display: flex; gap: 1rem; align-items: center; font-size: 0.8125rem">
+      <div style="flex: 1; min-width: 0">
+        <span style="font-weight: 600; color: #0f172a">{% if item3.first_name %}{{ item3.first_name }} {{ item3.last_name }}{% else %}{{ item3.email }}{% endif %}</span>
+        {% if not item3.accepted_at %}<span style="font-size: 0.5625rem; font-weight: 700; text-transform: uppercase; padding: 0.125rem 0.375rem; border-radius: 9999px; background: #fef9c3; color: #a16207; margin-left: 0.375rem">Pending</span>{% endif %}
+        {% if item3.first_name %}<p style="font-size: 0.6875rem; color: #94a3b8; margin-top: 0.125rem">{{ item3.email }}</p>{% endif %}
+      </div>
+      <span style="width: 80px; font-size: 0.75rem; font-weight: 600; color: {% if item3.role == "owner" %}#7c3aed{% else %}#64748b{% endif %}">{{ item3.role|title }}</span>
+      <span style="width: 100px; font-size: 0.6875rem; color: #94a3b8">{% if item3.accepted_at %}{{ item3.accepted_at|timesince }}{% else %}Invited {{ item3.invited_at|timesince }}{% endif %}</span>
+      {% if item3.my_role == "owner" %}
+      <span style="width: 60px">
+        {% if item3.role != "owner" %}
+        <form method="POST" action="/api/flow/team/remove/{{ item3.id }}" style="display: inline">
+          {% csrf_token %}
+          <button type="submit" onclick="return confirm('Remove this team member?')" style="padding: 0.25rem 0.5rem; background: none; color: #ef4444; border: 1px solid #fecaca; border-radius: 9999px; font-size: 0.625rem; font-weight: 600; cursor: pointer">Remove</button>
+        </form>
+        {% endif %}
+      </span>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% if not members %}
+    <div style="padding: 2rem; text-align: center">
+      <p style="font-size: 0.8125rem; color: #94a3b8">No team members yet. Invite your first member above.</p>
+    </div>
+    {% endif %}
+    
+  </div>
+
+  <!-- Response tracking -->
+  {% if response_leaders %}
+  <div style="padding: 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-top: 1rem">
+    <h3 style="font-weight: 700; color: #0f172a; font-size: 0.875rem; margin-bottom: 0.75rem">Response Activity</h3>
+    {% for item4 in response_leaders %}
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #f8fafc; font-size: 0.8125rem">
+      <span style="font-weight: 600; color: #0f172a">{{ item4.responder_name }}</span>
+      <div style="display: flex; gap: 1rem; align-items: center">
+        <span style="font-size: 0.6875rem; color: #64748b">{{ item4.response_count }} responses</span>
+        <span style="font-size: 0.6875rem; color: #94a3b8">Last: {{ item4.last_response|timesince }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  
+
+  {% endfor %}
+  {% if not my_org %}
+  <div style="text-align: center; padding: 3rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+    <p style="font-weight: 600; color: #0f172a; margin-bottom: 0.25rem">No organization found</p>
+    <p style="font-size: 0.8125rem; color: #64748b">An organization is created automatically when your pharmacy claim is approved.</p>
+  </div>
+  {% endif %}
+  
+  {% endif %}
+
+  <!-- ===== WIDGET TAB ===== -->
+  {% if param_tab == "widget" %}
+  <div style="padding: 1.5rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 1.5rem">
+    <h3 style="font-weight: 700; color: #0f172a; font-size: 0.9375rem; margin-bottom: 0.5rem">Embed Widget</h3>
+    <p style="font-size: 0.8125rem; color: #64748b; margin-bottom: 1.25rem">Add this widget to your website to showcase your PharmacyPulse rating. The widget is served from our servers so your rating always stays accurate and up-to-date.</p>
+
+    <!-- Widget preview (live iframe) -->
+    <div style="padding: 1.25rem; background: #fafbfc; border: 1px solid #e5e7eb; border-radius: 1rem; margin-bottom: 1.25rem">
+      <p style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem">Live Preview</p>
+      
+      {% for item2 in widget_pid %}
+      <iframe src="/widget?id={{ item2.id }}" width="280" height="108" frameborder="0" style="border: none; overflow: hidden" scrolling="no"></iframe>
+      {% endfor %}
+      
+    </div>
+
+    <!-- Embed code -->
+    <p style="font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.5rem">Embed Code</p>
+    
+    {% for item2 in widget_pid2 %}
+    <div style="position: relative">
+      <pre id="widget-code" style="padding: 1rem; background: #0f172a; color: #a5f3fc; font-size: 0.6875rem; line-height: 1.6; overflow-x: auto; white-space: pre-wrap; word-break: break-all">&lt;iframe src="https://pharmacypulse.co/widget?id={{ item2.id }}" width="280" height="108" frameborder="0" style="border:none;overflow:hidden" scrolling="no"&gt;&lt;/iframe&gt;</pre>
+      <button onclick="navigator.clipboard.writeText(document.getElementById('widget-code').textContent);this.textContent='Copied!';setTimeout(function(){this.textContent='Copy code'}.bind(this),2000)" style="position: absolute; top: 0.5rem; right: 0.5rem; padding: 0.25rem 0.75rem; background: #1e293b; color: #a5f3fc; border: 1px solid #334155; font-size: 0.6875rem; font-weight: 600; cursor: pointer">Copy code</button>
+    </div>
+    {% endfor %}
+    
+
+    <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.75rem; font-size: 0.6875rem; color: #006B62">
+      <strong>Tamper-proof:</strong> The widget is rendered on PharmacyPulse servers and served via iframe. Your rating updates automatically with each new review and cannot be modified by anyone.
+    </div>
+  </div>
+
+  <!-- Badge styles -->
+  <div style="padding: 1.5rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+    <h3 style="font-weight: 700; color: #0f172a; font-size: 0.9375rem; margin-bottom: 0.5rem">Review Badge</h3>
+    <p style="font-size: 0.8125rem; color: #64748b; margin-bottom: 1rem">Simple badge you can add to emails, social media, or printed materials.</p>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap">
+      <div style="padding: 0.625rem 1rem; background: #0f172a; display: inline-flex; align-items: center; gap: 0.5rem">
+        <span style="color: #f59e0b">&#9733;</span>
+        <span style="color: white; font-weight: 700; font-size: 0.875rem">{{ item.avg_service_rating }}</span>
+        <span style="color: #94a3b8; font-size: 0.625rem">on PharmacyPulse</span>
+      </div>
+      <div style="padding: 0.625rem 1rem; background: white; border: 1px solid #e5e7eb; display: inline-flex; align-items: center; gap: 0.5rem">
+        <span style="color: #f59e0b">&#9733;</span>
+        <span style="color: #0f172a; font-weight: 700; font-size: 0.875rem">{{ item.avg_service_rating }}</span>
+        <span style="color: #64748b; font-size: 0.625rem">on PharmacyPulse</span>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ===== SERVICES TAB ===== -->
+  {% if param_tab == "services" %}
+  <div style="padding: 1.5rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 1rem">
+    <h3 style="font-weight: 700; color: #0f172a; font-size: 0.9375rem; margin-bottom: 0.5rem">Service Offerings</h3>
+    <p style="font-size: 0.8125rem; color: #64748b; margin-bottom: 1.25rem">Let patients know what services your pharmacy provides. This information will be displayed on your public listing.</p>
+
+    
+    {% for item2 in current_services.0 %}
+    <div style="margin-bottom: 1.25rem">
+      <p style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem">Current Services</p>
+      <div style="display: flex; gap: 0.375rem; flex-wrap: wrap">
+        {% for item3 in current_services %}
+        <span style="font-size: 0.75rem; font-weight: 600; padding: 0.375rem 0.75rem; border-radius: 9999px; background: #f0fdf4; color: #006B62; border: 1px solid #bbf7d0">{{ item3.service_type }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+    
+
+    <form method="POST" action="/api/pharmacy_services" style="display: grid; gap: 0.75rem">
+      {% csrf_token %}
+      
+      {% for item2 in svc_pid %}<input type="hidden" name="pharmacy_id" value="{{ item2.id }}">{% endfor %}
+      
+      <p style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em">Add Services</p>
+      <p style="font-size: 0.75rem; color: #64748b; margin-top: -0.375rem">Select all the services your pharmacy provides &mdash; you can add several at once.</p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.375rem 0.75rem; padding: 0.875rem; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 0.75rem">
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="service_type" value="walk_in" style="accent-color: #008F82"> Walk-in</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="service_type" value="drive_thru" style="accent-color: #008F82"> Drive-thru</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="service_type" value="delivery" style="accent-color: #008F82"> Delivery</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="service_type" value="online" style="accent-color: #008F82"> Online / Mail Order</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="service_type" value="vaccines" style="accent-color: #008F82"> Vaccines &amp; Immunizations</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="service_type" value="compounding" style="accent-color: #008F82"> Compounding</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="service_type" value="specialty" style="accent-color: #008F82"> Specialty Pharmacy</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="service_type" value="consultation" style="accent-color: #008F82"> Pharmacist Consultation</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="service_type" value="mtm" style="accent-color: #008F82"> Medication Therapy Management</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="service_type" value="pet_meds" style="accent-color: #008F82"> Pet Medications</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="service_type" value="dme" style="accent-color: #008F82"> Durable Medical Equipment</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="service_type" value="covid_testing" style="accent-color: #008F82"> COVID Testing</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="service_type" value="health_screening" style="accent-color: #008F82"> Health Screenings</label>
+      </div>
+      <p style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em">Add a Custom Service</p>
+      <input type="text" name="service_type_custom" placeholder="Custom service &mdash; e.g. Immunizations, Drive-thru pickup" style="padding: 0.625rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #0f172a; background: white; outline: none">
+      <button type="submit" style="padding: 0.5rem 1.25rem; background: #008F82; color: white; border: none; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; cursor: pointer; justify-self: start">Add Selected Services</button>
+    </form>
+  </div>
+  {% endif %}
+
+  <!-- ===== INSURANCE TAB ===== -->
+  {% if param_tab == "insurance" %}
+  <div style="padding: 1.5rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 1rem">
+    <h3 style="font-weight: 700; color: #0f172a; font-size: 0.9375rem; margin-bottom: 0.5rem">Insurance</h3>
+    <p style="font-size: 0.8125rem; color: #64748b; margin-bottom: 1.25rem">List the insurance companies, PBMs, and government plans your pharmacy accepts &mdash; e.g. Cigna, Aetna, UnitedHealthcare, OptumRx, Medicare Part D, Medicaid. This information will be displayed on your public listing.</p>
+
+    <form method="POST" action="/api/insurance" style="display: grid; gap: 1rem">
+      {% csrf_token %}
+      {% for item2 in insurance_pid %}<input type="hidden" name="pharmacy_id" value="{{ item2.id }}">{% endfor %}
+
+      <!-- Insurance providers -->
+      {% for item2 in current_insurance.0 %}
+      <div>
+        <p style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem">Accepted Insurance</p>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem">
+          {% for item3 in current_insurance %}
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.625rem 0.875rem; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 0.75rem">
+            <span style="font-size: 0.8125rem; font-weight: 600; color: #0f172a">{{ item3.provider_name }}</span>
+            <a href="/api/insurance_providers/{{ item3.id }}/remove" style="font-size: 0.6875rem; font-weight: 600; color: #dc2626; text-decoration: none; white-space: nowrap">Remove</a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+
+      {% if not current_insurance %}
+      <p style="font-size: 0.8125rem; color: #94a3b8; margin-bottom: 0">No insurance providers listed yet. Add the insurers you accept below.</p>
+      {% endif %}
+
+      <div>
+        <p style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem">Add Insurance Providers</p>
+        <p style="font-size: 0.75rem; color: #64748b; margin-top: -0.25rem">Select all the insurance companies your pharmacy works with &mdash; you can add several at once.</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.375rem 0.75rem; padding: 0.875rem; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 0.75rem">
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="provider_name" value="Aetna" style="accent-color: #008F82"> Aetna</label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="provider_name" value="Blue Cross Blue Shield" style="accent-color: #008F82"> Blue Cross Blue Shield</label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="provider_name" value="Caremark (CVS)" style="accent-color: #008F82"> Caremark (CVS)</label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="provider_name" value="Cigna" style="accent-color: #008F82"> Cigna</label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="provider_name" value="Express Scripts" style="accent-color: #008F82"> Express Scripts</label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="provider_name" value="Humana" style="accent-color: #008F82"> Humana</label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="provider_name" value="Kaiser Permanente" style="accent-color: #008F82"> Kaiser Permanente</label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="provider_name" value="Molina Healthcare" style="accent-color: #008F82"> Molina Healthcare</label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="provider_name" value="OptumRx" style="accent-color: #008F82"> OptumRx</label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="provider_name" value="Oscar Health" style="accent-color: #008F82"> Oscar Health</label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="provider_name" value="UnitedHealthcare" style="accent-color: #008F82"> UnitedHealthcare</label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="provider_name" value="Wellcare" style="accent-color: #008F82"> Wellcare</label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="provider_name" value="Marketplace / Exchange" style="accent-color: #008F82"> Marketplace / Exchange</label>
+        </div>
+        <input type="text" name="provider_name_custom" placeholder="Add another provider &mdash; e.g. Highmark, Independence Blue Cross" style="width: 100%; box-sizing: border-box; padding: 0.625rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #0f172a; background: white; outline: none; margin-top: 0.75rem">
+      </div>
+
+      <div style="height: 1px; background: #e5e7eb; margin: 0"></div>
+
+      <!-- Government plans -->
+      {% for item2 in current_coverage.0 %}
+      <div>
+        <p style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem">Accepted Government Plans</p>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem">
+          {% for item3 in current_coverage %}
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.625rem 0.875rem; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 0.75rem">
+            <div>
+              <span style="font-size: 0.8125rem; font-weight: 600; color: #0f172a">{{ item3.plan_name }}</span>
+              {% if item3.plan_type %}<span style="font-size: 0.6875rem; color: #64748b; margin-left: 0.5rem">{{ item3.plan_type }}</span>{% endif %}
+            </div>
+            <a href="/api/coverage_plans/{{ item3.id }}/remove" style="font-size: 0.6875rem; font-weight: 600; color: #dc2626; text-decoration: none; white-space: nowrap">Remove</a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+
+      {% if not current_coverage %}
+      <p style="font-size: 0.8125rem; color: #94a3b8; margin-bottom: 0">No government plans listed yet. Add the plans you accept below.</p>
+      {% endif %}
+
+      <div>
+        <p style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem">Add Government Plan</p>
+        <p style="font-size: 0.75rem; color: #64748b; margin-top: -0.25rem">Select the government plans your pharmacy accepts &mdash; you can add several at once.</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.375rem 0.75rem">
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="plan_name" value="Medicare Part D" style="accent-color: #008F82"> Medicare Part D</label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="plan_name" value="Medicare Advantage" style="accent-color: #008F82"> Medicare Advantage</label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="plan_name" value="Medicaid" style="accent-color: #008F82"> Medicaid</label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="plan_name" value="Tricare" style="accent-color: #008F82"> Tricare</label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="plan_name" value="Veterans Affairs (VA)" style="accent-color: #008F82"> Veterans Affairs (VA)</label>
+        </div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem; margin-top: 0.75rem">
+          <input type="text" name="plan_name_custom" placeholder="Add a custom plan &mdash; e.g. SilverScript, Humana Walmart Value" style="padding: 0.625rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #0f172a; background: white; outline: none">
+          <select name="plan_type" style="padding: 0.625rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #0f172a; background: white; outline: none">
+            <option value="">Type (optional)</option>
+            <option value="Medicare">Medicare</option>
+            <option value="Medicaid">Medicaid</option>
+            <option value="Commercial / PBM">Commercial / PBM</option>
+            <option value="Marketplace / Exchange">Marketplace / Exchange</option>
+            <option value="VA / Tricare">VA / Tricare</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" style="padding: 0.5rem 1.25rem; background: #008F82; color: white; border: none; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; cursor: pointer; justify-self: start">Save Insurance</button>
+    </form>
+  </div>
+  {% endif %}
+
+  <!-- ===== HOURS TAB ===== -->
+  {% if param_tab == "hours" %}
+  <div style="padding: 1.5rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+    <h3 style="font-weight: 700; color: #0f172a; font-size: 0.9375rem; margin-bottom: 0.5rem">Operating Hours</h3>
+    <p style="font-size: 0.8125rem; color: #64748b; margin-bottom: 1.25rem">Hours are imported from Google Places when available. If yours are missing or wrong, enter them below &mdash; they&rsquo;ll be saved and shown on your public listing.</p>
+
+    <form method="POST" action="/api/pharmacy_hours" style="display: grid; gap: 1rem">
+      {% csrf_token %}
+      {% for item2 in hours_pid %}<input type="hidden" name="pharmacy_id" value="{{ item2.id }}">{% endfor %}
+
+      <div style="display: grid; grid-template-columns: 9rem 1fr 1fr 5rem; gap: 0.5rem; align-items: center; padding-bottom: 0.5rem; border-bottom: 1px solid #e5e7eb">
+        <span style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em">Day</span>
+        <span style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em">Open</span>
+        <span style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em">Close</span>
+        <span style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em">Closed</span>
+      </div>
+
+      {% for d in "0123456" %}
+      {% with hd=hours_map|get_item:d %}
+      <div style="display: grid; grid-template-columns: 9rem 1fr 1fr 5rem; gap: 0.5rem; align-items: center">
+        {% if d == "0" %}<span style="font-size: 0.8125rem; font-weight: 500; color: #0f172a">Monday</span>{% endif %}
+        {% if d == "1" %}<span style="font-size: 0.8125rem; font-weight: 500; color: #0f172a">Tuesday</span>{% endif %}
+        {% if d == "2" %}<span style="font-size: 0.8125rem; font-weight: 500; color: #0f172a">Wednesday</span>{% endif %}
+        {% if d == "3" %}<span style="font-size: 0.8125rem; font-weight: 500; color: #0f172a">Thursday</span>{% endif %}
+        {% if d == "4" %}<span style="font-size: 0.8125rem; font-weight: 500; color: #0f172a">Friday</span>{% endif %}
+        {% if d == "5" %}<span style="font-size: 0.8125rem; font-weight: 500; color: #0f172a">Saturday</span>{% endif %}
+        {% if d == "6" %}<span style="font-size: 0.8125rem; font-weight: 500; color: #0f172a">Sunday</span>{% endif %}
+        <input type="text" name="day_{{ d }}_open" placeholder="e.g. 9:00 AM" value="{{ hd.open_time|default:'' }}" style="padding: 0.5rem 0.625rem; border: 1.5px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.8125rem; color: #0f172a; background: white; outline: none">
+        <input type="text" name="day_{{ d }}_close" placeholder="e.g. 9:00 PM" value="{{ hd.close_time|default:'' }}" style="padding: 0.5rem 0.625rem; border: 1.5px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.8125rem; color: #0f172a; background: white; outline: none">
+        <input type="checkbox" name="day_{{ d }}_closed" value="1" {% if hd.is_closed %}checked{% endif %} style="accent-color: #008F82; justify-self: center">
+      </div>
+      {% endwith %}
+      {% endfor %}
+
+      <button type="submit" style="padding: 0.5rem 1.25rem; background: #008F82; color: white; border: none; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; cursor: pointer; justify-self: start">Save Hours</button>
+    </form>
+  </div>
+  {% endif %}
+
+  <!-- ===== UPGRADE TAB ===== -->
+  {% if param_tab == "upgrade" %}
+  <div style="max-width: 40rem; margin: 0 auto">
+    {% if param_error %}<div style="padding: 0.75rem 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.75rem; margin-bottom: 1.5rem; font-size: 0.8125rem; color: #dc2626">{{ param_error }}</div>{% endif %}
+    {% if param_upgraded %}<div style="padding: 0.75rem 1rem; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 0.75rem; margin-bottom: 1.5rem; font-size: 0.8125rem; color: #065f46">✅ Subscription active. Welcome to Pro!</div>{% endif %}
+
+    {% if user.plan == "pro" %}
+    <div style="text-align: center; margin-bottom: 2rem">
+      <span style="display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.75rem; background: #008F82; color: white; font-size: 0.6875rem; font-weight: 700; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem">★ Pro</span>
+      <h2 style="font-family: 'DM Serif Display', serif; font-size: 1.5rem; color: #1A1A2E; margin-bottom: 0.375rem">You're on Pro</h2>
+      <p style="font-size: 0.875rem; color: #6B7280">
+        {% if user.subscription_status == "past_due" %}<strong style="color: #dc2626">Payment past due.</strong> Update your card to keep Pro features.
+        {% elif user.subscription_period_end %}Renews {{ user.subscription_period_end|date:"M j, Y" }}.
+        {% else %}Your subscription is active.{% endif %}
+      </p>
+      <a href="/api/flow/billing-portal" style="display: inline-block; margin-top: 1rem; padding: 0.625rem 1.25rem; background: #1A1A2E; color: white; font-size: 0.8125rem; font-weight: 600; text-decoration: none; border-radius: 9999px">Manage billing →</a>
+    </div>
+    {% else %}
+    <div style="text-align: center; margin-bottom: 2rem">
+      <h2 style="font-family: 'DM Serif Display', serif; font-size: 1.5rem; color: #1A1A2E; margin-bottom: 0.375rem">Upgrade your plan</h2>
+      <p style="font-size: 0.875rem; color: #6B7280">Unlock unlimited responses and premium features to grow your pharmacy.</p>
+    </div>
+    {% endif %}
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem">
+      <!-- Free plan -->
+      <div style="padding: 1.5rem; background: white; border: 1px solid #E5E7EB; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+        <p style="font-size: 0.6875rem; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem">Free</p>
+        <p style="font-size: 2rem; font-weight: 800; color: #1A1A2E; margin-bottom: 0.25rem">$0<span style="font-size: 0.875rem; font-weight: 500; color: #9CA3AF">/mo</span></p>
+        <p style="font-size: 0.75rem; color: #6B7280; margin-bottom: 1.25rem">For pharmacies getting started</p>
+        <div style="display: grid; gap: 0.5rem; margin-bottom: 1.5rem">
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #374151">
+            ✅
+            10 review responses/month
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #374151">
+            ✅
+            Basic dashboard
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #374151">
+            ✅
+            Embeddable widget
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #9CA3AF">
+            <span style="color: #D1D5DB">✕</span>
+            Priority support
+          </div>
+        </div>
+        {% if user.plan == "pro" %}
+        <div style="padding: 0.625rem; background: #F3F4F6; color: #6B7280; font-size: 0.75rem; font-weight: 600; text-align: center; border-radius: 9999px">Free</div>
+        {% else %}
+        <div style="padding: 0.625rem; background: #E6F7F5; color: #006B62; font-size: 0.75rem; font-weight: 600; text-align: center; border-radius: 9999px">Current plan</div>
+        {% endif %}
+      </div>
+
+      <!-- Pro plan -->
+      <div style="padding: 1.5rem; background: white; border: 2px solid #008F82; border-radius: 1rem; box-shadow: 0 4px 16px rgba(0,143,130,0.12); position: relative">
+        <span style="position: absolute; top: -0.625rem; left: 50%; transform: translateX(-50%); padding: 0.125rem 0.75rem; background: #008F82; color: white; font-size: 0.625rem; font-weight: 700; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em">Most Popular</span>
+        <p style="font-size: 0.6875rem; font-weight: 700; color: #008F82; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem">Pro</p>
+        <p style="font-size: 2rem; font-weight: 800; color: #1A1A2E; margin-bottom: 0.25rem">$49<span style="font-size: 0.875rem; font-weight: 500; color: #9CA3AF">/mo</span></p>
+        <p style="font-size: 0.75rem; color: #6B7280; margin-bottom: 1.25rem">For pharmacies ready to grow</p>
+        <div style="display: grid; gap: 0.5rem; margin-bottom: 1.5rem">
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #374151">
+            ✅
+            <strong>Unlimited</strong> responses
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #374151">
+            ✅
+            Advanced analytics
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #374151">
+            ✅
+            Promoted listing
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #374151">
+            ✅
+            Priority support
+          </div>
+        </div>
+        {% if user.plan == "pro" %}
+        <div style="padding: 0.75rem; background: #008F82; color: white; font-size: 0.875rem; font-weight: 600; text-align: center; border-radius: 9999px">Current plan</div>
+        {% else %}
+        <a href="/api/flow/create-checkout" id="pp-upgrade-btn" style="display: block; padding: 0.75rem; background: #008F82; color: white; font-size: 0.875rem; font-weight: 600; text-align: center; text-decoration: none; border-radius: 9999px; transition: background 0.15s" onmouseover="this.style.background='#006B62'" onmouseout="this.style.background='#008F82'" onclick="if(this.dataset.clicked){event.preventDefault();return false;}this.dataset.clicked='1';this.style.opacity='0.6';this.textContent='Redirecting…';">Upgrade to Pro</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <p style="text-align: center; font-size: 0.6875rem; color: #9CA3AF; margin-top: 1.5rem">Cancel anytime. 30-day money-back guarantee. Powered by Stripe.</p>
+  </div>
+  {% endif %}
+
+  {% endfor %}
+  {% if not my_pharmacy %}
+  <div style="text-align: center; padding: 4rem 1rem">
+    <div style="font-size: 2.5rem; margin: 0 auto 0.75rem; text-align: center">🏪</div>
+    <p style="font-weight: 600; color: #0f172a; margin-bottom: 0.25rem">No claimed pharmacy</p>
+    <p style="font-size: 0.8125rem; color: #64748b; margin-bottom: 1rem">You need an approved claim to access the dashboard.</p>
+    <a href="/claim" style="display: inline-block; padding: 0.5rem 1.5rem; border-radius: 9999px; background: #7c3aed; color: white; font-size: 0.8125rem; font-weight: 600; text-decoration: none">Claim a pharmacy</a>
+  </div>
+  {% endif %}
+  
+
+  </div>
+</div>
+{% include "pharmacypulse/partials/footer.html" %}
+{% include "pharmacypulse/partials/bottom-nav.html" %}
+{% endblock %}

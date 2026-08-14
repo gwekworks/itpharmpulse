@@ -1,0 +1,339 @@
+{% load pharmacypulse %}
+<!-- Extends window.PP_EN_ES (defined in topbar) and re-applies if cookie=es. -->
+<script>
+(function(){
+  if (!window.PP_EN_ES) return;
+  Object.assign(window.PP_EN_ES, {
+    // Table / column headers commonly seen on compare & list
+    "Pharmacy": "Farmacia",
+    "Rating": "Calificación",
+    "Phone": "Teléfono",
+    "Email": "Correo",
+    "Address": "Dirección",
+    "Hours": "Horario",
+    "Services": "Servicios",
+    "Distance": "Distancia",
+    "Name": "Nombre",
+    "Status": "Estado",
+    "Type": "Tipo",
+    "Date": "Fecha",
+    "Action": "Acción",
+    "Actions": "Acciones",
+    "Details": "Detalles",
+    "Info": "Información",
+
+    // Compare page empty state
+    "No pharmacies in your comparison yet": "Aún no hay farmacias en tu comparación",
+    "Use the search bar above to add pharmacies.": "Usa la barra de búsqueda de arriba para añadir farmacias.",
+    "Compare pharmacies in your area": "Compara farmacias en tu zona",
+    "Enter a ZIP code to see all pharmacies compared.": "Ingresa un código postal para ver las farmacias comparadas.",
+    "to save your own comparison set.": "para guardar tu propio conjunto de comparación.",
+
+    // Buttons / microcopy frequently missed
+    "Share": "Compartir",
+    "Copy": "Copiar",
+    "Copy code": "Copiar código",
+    "Report": "Reportar",
+    "Report review": "Reportar reseña",
+    "Helpful": "Útil",
+    "Reply": "Responder",
+    "Respond": "Responder",
+    "Respond to reviews": "Responder a reseñas",
+    "Loading…": "Cargando…",
+    "Loading...": "Cargando...",
+    "Please wait…": "Espera un momento…",
+    "Saved": "Guardado",
+    "Sent": "Enviado",
+    "Updated": "Actualizado",
+    "Success": "Éxito",
+    "Error": "Error",
+    "Warning": "Advertencia",
+
+    // Shortages detail
+    "Manufacturer": "Fabricante",
+    "Generic Name": "Nombre Genérico",
+    "Reason": "Motivo",
+    "Estimated resolution": "Resolución estimada",
+    "Status:": "Estado:",
+    "current": "actual",
+    "resolved": "resuelto",
+    "discontinued": "descontinuado",
+
+    // Pharmacy detail
+    "Operating Hours": "Horario de Operación",
+    "Hours not available": "Horario no disponible",
+    "Closed": "Cerrado",
+    "Open": "Abierto",
+    "Rating Breakdown": "Desglose de Calificación",
+    "No reviews to break down yet.": "Aún no hay reseñas para desglosar.",
+    "Total Reviews": "Total de Reseñas",
+
+    // Review form / labels
+    "Your review": "Tu reseña",
+    "Your rating": "Tu calificación",
+    "Overall experience": "Experiencia general",
+    "Was your medication available?": "¿Estaba disponible tu medicamento?",
+    "Was the staff helpful?": "¿Fue útil el personal?",
+    "How long did you wait?": "¿Cuánto esperaste?",
+
+    // Account / profile
+    "Profile": "Perfil",
+    "My Reviews": "Mis Reseñas",
+    "Data & Privacy": "Datos y Privacidad",
+    "Export My Data": "Exportar mis Datos",
+    "Delete Account": "Eliminar Cuenta",
+    "Marketing Communications": "Comunicaciones de Marketing",
+
+    // Reviews page sections + stat labels
+    "Pharmacies Reviewed": "Farmacias Reseñadas",
+    "Highest Rated": "Mejor Calificadas",
+    "Latest Reviews": "Reseñas Recientes",
+    "Most Reviewed": "Más Reseñadas",
+    "Pharmacy Response": "Respuesta de la Farmacia",
+    "Caregiver": "Cuidador",
+    "In stock": "En existencia",
+    "Out of stock": "Agotado",
+    "No reviewed pharmacies yet.": "Aún no hay farmacias reseñadas.",
+    "No reviews yet": "Aún sin reseñas",
+    "Be the first to share your pharmacy experience!": "¡Sé el primero en compartir tu experiencia!",
+    "Wait:": "Espera:",
+    "Wait": "Espera",
+
+    // Pharmacist dashboard
+    "Response Activity": "Actividad de Respuestas",
+    "responses": "respuestas",
+    "Last:": "Último:",
+
+    // Account page sections
+    "My account": "Mi cuenta",
+    "Manage your profile, password, billing, and privacy.": "Administra tu perfil, contraseña, facturación y privacidad.",
+    "Edit profile": "Editar perfil",
+    "Change password": "Cambiar contraseña",
+    "Save changes": "Guardar cambios",
+    "Update password": "Actualizar contraseña",
+    "Current password": "Contraseña actual",
+    "New password": "Nueva contraseña",
+    "Confirm": "Confirmar",
+    "Subscription": "Suscripción",
+    "Plan": "Plan",
+    "Free": "Gratis",
+    "Manage billing": "Administrar facturación",
+    "Upgrade to Pro": "Actualiza a Pro",
+    "Notifications": "Notificaciones",
+    "Weekly newsletter": "Boletín semanal",
+    "Subscribe": "Suscribirse",
+    "Subscribed ✓": "Suscrito ✓",
+    "Danger zone": "Zona de peligro",
+    "Permanently delete all data": "Eliminar todos los datos permanentemente",
+    "Not set": "No establecido",
+    "Find a pharmacy": "Buscar una farmacia",
+
+    // Compare page
+    "Your comparison set": "Tu conjunto de comparación",
+    "Clear all": "Limpiar todo",
+    "Top-rated near": "Mejor calificadas cerca de",
+    "Teal pill = best in column.": "Píldora verde = mejor en la columna.",
+    "Independent": "Independiente",
+    "Chain": "Cadena",
+    "Digital": "Digital",
+    "Visit site →": "Visitar sitio →",
+    "Contact": "Contacto",
+    "Add at least one more": "Añade al menos una más",
+    "Comparing pharmacies near": "Comparando farmacias cerca de",
+    "Showing pharmacies near": "Mostrando farmacias cerca de",
+    "Showing reviews near": "Mostrando reseñas cerca de",
+    "based on your location": "según tu ubicación",
+    "from your profile": "desde tu perfil",
+
+    // Common card / detail bits
+    "Back": "Volver",
+    "Back to pharmacy": "Volver a la farmacia",
+    "Browse more pharmacies": "Ver más farmacias",
+    "View your reviews": "Ver tus reseñas",
+    "You already reviewed this pharmacy": "Ya reseñaste esta farmacia",
+    "We couldn't submit your review": "No pudimos enviar tu reseña",
+
+    // Home greeting + section headers
+    "Hello": "Hola",
+    "Pharmacist Dashboard": "Panel del Farmacéutico",
+    "Manage reviews, view analytics, and embed your widget": "Administra reseñas, ve analíticas e integra tu widget",
+    "Map View": "Vista del Mapa",
+    "Browse nearby": "Explora cerca",
+    "Digital pharmacies": "Farmacias digitales",
+    "Drug shortage tracker": "Rastreador de escasez de medicamentos",
+    "Side-by-side": "Lado a lado",
+    "Cities": "Ciudades",
+    "Top Rated Pharmacies": "Farmacias Mejor Calificadas",
+    "No pharmacies yet. Import some from the admin panel.": "Aún no hay farmacias. Importa algunas desde el panel de administración.",
+
+    // List filters
+    "Any Ownership": "Cualquier Propiedad",
+    "Independent only": "Solo Independientes",
+    "Chains (5–99 loc.)": "Cadenas (5–99 ubicaciones)",
+    "Big Chains (100+)": "Grandes Cadenas (100+)",
+    "Any Era": "Cualquier Época",
+    "Established 2020+": "Establecidas 2020+",
+    "Established 2010s": "Establecidas en los 2010s",
+    "Established 2000s": "Establecidas en los 2000s",
+    "Pre-2000 (long-established)": "Antes de 2000 (establecidas hace mucho)",
+    "Has reviews": "Con reseñas",
+    "Active:": "Activos:",
+    "Big Chains": "Grandes Cadenas",
+    "Pre-2000": "Antes de 2000",
+    "Mail Order": "Pedido por Correo",
+    "Long-Term Care": "Cuidado a Largo Plazo",
+    "Home Infusion": "Infusión en Casa",
+    "Specialty": "Especializada",
+    "Compounding": "Magistral",
+    "Nuclear": "Nuclear",
+    "Institutional": "Institucional",
+    "Retail": "Minorista",
+
+    // Compare page extras
+    "Or preview by ZIP code": "O vista previa por código postal",
+    "A quick look at top-rated pharmacies near you.": "Un vistazo rápido a las farmacias mejor calificadas cerca de ti.",
+    "Preview": "Vista previa",
+    "Top-rated near": "Mejor calificadas cerca de",
+
+    // Shortages
+    "All Status": "Todos los Estados",
+    "Current": "Actual",
+    "Resolved": "Resuelto",
+    "Discontinued": "Descontinuado",
+    "No shortages found": "No se encontraron escaseces",
+    "No matching medication shortages at this time.": "No hay escaseces de medicamentos coincidentes en este momento.",
+
+    // Pharmacy detail
+    "Patient Reviews": "Reseñas de Pacientes",
+    "Write a review →": "Escribir una reseña →",
+    "Be the first to share your experience!": "¡Sé el primero en compartir tu experiencia!",
+
+    // Review form labels
+    "Very slow": "Muy lento",
+    "Very fast": "Muy rápido",
+    "Poor": "Malo",
+    "Excellent": "Excelente",
+    "Very late": "Muy tarde",
+    "On time / early": "A tiempo / temprano",
+
+    // Account extras
+    "You haven't left any reviews yet.": "Aún no has dejado ninguna reseña.",
+    "Send me weekly pharmacy reviews and updates for my area.": "Envíame reseñas semanales y actualizaciones de mi área.",
+
+    // Claim
+    "Submit a Claim": "Enviar un Reclamo",
+    "NPI Number": "Número NPI",
+    "License Number": "Número de Licencia",
+    "Contact Email": "Correo de Contacto",
+    "We'll use this to confirm your professional identity.": "Lo usaremos para confirmar tu identidad profesional.",
+    "How verification works:": "Cómo funciona la verificación:",
+    "No physical pharmacies found": "No se encontraron farmacias físicas",
+
+    // For-pharmacies
+    "Turn feedback into better care": "Convierte el feedback en mejor atención",
+    "Claim your listing, respond to reviews, and use real patient feedback to improve your metrics.": "Reclama tu listado, responde a reseñas y usa el feedback real de pacientes para mejorar tus métricas.",
+    "Pharmacy transparency for owners": "Transparencia farmacéutica para dueños",
+    "Dashboard": "Panel",
+    "Owner Tools": "Herramientas del Dueño",
+    "What You Get": "Lo Que Obtienes",
+    "All the tools, no guesswork": "Todas las herramientas, sin adivinanzas",
+    "Understand what your patients really think and use real data to improve.": "Entiende lo que tus pacientes realmente piensan y usa datos reales para mejorar.",
+    "See your ratings": "Ve tus calificaciones",
+    "Respond to reviews": "Responde a reseñas",
+    "Track trends": "Sigue tendencias",
+    "Real-time analytics": "Analíticas en tiempo real",
+    "Patient View": "Vista del Paciente",
+    "1–5 stars": "1–5 estrellas",
+    "A growing community of patients": "Una comunidad creciente de pacientes",
+    "These patients are already looking for pharmacies like yours.": "Estos pacientes ya están buscando farmacias como la tuya.",
+    "Registered Patients": "Pacientes Registrados",
+    "How It Works": "Cómo Funciona",
+    "Create an account": "Crear una cuenta",
+    "Auto-verified against the federal NPI registry. No manual review, no waiting.": "Verificación automática contra el registro federal NPI. Sin revisión manual ni esperas.",
+    "Manage your listing": "Administra tu listado",
+    "Live Feed": "Feed en Vivo",
+    "Built on trust and transparency": "Construido sobre confianza y transparencia",
+    "Your patients are already talking.": "Tus pacientes ya están hablando.",
+    "Are you listening?": "¿Estás escuchando?",
+
+    // Login + signup
+    "Your guide to better pharmacy care": "Tu guía para una mejor atención farmacéutica",
+    "Stock confidence": "Confianza de stock",
+    "Know if your medication is likely in stock.": "Sabe si tu medicamento probablemente esté en stock.",
+    "Verified patient reviews": "Reseñas verificadas de pacientes",
+    "Honest ratings on wait times and Staff Care.": "Calificaciones honestas sobre tiempos de espera y atención del personal.",
+    "Compare side-by-side": "Compara lado a lado",
+    "See how pharmacies stack up on what matters.": "Ve cómo se comparan las farmacias en lo que importa.",
+    "PharmacyPulse helped me find a pharmacy that actually had my medication in stock. No more wasted trips.": "PharmacyPulse me ayudó a encontrar una farmacia que realmente tenía mi medicamento en stock. Se acabaron los viajes en vano.",
+    "Patient in Philadelphia": "Paciente en Philadelphia",
+    "Demo Accounts": "Cuentas de Demostración",
+    "Demo accounts": "Cuentas de demostración",
+    "Patient": "Paciente",
+    "Pharmacy Owner": "Dueño de Farmacia",
+    "Admin": "Admin",
+    "Your voice helps others find pharmacies that truly care.": "Tu voz ayuda a otros a encontrar farmacias que realmente se preocupan.",
+    "Know if your medication is likely in stock": "Sabe si tu medicamento probablemente esté en stock",
+    "Read honest reviews from real patients": "Lee reseñas honestas de pacientes reales",
+    "Compare pharmacies on wait time and Staff Care": "Compara farmacias por tiempo de espera y atención del personal",
+    "Takes under a minute.": "Toma menos de un minuto.",
+
+    // Forgot password
+    "Reset your password": "Restablece tu contraseña",
+    "Enter the email on your account and we'll send you a link to reset your password.": "Ingresa el correo de tu cuenta y te enviaremos un enlace para restablecer tu contraseña.",
+    "Check your inbox.": "Revisa tu bandeja de entrada.",
+
+    // Map
+    "Pharmacy Map": "Mapa de Farmacias",
+    "Showing nearest": "Mostrando las más cercanas",
+    "Re-center on map view": "Recentrar en vista del mapa",
+
+    // Online
+    "No online pharmacies found": "No se encontraron farmacias en línea",
+    "Try a different search.": "Prueba una búsqueda diferente.",
+
+    // Pharmacist dashboard tabs + KPIs
+    "Overview": "Resumen",
+    "Widget": "Widget",
+    "Upgrade": "Mejorar Plan",
+    "Response Rate": "Tasa de Respuesta",
+    "reviews responded to": "reseñas respondidas",
+    "This Week": "Esta Semana",
+    "This Month": "Este Mes",
+    "new reviews": "reseñas nuevas",
+
+    // Footer
+    "Review Widget": "Widget de Reseñas",
+    "Why PharmacyPulse": "Por qué PharmacyPulse",
+    "Owner Dashboard": "Panel del Dueño"
+  });
+
+  // Regex patterns for interpolated strings like "5 reviews" / "80% stock"
+  // that exact-match dict swaps can't catch. Both directions defined so the
+  // toggle round-trips cleanly.
+  window.PP_PATTERNS_EN_TO_ES = [
+    {from: /(\b\d+(?:\.\d+)?)% stock\b/g, to: '$1% existencias'},
+    {from: /(\b\d+)\s+reviews\b/g,   to: '$1 reseñas'},
+    {from: /(\b\d+)\s+review\b/g,    to: '$1 reseña'},
+    {from: /(\b\d+)\s+responses\b/g, to: '$1 respuestas'},
+    {from: /(\b\d+)\s+response\b/g,  to: '$1 respuesta'},
+    {from: /Wait:\s*(\d+)\/5/g,      to: 'Espera: $1/5'},
+    {from: /(\b\d+)\s+min wait\b/g,  to: '$1 min espera'},
+    {from: /~(\d+)m\b/g,             to: '~$1m'}
+  ];
+  window.PP_PATTERNS_ES_TO_EN = [
+    {from: /(\b\d+(?:\.\d+)?)% existencias\b/g, to: '$1% stock'},
+    {from: /(\b\d+)\s+reseñas\b/g,    to: '$1 reviews'},
+    {from: /(\b\d+)\s+reseña\b/g,     to: '$1 review'},
+    {from: /(\b\d+)\s+respuestas\b/g, to: '$1 responses'},
+    {from: /(\b\d+)\s+respuesta\b/g,  to: '$1 response'},
+    {from: /Espera:\s*(\d+)\/5/g,     to: 'Wait: $1/5'},
+    {from: /(\b\d+)\s+min espera\b/g, to: '$1 min wait'}
+  ];
+
+  // Re-apply if cookie is ES so the new keys kick in on this page load
+  var m = document.cookie.match(/(?:^|;\s*)lang=([^;]+)/);
+  if (m && m[1] === 'es' && typeof window.ppApplyUniversalLang === 'function') {
+    window.ppApplyUniversalLang('es');
+  }
+})();
+</script>

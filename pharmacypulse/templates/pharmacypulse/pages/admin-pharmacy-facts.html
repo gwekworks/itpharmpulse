@@ -1,0 +1,84 @@
+{% extends "pharmacypulse/layouts/blank.html" %}
+{% load pharmacypulse %}
+{% block title %}Pharmacy Facts{% endblock %}
+{% block content %}
+<div class="flex min-h-screen">
+{% include "pharmacypulse/partials/admin-sidebar.html" %}
+
+<div class="admin-content">
+  <div class="admin-pg-header">
+    <div class="admin-pg-header-left">
+      <h1>Pharmacy Facts</h1>
+      <p>Manage homepage fact cards shown to users</p>
+    </div>
+  </div>
+  <div class="admin-pg-body">
+    <div class="max-w-6xl mx-auto">
+
+    <form method="POST" action="/admin-pharmacy-facts" class="mb-6">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="update">
+      <div class="space-y-3 mb-4">
+        {% for f in facts %}
+        <details class="glass-card p-5">
+          <summary style="cursor: pointer; display: flex; align-items: center; gap: 0.75rem; list-style: none">
+            <span style="font-size: 1.5rem">{{ f.icon }}</span>
+            <div style="flex: 1; min-width: 0">
+              <div class="text-sm font-semibold" style="color: hsl(220 50% 10%)">{{ f.head }}</div>
+              <div class="text-xs" style="color: hsl(215 20% 55%)">{{ f.stat }} &middot; sort {{ f.sort_order }} {% if not f.is_active %}&middot; <span style="color: hsl(0 72% 51%)">inactive</span>{% endif %}</div>
+            </div>
+            <span class="text-xs" style="color: hsl(215 20% 55%)">edit ▾</span>
+          </summary>
+          <div class="grid gap-3 mt-4" style="grid-template-columns: 100px 200px 1fr">
+            <label class="text-xs" style="color: hsl(215 20% 42%)">Icon (emoji)<input type="text" name="icon_{{ f.id }}" value="{{ f.icon }}" class="input-field text-sm mt-1"></label>
+            <label class="text-xs" style="color: hsl(215 20% 42%)">Stat (big number)<input type="text" name="stat_{{ f.id }}" value="{{ f.stat }}" class="input-field text-sm mt-1"></label>
+            <label class="text-xs" style="color: hsl(215 20% 42%)">Source attribution<input type="text" name="src_{{ f.id }}" value="{{ f.src }}" class="input-field text-sm mt-1"></label>
+          </div>
+          <label class="block text-xs mt-3" style="color: hsl(215 20% 42%)">Headline<input type="text" name="head_{{ f.id }}" value="{{ f.head }}" class="input-field text-sm mt-1 w-full"></label>
+          <label class="block text-xs mt-3" style="color: hsl(215 20% 42%)">Body<textarea name="body_{{ f.id }}" rows="2" class="input-field text-sm mt-1 w-full" style="resize: vertical; font-family: inherit">{{ f.body }}</textarea></label>
+          <label class="block text-xs mt-3" style="color: hsl(215 20% 42%)">CTA text<input type="text" name="cta_{{ f.id }}" value="{{ f.cta }}" class="input-field text-sm mt-1 w-full"></label>
+          <label class="block text-xs mt-3" style="color: hsl(215 20% 42%)">CTA link (optional)<input type="url" name="cta_link_{{ f.id }}" value="{{ f.cta_link }}" placeholder="https://..." class="input-field text-sm mt-1 w-full"></label>
+          <div class="flex gap-4 items-center mt-3">
+            <label class="text-xs" style="color: hsl(215 20% 42%)">Sort order<input type="number" name="sort_{{ f.id }}" value="{{ f.sort_order }}" class="input-field text-sm ml-2" style="width: 80px; display: inline-block"></label>
+            <label class="text-sm flex items-center gap-1.5" style="color: hsl(220 50% 10%)"><input type="checkbox" name="active_{{ f.id }}" {% if f.is_active %}checked{% endif %}> Active</label>
+            <button type="submit" form="delete-{{ f.id }}" class="ml-auto text-xs py-1.5 px-3 rounded-lg font-semibold" style="background: hsl(0 72% 95%); color: hsl(0 72% 45%); border: 1px solid hsl(0 72% 88%)">Delete</button>
+          </div>
+        </details>
+        {% endfor %}
+      </div>
+      <button type="submit" class="btn-primary text-sm py-2 px-5">Save all changes</button>
+    </form>
+
+    {% for f in facts %}
+    <form id="delete-{{ f.id }}" method="POST" action="/admin-pharmacy-facts" style="display: none">
+      {% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="{{ f.id }}">
+    </form>
+    {% endfor %}
+
+    <!-- Add new fact -->
+    <details class="glass-card p-5" style="border: 1.5px dashed hsl(220 20% 85%)">
+      <summary style="cursor: pointer; list-style: none" class="text-sm font-semibold" style="color: hsl(174 100% 28%)">+ Add new fact</summary>
+      <form method="POST" action="/admin-pharmacy-facts" class="mt-4">
+        {% csrf_token %}<input type="hidden" name="action" value="create">
+        <div class="grid gap-3 mb-3" style="grid-template-columns: 100px 200px 1fr">
+          <input name="new_icon" placeholder="🎯" class="input-field text-sm">
+          <input name="new_stat" placeholder="big stat" class="input-field text-sm">
+          <input name="new_src" placeholder="source" class="input-field text-sm">
+        </div>
+        <input name="new_head" placeholder="Headline" required class="input-field text-sm w-full mb-3">
+        <textarea name="new_body" placeholder="Body text" rows="2" required class="input-field text-sm w-full mb-3" style="font-family: inherit; resize: vertical"></textarea>
+        <input name="new_cta" placeholder="Question prompt to user" class="input-field text-sm w-full mb-3">
+        <input name="new_cta_link" type="url" placeholder="https://optional-link" class="input-field text-sm w-full mb-3">
+        <div class="flex gap-4 items-center">
+          <label class="text-xs" style="color: hsl(215 20% 42%)">Sort<input type="number" name="new_sort" value="0" class="input-field text-sm ml-2" style="width: 70px; display: inline-block"></label>
+          <label class="text-sm flex items-center gap-1.5" style="color: hsl(220 50% 10%)"><input type="checkbox" name="new_active" checked> Active</label>
+          <button type="submit" class="btn-primary text-sm py-2 px-4 ml-auto">Add fact</button>
+        </div>
+      </form>
+    </details>
+
+    </div><!-- /max-w-6xl -->
+  </div><!-- /admin-pg-body -->
+</div><!-- /admin-content -->
+</div><!-- /flex -->
+{% endblock %}

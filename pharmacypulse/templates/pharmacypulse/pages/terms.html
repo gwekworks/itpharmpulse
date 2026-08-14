@@ -1,0 +1,68 @@
+{% extends "pharmacypulse/layouts/blank.html" %}
+{% load pharmacypulse %}
+{% block title %}Terms of Service{% endblock %}
+{% block meta_description %}PharmacyPulse terms of service — the rules and guidelines for using our community pharmacy review and comparison platform.{% endblock %}
+{% block content %}
+<div class="min-h-screen" style="background: hsl(210 20% 98%)">
+  <div class="max-w-2xl mx-auto px-4 py-12">
+    <a href="/" class="inline-flex items-center gap-1 text-sm mb-6 no-underline" style="color: hsl(215 20% 42%)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+      Back to PharmacyPulse
+    </a>
+
+    <h1 class="font-serif text-3xl mb-2" style="color: hsl(220 50% 10%)">Terms of Service</h1>
+    <p class="text-sm mb-8" style="color: hsl(215 20% 42%)">Last updated: March 29, 2026</p>
+
+    <div class="prose prose-sm" style="color: hsl(215 20% 30%)">
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">1. Acceptance of Terms</h2>
+      <p class="text-sm mb-3">By accessing or using PharmacyPulse ("the Service"), operated by ByondRx, you agree to be bound by these Terms of Service. If you do not agree, do not use the Service.</p>
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">2. User-Generated Content</h2>
+      <p class="text-sm mb-3">Reviews, ratings, and comments submitted to PharmacyPulse are user-generated content. By submitting a review, you represent that:</p>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li>Your review reflects a genuine pharmacy experience</li>
+        <li>You will not fabricate or manipulate reviews</li>
+        <li>You will not include specific medication names, diagnoses, or personal health information (PHI)</li>
+        <li>You will not include profanity, threats, or discriminatory language</li>
+        <li>You will not post reviews on behalf of others without their consent</li>
+      </ul>
+      <p class="text-sm mb-3"><strong>Disclaimer:</strong> Reviews are user-generated opinions and do not constitute medical advice. PharmacyPulse does not verify the accuracy of individual reviews.</p>
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">3. Review Integrity (FTC Compliance)</h2>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li>We do not fabricate or manipulate reviews</li>
+        <li>Incentivized reviews must be clearly disclosed by the pharmacy</li>
+        <li>We do not selectively suppress negative reviews</li>
+        <li>Pharmacy-verified badges indicate verified ownership, not review endorsement</li>
+      </ul>
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">4. Pharmacy Claims</h2>
+      <p class="text-sm mb-3">Pharmacists may claim their pharmacy listing by providing a valid NPI number and state license. Claims are verified against the federal NPI registry. Claimed pharmacies may respond to reviews subject to the following:</p>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li>Responses must be professional and relevant</li>
+        <li>Free tier: up to 30 responses total. Additional responses require a paid plan.</li>
+        <li>Pharmacies may not threaten, intimidate, or coerce reviewers</li>
+      </ul>
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">5. SMS Communications (TCPA)</h2>
+      <p class="text-sm mb-3">By providing your phone number and creating an account, you expressly consent to receive SMS messages from PharmacyPulse for account verification and security purposes only. We will not send marketing messages via SMS. Standard messaging and data rates may apply. You may opt out at any time by deleting your account.</p>
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">6. Content Moderation</h2>
+      <p class="text-sm mb-3">We employ automated screening to detect and block content containing medication names, medical conditions, profanity, and potential legal threats. Content flagged by our moderation system will be rejected with a notification. We reserve the right to remove any content that violates these Terms.</p>
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">7. Account Suspension</h2>
+      <p class="text-sm mb-3">We may suspend or terminate accounts that engage in review manipulation, fraud (including VoIP-based fake accounts), harassment, or repeated Terms violations.</p>
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">8. Limitation of Liability</h2>
+      <p class="text-sm mb-3">PharmacyPulse is provided "as is." We are not responsible for the accuracy of user-submitted reviews, pharmacy data, or drug shortage information. Drug shortage data is sourced from the FDA openFDA API and is provided for informational purposes only.</p>
+
+      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">9. Contact</h2>
+      <p class="text-sm mb-3">Questions about these Terms: <strong>legal@beyondrx.com</strong></p>
+
+    </div>
+  </div>
+</div>
+{% include "pharmacypulse/partials/footer.html" %}
+{% include "pharmacypulse/partials/bottom-nav.html" %}
+{% endblock %}

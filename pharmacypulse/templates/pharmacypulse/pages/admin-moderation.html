@@ -1,0 +1,105 @@
+{% extends "pharmacypulse/layouts/blank.html" %}
+{% load pharmacypulse %}
+{% block title %}Review Moderation{% endblock %}
+{% block content %}
+<div class="flex min-h-screen">
+{% include "pharmacypulse/partials/admin-sidebar.html" %}
+
+<div class="admin-content">
+  <div class="admin-pg-header">
+    <div class="admin-pg-header-left">
+      <h1>Review Moderation</h1>
+      <p>Moderate flagged and pending reviews</p>
+    </div>
+  </div>
+  <div class="admin-pg-body">
+    <div class="max-w-6xl mx-auto">
+
+    <!-- Filter tabs -->
+    <div class="tab-group mb-5">
+      <a href="/admin-moderation" class="tab-btn {% if not param_status %}active{% endif %} no-underline">All</a>
+      <a href="/admin-moderation?status=flagged" class="tab-btn {% if param_status == "flagged" %}active{% endif %} no-underline">Flagged</a>
+      <a href="/admin-moderation?status=pending" class="tab-btn {% if param_status == "pending" %}active{% endif %} no-underline">Pending</a>
+      <a href="/admin-moderation?status=approved" class="tab-btn {% if param_status == "approved" %}active{% endif %} no-underline">Approved</a>
+      <a href="/admin-moderation?status=rejected" class="tab-btn {% if param_status == "rejected" %}active{% endif %} no-underline">Rejected</a>
+    </div>
+
+    <!-- Reviews list -->
+    <div class="space-y-3">
+      {% for item in all_reviews %}
+      <div class="glass-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <p class="text-sm font-semibold" style="color: #0f172a">{{ item.user_name }}</p>
+              <span class="badge-{{ item.moderation_status }}">{{ item.moderation_status }}</span>
+              {% if item.is_caregiver %}
+              <span class="text-xs px-2 py-0.5 rounded-full" style="background: #f3f0ff; color: #6d28d9">Caregiver</span>
+              {% endif %}
+            </div>
+            <p class="text-xs" style="color: #64748b">Review for <strong style="color: #0f172a">{{ item.pharm_name }}</strong></p>
+          </div>
+          <span class="text-xs" style="color: #94a3b8">{{ item.created_at|date:"M d, Y" }}</span>
+        </div>
+
+        <!-- Ratings row -->
+        <div class="flex gap-4 mb-3 text-xs" style="color: #64748b">
+          <span>Service: <span class="star-filled font-semibold">★</span> <span style="color: #0f172a; font-weight: 600">{{ item.service_rating }}/5</span></span>
+          <span>Wait: <span style="color: #0f172a; font-weight: 600">{{ item.wait_time_rating }}/5</span></span>
+          <span>Stock: {% if item.stock_available %}<span style="color: #16a34a; font-weight: 600">In stock</span>{% else %}<span style="color: #dc2626; font-weight: 600">Out of stock</span>{% endif %}</span>
+        </div>
+
+        {% if item.comment %}
+        <p class="text-sm mb-3" style="color: #475569; background: #f8fafc; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #e2e8f0">{{ item.comment }}</p>
+        {% endif %}
+
+        {% if item.flag_reason %}
+        <div class="flex items-start gap-2 p-2.5 rounded-lg mb-3" style="background: #fef2f2; border-left: 3px solid #ef4444">
+          <span class="text-xs font-semibold" style="color: #dc2626; flex-shrink: 0">⚑ Flag:</span>
+          <p class="text-xs" style="color: #dc2626">{{ item.flag_reason }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Action buttons -->
+        <div class="flex gap-2 pt-1">
+          <form method="POST" action="/api/flow/moderate-review/{{ item.id }}" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="approved">
+            <button type="submit" class="btn-primary text-xs py-1.5 px-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Approve
+            </button>
+          </form>
+          <form method="POST" action="/api/flow/moderate-review/{{ item.id }}" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="rejected">
+            <button type="submit" class="btn-destructive text-xs py-1.5 px-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              Reject
+            </button>
+          </form>
+          <form method="POST" action="/api/flow/moderate-review/{{ item.id }}" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="flagged">
+            <button type="submit" class="btn-ghost text-xs py-1.5 px-3" style="color: #d97706">
+              ⚑ Flag
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+
+      {% if not all_reviews %}
+      <div class="glass-card text-center py-16">
+        <div style="font-size: 2.5rem; margin-bottom: 0.75rem">✅</div>
+        <p class="font-semibold mb-1" style="color: #0f172a">All clear</p>
+        <p class="text-sm" style="color: #94a3b8">No reviews to moderate right now.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    </div><!-- /max-w-6xl -->
+  </div><!-- /admin-pg-body -->
+</div><!-- /admin-content -->
+</div><!-- /flex -->
+{% endblock %}

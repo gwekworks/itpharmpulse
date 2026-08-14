@@ -1,0 +1,138 @@
+{% extends "pharmacypulse/layouts/app.html" %}
+{% load pharmacypulse %}
+{% block title %}Pharmacy Reviews — Real Patient Experiences{% endblock %}
+{% block meta_description %}Read real patient reviews of pharmacies. Compare service ratings, wait times, and stock availability to find a pharmacy you can trust.{% endblock %}
+{% block content %}
+{% include "pharmacypulse/partials/topbar.html" %}
+<div style="background: #fafbfc; min-height: 100vh; padding-bottom: 0">
+  <div style="max-width: 72rem; margin: 0 auto; padding: 1.5rem 1.5rem">
+
+    <div style="margin-bottom: 1.5rem">
+      <h1 style="font-family: 'DM Serif Display', serif; font-size: 1.75rem; color: #0f172a; margin-bottom: 0.25rem">Reviews</h1>
+      <p style="font-size: 0.875rem; color: #64748b">Real experiences from real patients.</p>
+      {% if auto_loc_zip %}
+      <div style="margin-top: 0.625rem; display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.625rem; background: #E6F7F5; border-radius: 9999px; font-size: 0.75rem; color: #006B62; font-weight: 500">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink: 0"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+        Showing reviews near
+        {% if auto_loc_city %}<strong>{{ auto_loc_city }}{% if auto_loc_state %}, {{ auto_loc_state }}{% endif %}</strong>{% else %}<strong>{{ auto_loc_zip }}</strong>{% endif %}
+        {% if auto_loc_source == "ip" %}<span style="color: #94a3b8; font-weight: 400">— based on your location</span>{% elif auto_loc_source == "user" %}<span style="color: #94a3b8; font-weight: 400">— from your profile</span>{% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    {% include "pharmacypulse/partials/disclaimer.html" with text="Reviews reflect the personal opinions of individual users, are not verified by PharmacyPulse, and do not constitute medical advice." only %}
+
+    <!-- ===== STATS BAR ===== -->
+    <div class="grid grid-cols-3 gap-3" style="margin-bottom: 1.5rem">
+      
+      <div style="padding: 1rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); text-align: center">
+        <p style="font-size: 1.5rem; font-weight: 800; color: #0f172a">{{r_total.0.n}}</p>
+        <p style="font-size: 0.6875rem; color: #64748b">Total Reviews</p>
+      </div>
+      
+      
+      <div style="padding: 1rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); text-align: center">
+        <p style="font-size: 1.5rem; font-weight: 800; color: #f59e0b">&#9733; {{r_avg.0.avg}}</p>
+        <p style="font-size: 0.6875rem; color: #64748b">Avg Rating</p>
+      </div>
+      
+      
+      <div style="padding: 1rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); text-align: center">
+        <p style="font-size: 1.5rem; font-weight: 800; color: #008F82">{{r_pharm.0.n}}</p>
+        <p style="font-size: 0.6875rem; color: #64748b">Pharmacies Reviewed</p>
+      </div>
+      
+    </div>
+
+    <!-- ===== MOST REVIEWED PHARMACIES ===== -->
+    <div style="margin-bottom: 2rem">
+      <h2 style="font-family: 'DM Serif Display', serif; font-size: 1.25rem; color: #0f172a; margin-bottom: 1rem">Most Reviewed Pharmacies</h2>
+
+      <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
+        {% for item in top_reviewed %}
+        <a href="{{ item.url }}" style="display: block; padding: 1rem; background: white; border: 1px solid #e5e7eb; border-left: 3px solid #008F82; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); text-decoration: none; transition: border-color 0.15s" onmouseover="this.style.borderColor='#008F82'" onmouseout="this.style.borderColor='#e5e7eb'">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem">
+            <span style="font-weight: 700; color: #0f172a; font-size: 0.8125rem">{{ item.name }}</span>
+            <span style="font-weight: 800; color: #7c3aed; font-size: 0.875rem">{{ item.total_reviews }}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem">
+            <span style="color: #f59e0b">&#9733;</span>
+            <span style="font-weight: 600; color: #0f172a">{{ item.avg_service_rating }}</span>
+            <span style="color: #94a3b8">&middot;</span>
+            <span style="color: #008F82; font-weight: 600">{{ item.stock_confidence }}% stock</span>
+          </div>
+          {% if item.is_digital %}{% if item.website %}<p style="font-size: 0.6875rem; color: #008F82; margin-top: 0.25rem">{{ item.website }}</p>{% endif %}{% else %}<p style="font-size: 0.6875rem; color: #94a3b8; margin-top: 0.25rem">{{ item.city }}, {{ item.state }} {{ item.zip }}</p>{% endif %}
+        </a>
+        {% endfor %}
+      </div>
+      {% if not top_reviewed %}<p style="font-size: 0.8125rem; color: #64748b; text-align: center; padding: 1.5rem">No reviewed pharmacies yet.</p>{% endif %}
+      
+    </div>
+
+    <!-- ===== HIGHEST RATED ===== -->
+    <div style="margin-bottom: 2rem">
+      <h2 style="font-family: 'DM Serif Display', serif; font-size: 1.25rem; color: #0f172a; margin-bottom: 1rem">Highest Rated</h2>
+
+      <div style="display: grid; gap: 0; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); background: white; overflow: hidden">
+        {% for item in highest_rated %}
+        <a href="{{ item.url }}" style="display: flex; align-items: center; justify-content: space-between; padding: 0.875rem 1rem; border-bottom: 1px solid #f1f5f9; text-decoration: none" onmouseover="this.style.background='#fafbfc'" onmouseout="this.style.background='white'">
+          <div>
+            <span style="font-weight: 600; color: #0f172a; font-size: 0.8125rem">{{ item.name }}</span>
+            <span style="font-size: 0.6875rem; color: #94a3b8; margin-left: 0.5rem">{{ item.total_reviews }} reviews</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.25rem">
+            <span style="color: #f59e0b">&#9733;</span>
+            <span style="font-weight: 800; color: #0f172a; font-size: 1rem">{{ item.avg_service_rating }}</span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% if not highest_rated %}<p style="font-size: 0.8125rem; color: #64748b; text-align: center; padding: 1.5rem">Need at least 3 reviews to qualify.</p>{% endif %}
+      
+    </div>
+
+    <!-- ===== RECENT REVIEWS ===== -->
+    <div>
+      <h2 style="font-family: 'DM Serif Display', serif; font-size: 1.25rem; color: #0f172a; margin-bottom: 1rem">Latest Reviews</h2>
+      
+      <div style="display: grid; gap: 0; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); background: white; overflow: hidden">
+        {% for item in all_reviews %}
+        <div style="padding: 1.25rem; border-bottom: 1px solid #f1f5f9">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem">
+            <div>
+              <a href="{{ item.pharmacy_url }}" style="font-weight: 700; color: #0f172a; font-size: 0.875rem; text-decoration: none">{{ item.pharm_name }}</a>
+              {% if item.is_caregiver %}<span style="font-size: 0.5625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.125rem 0.375rem; background: #f3f0ff; color: #7c3aed; margin-left: 0.375rem; border-radius: 9999px">Caregiver</span>{% endif %}
+            </div>
+            <span style="font-size: 0.6875rem; color: #94a3b8; flex-shrink: 0">{{ item.created_at|timesince }}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; font-size: 0.75rem">
+            <span style="display: flex; align-items: center; gap: 0.25rem"><span style="color: #f59e0b">&#9733;</span> <strong>{{ item.service_rating }}</strong>/5</span>
+            {% if item.stock_available %}<span style="color: #008F82; font-weight: 600">In stock</span>{% else %}<span style="color: #ef4444; font-weight: 600">Out of stock</span>{% endif %}
+            <span style="color: #64748b">Wait: {{ item.wait_time_rating }}/5</span>
+          </div>
+          {% if item.comment %}<p style="font-size: 0.8125rem; color: #475569; line-height: 1.6">{{ item.comment }}</p>{% endif %}
+          <p style="font-size: 0.6875rem; color: #94a3b8; margin-top: 0.5rem">&mdash; {{ item.user_name }}</p>
+          {% if item.response_text %}
+          <div style="margin-top: 0.75rem; padding: 0.75rem; background: #E6F7F5; border-left: 3px solid #008F82; border-radius: 0.75rem">
+            <p style="font-size: 0.6875rem; font-weight: 700; color: #006B62; margin-bottom: 0.25rem">Pharmacy Response</p>
+            <p style="font-size: 0.8125rem; color: #374151">{{ item.response_text }}</p>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% if not all_reviews %}
+      <div style="text-align: center; padding: 4rem 1rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+        <p style="font-weight: 600; color: #0f172a; margin-bottom: 0.25rem">No reviews yet</p>
+        <p style="font-size: 0.8125rem; color: #64748b; margin-bottom: 1rem">Be the first to share your pharmacy experience!</p>
+        <a href="/list" style="padding: 0.5rem 1.5rem; background: #008F82; color: white; font-weight: 600; text-decoration: none; font-size: 0.875rem; border-radius: 9999px">Find a pharmacy</a>
+      </div>
+      {% endif %}
+      
+    </div>
+
+  </div>
+</div>
+{% include "pharmacypulse/partials/footer.html" %}
+{% include "pharmacypulse/partials/bottom-nav.html" %}
+{% endblock %}

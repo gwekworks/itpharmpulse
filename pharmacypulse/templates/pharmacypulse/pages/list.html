@@ -1,0 +1,312 @@
+{% extends "pharmacypulse/layouts/app.html" %}
+{% load pharmacypulse %}
+{% block title %}Pharmacies — Find a Pharmacy Near You{% endblock %}
+{% block meta_description %}Search and compare pharmacies near you. Filter by services, ownership, and patient reviews to find a trustworthy pharmacy.{% endblock %}
+{% block content %}
+{% include "pharmacypulse/partials/topbar.html" %}
+
+<div class="lp-layout">
+  <!-- Left: results -->
+  <div class="lp-results">
+
+    <div class="lp-search-section">
+      <span class="lp-eyebrow">FIND A PHARMACY NEAR YOU</span>
+      <form action="/list" method="GET" class="lp-search-form search-wrap">
+        <input type="text" name="q" data-autocomplete placeholder="City, state, or ZIP (e.g. 60601)" value="{{param_q}}" class="lp-search-input" autocomplete="off">
+        <button type="submit" class="lp-search-btn">Search</button>
+        <div class="search-dropdown"></div>
+      </form>
+      {% include "pharmacypulse/partials/search-autocomplete.html" %}
+
+      <div class="lp-filters-row">
+        <div class="lp-filter-pills">
+          <span class="lp-filter-label">Filter:</span>
+          <a href="/list?q={{param_q}}&sort={{param_sort}}" class="lp-pill {% if not param_ownership %}lp-pill-active{% endif %}">All</a>
+          <a href="/list?q={{param_q}}&ownership=independent&sort={{param_sort}}" class="lp-pill {% if param_ownership == 'independent' %}lp-pill-active{% endif %}">Independent</a>
+          <a href="/list?q={{param_q}}&ownership=chain&sort={{param_sort}}" class="lp-pill {% if param_ownership == 'chain' or param_ownership == 'big_chain' %}lp-pill-active{% endif %}">Chain</a>
+        </div>
+        <div class="lp-sort">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="16" y2="12"/><line x1="4" y1="18" x2="12" y2="18"/></svg>
+          <span class="lp-sort-label">Sort by:</span>
+          <select onchange="window.location=this.value" class="lp-sort-select">
+            <option value="/list?q={{param_q}}&ownership={{param_ownership}}" {% if not param_sort or param_sort == 'distance' %}selected{% endif %}>Closest</option>
+            <option value="/list?q={{param_q}}&ownership={{param_ownership}}&sort=reviews" {% if param_sort == 'reviews' %}selected{% endif %}>Most Reviewed</option>
+            <option value="/list?q={{param_q}}&ownership={{param_ownership}}&sort=stock" {% if param_sort == 'stock' %}selected{% endif %}>Best Stock</option>
+            <option value="/list?q={{param_q}}&ownership={{param_ownership}}&sort=wait" {% if param_sort == 'wait' %}selected{% endif %}>Shortest Wait</option>
+            <option value="/list?q={{param_q}}&ownership={{param_ownership}}&sort=service" {% if param_sort == 'service' %}selected{% endif %}>Best Service</option>
+            <option value="/list?q={{param_q}}&ownership={{param_ownership}}&sort=name" {% if param_sort == 'name' %}selected{% endif %}>A&ndash;Z</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="lp-results-header">
+      <div>
+        <h2 class="lp-results-title">Local pharmacy results</h2>
+        <p class="lp-results-sub">{% if sorted_by_distance and not param_sort %}Sorted by nearest to you{% else %}Scores driven by recent neighborhood reports.{% endif %}</p>
+      </div>
+      <span class="lp-results-count">{% if pharmacies %}{{ pharmacies|length }} results{% endif %}</span>
+    </div>
+
+    <!-- Table header -->
+    <div class="lp-table-header">
+      <span class="lp-th lp-th-pharmacy">PHARMACY</span>
+      <span class="lp-th lp-th-score">STOCK</span>
+      <span class="lp-th lp-th-score">WAIT</span>
+      <span class="lp-th lp-th-score">CARE</span>
+      <span class="lp-th lp-th-dist">DISTANCE</span>
+      <span class="lp-th lp-th-star"></span>
+    </div>
+
+    <!-- Results list -->
+    <div class="lp-table-body">
+      {% for item in pharmacies %}
+      <a href="{{ item.url }}" class="lp-row">
+        <input type="radio" name="selected_pharmacy" class="lp-radio" onclick="event.stopPropagation()">
+        <div class="lp-row-info">
+          <span class="lp-row-name">{{ item.name }}{% if item.listing_verified %} <span class="pp-listing-verified-badge" title="Verified — this pharmacy completed its listing setup">&#10003; Verified</span>{% endif %}</span>
+          <span class="lp-row-meta">{% if item.is_chain %}Chain{% else %}Independent{% endif %} &middot; {% if item.city %}{{ item.city }}{% endif %} &middot; {% if item.distance_mi is not None %}~{{ item.distance_mi|floatformat:1 }} mi{% else %}Distance unavailable{% endif %}</span>
+          <div class="lp-row-details">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#008F82" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="lp-row-hours">Open today &middot; 8:00 AM – 7:00 PM</span>
+            <span class="lp-row-reviews">{{ item.total_reviews }} reviews</span>
+          </div>
+        </div>
+        <div class="lp-scores">
+          <span class="lp-score lp-score-stock">{% if item.total_reviews %}{{ item.stock_confidence }}{% else %}&mdash;{% endif %}</span>
+          <span class="lp-score lp-score-wait">{% if item.total_reviews %}{{ item.avg_wait_time }}{% else %}&mdash;{% endif %}</span>
+          <span class="lp-score lp-score-care">{% if item.total_reviews %}{{ item.avg_service_rating }}{% else %}&mdash;{% endif %}</span>
+        </div>
+        <span class="lp-dist">{% if item.distance_mi is not None %}~{{ item.distance_mi|floatformat:1 }} mi{% else %}—{% endif %}</span>
+        <button type="button" class="lp-star-btn {% if item.id in saved_ids %}lp-star-saved{% endif %}" data-pharmacy-id="{{ item.id }}" onclick="event.preventDefault();event.stopPropagation();toggleFavorite(this);" aria-label="Save to favorites">
+          <svg class="lp-star-outline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg class="lp-star-filled" width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+      </a>
+      {% endfor %}
+    </div>
+
+    {% if not pharmacies %}
+    <div class="lp-empty">
+      <p class="lp-empty-title">No pharmacies found</p>
+      <p class="lp-empty-desc">Try a different search or adjust your filters.</p>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- Right: map -->
+  <div class="lp-map-panel">
+    <div class="lp-map-label">{{ param_q|default:"Your area" }} &middot; {{ pharmacies|length }} pharmacies shown</div>
+    {% if google_places_key %}
+    <div id="lp-map" class="lp-map"></div>
+    {% else %}
+    <div class="lp-map" style="display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 0.875rem">Map not available</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Location modal — asks the visitor to turn on location when the browser
+         hasn't shared it yet, so pharmacies can be sorted by closest-first.
+         Shown only when there's no pp_loc cookie and location wasn't declined. -->
+{% if show_location_banner %}
+<div id="loc-modal" class="pp-loc-modal" hidden>
+  <div class="pp-loc-modal-backdrop" data-loc-close></div>
+  <div class="pp-loc-modal-card" role="dialog" aria-modal="true" aria-labelledby="loc-modal-title">
+    <button type="button" class="pp-loc-modal-close" data-loc-close aria-label="Close">&#10005;</button>
+    <svg class="pp-loc-modal-icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#008F82" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    <h3 id="loc-modal-title">Turn on your location</h3>
+    <p class="pp-loc-modal-text">Allow location access so we can sort pharmacies by distance — the closest ones to you will appear first.</p>
+    <div class="pp-loc-modal-actions">
+      <button id="loc-enable" type="button" class="pp-loc-modal-btn">Enable location</button>
+      <button id="loc-notnow" type="button" class="pp-loc-modal-link">Maybe later</button>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% include "pharmacypulse/partials/footer.html" %}
+{% include "pharmacypulse/partials/bottom-nav.html" %}
+
+<script>
+// Location-aware sorting: if the visitor hasn't shared their location yet,
+// show a popup asking them to turn on location — on OK we grab coordinates,
+// stash them in the pp_loc cookie, and reload so the server sorts by
+// closest-first. Skipped when we already have a location, the user declined,
+// or geolocation is unsupported.
+(function () {
+  var modal = document.getElementById('loc-modal');
+  if (!modal) return;                      // server didn't render it (has location)
+  if (document.cookie.match(/(?:^|;\s*)pp_loc=/)) return;
+  if (sessionStorage.getItem('pp_loc_declined') === '1') return;
+  if (!navigator.geolocation) return;
+
+  var enableBtn = document.getElementById('loc-enable');
+  var notNowBtn = document.getElementById('loc-notnow');
+  if (!enableBtn) return;
+
+  var titleEl = document.getElementById('loc-modal-title');
+  var textEl = modal.querySelector('.pp-loc-modal-text');
+
+  function decline() {
+    sessionStorage.setItem('pp_loc_declined', '1');
+    modal.hidden = true;
+    document.body.classList.remove('pp-loc-modal-open');
+  }
+
+  function storeAndReload(pos) {
+    var lat = pos.coords.latitude.toFixed(4);
+    var lng = pos.coords.longitude.toFixed(4);
+    document.cookie = 'pp_loc=' + lat + ',' + lng + '; path=/; max-age=2592000; SameSite=Lax';
+    window.location.reload();
+  }
+
+  function handleDenied() {
+    modal.classList.add('pp-loc-denied');
+    if (titleEl) titleEl.textContent = 'Location is turned off';
+    if (textEl) textEl.textContent =
+      'Enable location in your browser\u2019s site settings so we can show the pharmacies closest to you. Or search by city or ZIP and we\u2019ll sort by distance from there.';
+    enableBtn.textContent = 'Try again';
+    enableBtn.disabled = false;
+  }
+
+  function requestLocation() {
+    enableBtn.disabled = true;
+    enableBtn.textContent = 'Locating\u2026';
+    navigator.geolocation.getCurrentPosition(
+      storeAndReload,
+      handleDenied,
+      { timeout: 10000, maximumAge: 600000 }
+    );
+  }
+
+  // Reveal the modal (scroll-locking the page behind it). The rAF defers one
+  // frame so listeners attach before any browser permission banner appears.
+  requestAnimationFrame(function () {
+    modal.hidden = false;
+    document.body.classList.add('pp-loc-modal-open');
+  });
+
+  enableBtn.addEventListener('click', requestLocation);
+  notNowBtn.addEventListener('click', decline);
+  modal.querySelectorAll('[data-loc-close]').forEach(function (el) {
+    el.addEventListener('click', decline);
+  });
+
+  // Permission already granted (e.g. shared on the homepage)? Grab the
+  // location right away instead of making them click again.
+  if (navigator.permissions && navigator.permissions.query) {
+    navigator.permissions.query({ name: 'geolocation' }).then(function (status) {
+      if (status.state === 'granted') requestLocation();
+      else if (status.state === 'denied') handleDenied();
+    }).catch(function () {});
+  }
+})();
+</script>
+<script>
+var csrftoken = document.querySelector('meta[name=csrf-token]')?.content || '';
+function toggleFavorite(btn){
+  if(!{{ request.user.is_authenticated|yesno:"true,false" }}){
+    window.location = '/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+    return;
+  }
+  var id = btn.dataset.pharmacyId;
+  var isSaved = btn.classList.contains('lp-star-saved');
+  var url = isSaved ? '/api/flow/compare/remove' : '/api/flow/compare/add';
+  fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':csrftoken},
+    body: 'pharmacy_id=' + id
+  }).then(function(r){return r.json()}).then(function(d){
+    if(d.ok){
+      btn.classList.toggle('lp-star-saved');
+    }
+  });
+}
+</script>
+{% if google_places_key %}
+<script>
+// Global callback referenced by the Maps loader below — must live on window.
+function initLpMap() {
+  if (window.__ppLpMapInit) return;
+  if (typeof google === 'undefined' || !google.maps) {
+    // Safety net if the async loader hasn't landed yet; bail after ~10s.
+    if ((window.__ppLpMapTries = (window.__ppLpMapTries || 0) + 1) < 50) setTimeout(initLpMap, 200);
+    return;
+  }
+  window.__ppLpMapInit = true;
+  var mapEl = document.getElementById('lp-map');
+  if (!mapEl) return;
+
+  var pharmacies = [];
+  {% for item in pharmacies %}
+  {% if item.latitude and item.longitude %}
+  pharmacies.push({name: "{{ item.name|escapejs }}", lat: {{ item.latitude }}, lng: {{ item.longitude }}, url: "{{ item.url }}", idx: {{ forloop.counter }}});
+  {% endif %}
+  {% endfor %}
+  pharmacies = pharmacies.filter(function(p) { return p.lat && p.lng; });
+
+  // Center on the first result; with no results fall back to the resolved
+  // search location, then a continental-US default so the map never renders
+  // blank. The map stays visible even when "No pharmacies found" shows.
+  var center = null;
+  if (pharmacies.length) {
+    center = {lat: pharmacies[0].lat, lng: pharmacies[0].lng};
+  } else {
+    {% if map_center_lat and map_center_lng %}
+    center = {lat: {{ map_center_lat }}, lng: {{ map_center_lng }}};
+    {% endif %}
+  }
+  var map = new google.maps.Map(mapEl, {
+    zoom: (pharmacies.length ? 11 : center ? 7 : 4),
+    center: center || {lat: 39.8283, lng: -98.5795},
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
+    clickableIcons: false,
+    gestureHandling: 'greedy',
+    styles: [{featureType: "poi", stylers: [{visibility: "off"}]}]
+  });
+  if (!pharmacies.length) return;
+
+  var infoWindow = new google.maps.InfoWindow();
+  var bounds = new google.maps.LatLngBounds();
+  var markers = [];
+
+  pharmacies.forEach(function(p) {
+    var pos = {lat: p.lat, lng: p.lng};
+    // Numbered purple pin matching the .lp-marker-inner list style.
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28">'
+      + '<circle cx="14" cy="14" r="13" fill="#7c3aed" stroke="#fff" stroke-width="2"/>'
+      + '<text x="14" y="19" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="Inter, sans-serif">' + p.idx + '</text></svg>';
+    var marker = new google.maps.Marker({
+      position: pos,
+      map: map,
+      title: p.name,
+      icon: {
+        url: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg),
+        scaledSize: new google.maps.Size(28, 28),
+        anchor: new google.maps.Point(14, 14)
+      }
+    });
+    bounds.extend(pos);
+    markers.push(marker);
+    marker.addListener('click', function() {
+      var esc = function(s) { return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+      infoWindow.setContent(
+        '<div style="font-family:Inter,sans-serif;max-width:200px">' +
+          '<strong style="font-size:13px">' + esc(p.name) + '</strong><br>' +
+          '<a href="' + p.url + '" style="color:#008F82;font-size:12px;font-weight:600">View details →</a>' +
+        '</div>'
+      );
+      infoWindow.open(map, marker);
+    });
+  });
+
+  if (pharmacies.length > 1) map.fitBounds(bounds, 40);
+  else if (pharmacies.length === 1) map.setZoom(13);
+}
+</script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_places_key }}&callback=initLpMap"></script>
+{% endif %}
+{% endblock %}

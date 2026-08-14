@@ -1,0 +1,82 @@
+{% load pharmacypulse %}
+
+<footer class="pp-footer">
+  <div class="pp-footer-inner">
+
+    <div class="pp-footer-grid">
+
+      <div>
+        <a href="/" class="pp-footer-brand">
+          <span class="pp-footer-brand-text">PharmacyPulse</span>
+        </a>
+        <p class="pp-footer-blurb">Built for patients. Trusted by pharmacies. Community-powered reviews that help your neighbors find care they can count on.</p>
+        <div class="pp-footer-lang-row">
+          <button type="button" onclick="ppSetLang('en')" class="pp-footer-lang-btn">EN</button>
+          <button type="button" onclick="ppSetLang('es')" class="pp-footer-lang-btn">ES</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="pp-footer-heading">For Patients</div>
+        <ul class="pp-footer-list">
+          <li><a href="/list">Find a Pharmacy</a></li>
+          <li><a href="/map">Map View</a></li>
+          <li><a href="/compare">Compare Pharmacies</a></li>
+          <li><a href="/online">Online Pharmacies</a></li>
+          <li><a href="/reviews">Read Reviews</a></li>
+          <li><a href="/review">Write a Review</a></li>
+          <li><a href="/shortages">Drug Shortages</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="pp-footer-heading">For Pharmacies</div>
+        <ul class="pp-footer-list">
+          <li><a href="/for-pharmacies">Why PharmacyPulse</a></li>
+          <li><a href="/claim">Claim Your Listing</a></li>
+          <li><a href="/pharmacist-dashboard">Owner Dashboard</a></li>
+          <li><a href="/widget">Review Widget</a></li>
+          <li><a href="/for-pharmacies#pricing">Pricing</a></li>
+          <li><a href="/for-pharmacies#how-it-works">How It Works</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="pp-footer-heading">Account</div>
+        <ul class="pp-footer-list">
+          <li><a href="/signup">Sign Up</a></li>
+          <li><a href="/login">Log In</a></li>
+          <li><a href="/account">My Account</a></li>
+          <li><a href="/home">My Home Feed</a></li>
+          <li><a href="/forgot-password">Forgot Password</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="pp-footer-heading">Company</div>
+        <ul class="pp-footer-list">
+          <li><a href="/for-pharmacies#about">About PharmacyPulse</a></li>
+          <li><a href="/privacy">Privacy Policy</a></li>
+          <li><a href="/terms">Terms of Service</a></li>
+          <li><a href="mailto:security@pharmacypulse.co">Security Contact</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="pp-footer-legal">
+      <p>PharmacyPulse provides pharmacy listings, community reviews, and drug-availability information for general informational purposes only. It is not medical advice and is not a substitute for guidance from a licensed pharmacist or healthcare provider. Pharmacy and shortage data is sourced from the NPPES/NPI registry, the FDA, and community contributions, and may be incomplete, outdated, or inaccurate. PharmacyPulse is not affiliated with, and does not endorse, the pharmacies listed. Always confirm hours, services, and medication availability directly with the pharmacy before relying on this information.</p>
+    </div>
+
+    <div class="pp-footer-bottom">
+      <span class="pp-footer-copyright">&copy; 2026 PharmacyPulse &middot; Built with &hearts; for health equity</span>
+      <div class="pp-footer-mini-links">
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="mailto:security@pharmacypulse.co">Security</a>
+      </div>
+    </div>
+
+  </div>
+</footer>
+{% include "pharmacypulse/partials/lang-extras.html" %}
