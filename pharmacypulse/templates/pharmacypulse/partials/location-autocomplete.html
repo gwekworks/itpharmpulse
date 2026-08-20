@@ -1,0 +1,251 @@
+{% load pharmacypulse %}
+<script>
+// Location field autocomplete + submit mapping. Works on any form containing an
+// input with [data-pp-loc] wrapped in a .pp-loc-field. Provides:
+//  - focus: native blinking cursor + a menu with "Use my current location" (GPS)
+//  - typing: live ZIP / city / state suggestions (our DB) and — for street-
+//    address input — Google Places addresses. Picking an address resolves it to
+//    coordinates (lat/lng) and sets the pp_loc cookie.
+//  - submit: maps the loc text to /list params — 5-digit ZIP → ?zip=, state
+//    name/code → ?state=, picked address → ?lat=&lng=, anything else → ?city= —
+//    and strips empty (or raw loc/plan) fields from the GET form.
+(function () {
+  var input = document.querySelector('[data-pp-loc]');
+  var form = input ? input.closest('form') : null;
+  if (!input || !form) return;
+  var field = input.closest('.pp-loc-field');
+  if (!field) return;
+
+  // State name → code map (server-rendered) for classifying typed text.
+  var STATE_CODES = {
+    {% for s in hero_us_states %} "{{ s.name|lower }}": "{{ s.code }}"{% if not forloop.last %}, {% endif %} {% endfor %}
+  };
+  window.PP_STATE_CODES = STATE_CODES;
+
+  var dropdown = document.createElement('div');
+  dropdown.className = 'search-dropdown pp-loc-dropdown';
+  field.appendChild(dropdown);
+
+  var timer = null, highlighted = -1;
+
+  function closeDropdown() {
+    dropdown.classList.remove('open');
+    highlighted = -1;
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function clearPicked() {
+    delete input.dataset.picked;
+    delete input.dataset.zip;
+    delete input.dataset.city;
+    delete input.dataset.state;
+    delete input.dataset.lat;
+    delete input.dataset.lng;
+  }
+
+  function setValueAndPick(meta) {
+    clearPicked();
+    input.value = meta.label;
+    if (meta.zip) input.dataset.zip = meta.zip;
+    if (meta.city) input.dataset.city = meta.city;
+    if (meta.state) input.dataset.state = meta.state;
+    if (meta.type) input.dataset.picked = meta.type;
+    closeDropdown();
+  }
+
+  // Remember the chosen coordinates so the server can sort/filter by true
+  // distance — via the pp_loc cookie (persists) and the hidden lat/lng the
+  // submit handler writes (works even if cookies are blocked).
+  function rememberCoords(lat, lng) {
+    input.dataset.lat = lat;
+    input.dataset.lng = lng;
+    document.cookie = 'pp_loc=' + lat + ',' + lng + '; path=/; max-age=2592000; SameSite=Lax';
+  }
+
+  function resolveAddress(placeId) {
+    fetch('/api/flow/place-detail?place_id=' + encodeURIComponent(placeId))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || d.lat == null || d.lng == null) return;
+        rememberCoords(d.lat, d.lng);
+      })
+      .catch(function () { });
+  }
+
+  function currentLocationRow() {
+    var row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'search-item pp-loc-item';
+    row.innerHTML =
+      '<span class="pp-loc-item-main">'
+      + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>'
+      + '<span class="pp-loc-item-label">Use my current location</span>'
+      + '</span>'
+      + '<span class="pp-loc-item-meta">GPS</span>';
+    row.addEventListener('click', useCurrentLocation);
+    return row;
+  }
+
+  function suggestionRow(s) {
+    var row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'search-item pp-loc-item';
+    var meta = s.type === 'zip' ? 'ZIP' : s.type === 'state' ? 'State' : s.type === 'address' ? 'Address' : 'City';
+    row.innerHTML =
+      '<span class="pp-loc-item-main">'
+      + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>'
+      + '<span class="pp-loc-item-label">' + esc(s.label) + '</span>'
+      + '</span>'
+      + '<span class="pp-loc-item-meta">' + meta + '</span>';
+    row.addEventListener('click', function () {
+      setValueAndPick(s);
+      if (s.type === 'address' && s.place_id) resolveAddress(s.place_id);
+    });
+    return row;
+  }
+
+  function useCurrentLocation() {
+    if (!navigator.geolocation) { input.value = ''; form.submit(); return; }
+    closeDropdown();
+    input.value = 'Locating\u2026';
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      var lat = pos.coords.latitude.toFixed(4);
+      var lng = pos.coords.longitude.toFixed(4);
+      rememberCoords(lat, lng);
+      input.value = '';
+      // Send explicit lat/lng so the search works even if cookies are
+      // blocked; the submit handler skips hidden fields, so no dupes.
+      var h1 = document.createElement('input'); h1.type = 'hidden'; h1.name = 'lat'; h1.value = lat;
+      var h2 = document.createElement('input'); h2.type = 'hidden'; h2.name = 'lng'; h2.value = lng;
+      form.appendChild(h1); form.appendChild(h2);
+      form.submit();
+    }, function () {
+      input.value = '';
+      alert('We couldn\u2019t get your location. Try typing a city, state, or ZIP instead.');
+    }, { timeout: 10000, maximumAge: 600000 });
+  }
+
+  function showBaseMenu() {
+    highlighted = -1;
+    dropdown.innerHTML = '';
+    dropdown.appendChild(currentLocationRow());
+    dropdown.classList.add('open');
+  }
+
+  function renderSuggestions(q) {
+    fetch('/api/flow/location-suggest?q=' + encodeURIComponent(q))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var results = (data.results || []).slice(0, 8);
+        highlighted = -1;
+        dropdown.innerHTML = '';
+        dropdown.appendChild(currentLocationRow());
+        if (!results.length) {
+          var none = document.createElement('div');
+          none.className = 'search-footer';
+          none.textContent = 'No locations found for "' + q + '"';
+          dropdown.appendChild(none);
+        } else {
+          results.forEach(function (s) { dropdown.appendChild(suggestionRow(s)); });
+        }
+        dropdown.classList.add('open');
+      })
+      .catch(function () { closeDropdown(); });
+  }
+
+  input.addEventListener('focus', showBaseMenu);
+
+  input.addEventListener('input', function () {
+    // A manually edited value is no longer tied to a picked suggestion.
+    clearPicked();
+    clearTimeout(timer);
+    var q = input.value.trim();
+    if (q.length < 2) { showBaseMenu(); return; }
+    timer = setTimeout(function () { renderSuggestions(q); }, 200);
+  });
+
+  input.addEventListener('keydown', function (e) {
+    var nodes = dropdown.querySelectorAll('.search-item');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      highlighted = Math.min(highlighted + 1, nodes.length - 1);
+      highlight(nodes);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      highlighted = Math.max(highlighted - 1, 0);
+      highlight(nodes);
+    } else if (e.key === 'Enter' && highlighted >= 0 && nodes[highlighted]) {
+      e.preventDefault();
+      nodes[highlighted].click();
+    } else if (e.key === 'Escape') {
+      closeDropdown();
+    }
+  });
+
+  function highlight(nodes) {
+    nodes.forEach(function (el, i) {
+      el.classList.toggle('highlighted', i === highlighted);
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    if (!field.contains(e.target)) closeDropdown();
+  });
+
+  // Submit mapping + empty-field stripping.
+  form.addEventListener('submit', function () {
+    function addHidden(name, value) {
+      var h = document.createElement('input');
+      h.type = 'hidden';
+      h.name = name;
+      h.value = value;
+      form.appendChild(h);
+    }
+
+    // Hidden service <select> (hero) maps to /list's ?service= param.
+    var planEl = form.querySelector('[name="plan"]');
+    if (planEl && planEl.value) {
+      addHidden('service', planEl.value);
+    }
+
+    var locEl = form.querySelector('[name="loc"]');
+    if (locEl && locEl.value && locEl.value.trim()) {
+      var picked = locEl.dataset;
+      if (picked.picked === 'zip' && picked.zip) {
+        addHidden('zip', picked.zip);
+      } else if (picked.picked === 'state' && picked.state) {
+        addHidden('state', picked.state);
+      } else if (picked.picked === 'city' && picked.city) {
+        addHidden('city', picked.city);
+      } else if (picked.picked === 'address' && picked.lat && picked.lng) {
+        addHidden('lat', picked.lat);
+        addHidden('lng', picked.lng);
+      } else {
+        var locVal = locEl.value.trim();
+        var digits = locVal.replace(/[^0-9]/g, '');
+        if (/^\d{5}$/.test(digits)) {
+          addHidden('zip', digits);
+        } else if (window.PP_STATE_CODES && window.PP_STATE_CODES[locVal.toLowerCase()]) {
+          addHidden('state', window.PP_STATE_CODES[locVal.toLowerCase()]);
+        } else {
+          addHidden('city', locVal);
+        }
+      }
+    }
+
+    // Never submit empty fields (and the raw loc/plan fields — they're mapped
+    // to zip/state/city/lat/lng/service above), so /list only sees params the
+    // user actually filled.
+    form.querySelectorAll('input, select').forEach(function (el) {
+      if (el.type === 'hidden') return;
+      var v = (el.value || '').trim();
+      if (!v || el.name === 'plan' || el.name === 'loc') el.name = '';
+    });
+  });
+})();
+</script>

@@ -20,6 +20,7 @@ from .common import (
     _shortage_dict, _compare_winners, _normalize_validation_error,
     _TAXONOMY_BADGE, _TAXONOMY_LABEL, _STATE_NAMES, BRAND_PATTERNS,
     BRAND_PATTERNS_BY_KEY, DEFUNCT_CHAIN_KEYS, published_pharmacies,
+    get_search_radius_mi,
 )
 
 
@@ -140,17 +141,20 @@ def _index_testimonials():
 
 
 def _index_cards(active, approved_reviews, loc):
-    """Pick 1 closest retail + 1 closest online + 1 next-closest, then
-    hydrate each card with latest comment and review count.
+    """Pick 1 closest retail + 1 closest online + 1 next-closest from the
+    pharmacies within the admin-set search radius, then hydrate each card
+    with latest comment and review count.
 
     With 78k retail pharmacies in the DB, the previous version loaded all of
     them into Python and haversine-sorted on every request. The bounding-box
-    prefilter caps the candidate set to a few hundred even in dense regions
-    (and degrades gracefully to a wider box, then rating-fallback, when the
-    user is rural or has no resolvable location).
+    prefilter caps the candidate set to a few hundred even in dense regions.
+    Only pharmacies whose distance from `loc` is <= the admin-tuned radius
+    (default 1.86 mi) are eligible; without a resolvable location the pools
+    stay empty so no out-of-range pharmacy is ever shown.
     """
     retail_pool = []
     online_pool = []
+    radius_km = get_search_radius_mi() * 1.609344  # admin-tunable cap (miles)
 
     if loc is not None:
         from math import radians, sin, cos, asin, sqrt
@@ -185,12 +189,16 @@ def _index_cards(active, approved_reviews, loc):
             key=_km,
         )
 
-    if not retail_pool:
-        retail_pool = list(active.filter(is_digital=0)
-                           .order_by("-avg_service_rating", "-total_reviews")[:3])
-    if not online_pool:
-        online_pool = list(active.filter(is_digital=1)
-                           .order_by("-avg_service_rating", "-total_reviews")[:3])
+        # Radius cap: only surface pharmacies within the admin-set distance
+        # (default 1.86 mi) of the visitor. Empty pools stay empty — the
+        # template's "No pharmacies in your area yet" empty state covers it.
+        retail_pool = [p for p in retail_pool if _km(p) <= radius_km]
+        online_pool = [p for p in online_pool if _km(p) <= radius_km]
+
+    # No fallback when a location can't be resolved (e.g. private/dev IPs):
+    # without a reference point there's no distance to enforce the admin-set
+    # radius, so the pools stay empty and the section shows its empty state
+    # rather than listing pharmacies that could be miles away.
 
     best_retail = retail_pool[:1]
     best_online = online_pool[:1]
@@ -226,6 +234,10 @@ def _index_cards(active, approved_reviews, loc):
             "review_count": counts.get(p.id, 0),
             "latest_comment": (latest.comment if latest else ""),
             "latest_user": (latest.user_name if latest else ""),
+            # Real distance from the visitor (miles); always <= the admin radius
+            # because pools were already capped. None only when no reference
+            # point resolved, in which case the pools are empty anyway.
+            "distance_mi": round(_km(p) * 0.621371, 1) if loc is not None else None,
         })
     return cards
 
@@ -248,10 +260,19 @@ def page_index(request):
     user_loc = resolve_loc(request)
     loc = (user_loc.lat, user_loc.lng) if (user_loc.lat and user_loc.lng) else None
 
+    state_code = (user_loc.state or "").upper()
     return {
         **_index_aggregates(),
         "cards": _index_cards(active, approved_reviews, loc),
         "testimonials": _index_testimonials(),
+        # Hero search location dropdown: the visitor's resolved state is
+        # preselected (flag computed here, so the template needs no `==`);
+        # the full US state list populates the other options.
+        "hero_loc_state": state_code,
+        "hero_us_states": [
+            {"code": code, "name": name, "selected": code == state_code}
+            for code, name in sorted(_STATE_NAMES.items(), key=lambda kv: kv[1])
+        ],
     }
 
 

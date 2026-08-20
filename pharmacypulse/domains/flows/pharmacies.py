@@ -31,15 +31,22 @@ from .common import admin_required, _activity
 
 @admin_required
 def bulk_delete_pharmacies(request):
+    from ...models import PharmacyPublishable
     ids = request.POST.getlist("pharmacy_id")
     ids = [int(x) for x in ids if x.isdigit()][:500]  # hard cap
     if not ids:
         return redirect("/admin-pharmacies?error=No+pharmacies+selected")
-    n = Pharmacy.objects.filter(id__in=ids).update(
-        status="deleted", deleted_at=djtz.now(),
-    )
+    n = Pharmacy.objects.filter(id__in=ids).count()
+    with transaction.atomic():
+        # Permanently remove the row from BOTH tables: first the searchable
+        # copy the public reads, then the source row. Deleting the source
+        # cascades to hours/services/coverage/insurance/etc.; reviews and
+        # claims survive (their FK is SET_NULL → pharmacy_id becomes NULL).
+        PharmacyPublishable.objects.filter(pharmacy_id__in=ids).delete()
+        Pharmacy.objects.filter(id__in=ids).delete()
     _activity(request, "pharmacy_bulk_delete",
-              f"{request.user.email} soft-deleted {n} pharmacies")
+              f"{request.user.email} permanently deleted {n} pharmacies "
+              f"(id {min(ids)}–{max(ids)})")
     return redirect(f"/admin-pharmacies?success=Deleted+{n}+pharmacies")
 
 

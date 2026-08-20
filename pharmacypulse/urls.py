@@ -21,6 +21,8 @@ urlpatterns = [
 
     # ===== flow endpoints (25 from flows.yaml, paths preserved 1:1) =====
     path("api/flow/search", flows.search_pharmacies, name="flow_search"),
+    path("api/flow/location-suggest", flows.suggest_locations, name="flow_location_suggest"),
+    path("api/flow/place-detail", flows.place_details, name="flow_place_detail"),
     path("api/flow/ccpa-export", flows.ccpa_export, name="flow_ccpa_export"),
     path("api/flow/ccpa-delete", flows.ccpa_delete, name="flow_ccpa_delete"),
     path("api/flow/ingest-pharmacies", flows.ingest_pharmacies_by_zip, name="flow_ingest_pharmacies"),

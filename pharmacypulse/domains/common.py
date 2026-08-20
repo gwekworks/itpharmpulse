@@ -25,6 +25,47 @@ def _safe_int(v):
         return None
 
 
+# Default pharmacy search radius (miles) for the auto-localized "near me"
+# list. Admins override this at runtime from the admin dashboard; the value
+# is stored in the site_settings key/value table.
+DEFAULT_SEARCH_RADIUS_MI = 1.86
+_SEARCH_RADIUS_KEY = "search_radius_mi"
+
+
+def get_search_radius_mi():
+    """Resolved pharmacy search radius in miles. Reads the admin-tunable
+    site_settings value, falling back to the DEFAULT_SEARCH_RADIUS_MI default
+    when unset or invalid."""
+    from ..models import SiteSetting
+    raw = SiteSetting.objects.filter(key=_SEARCH_RADIUS_KEY)\
+        .values_list("value", flat=True).first()
+    if raw is None:
+        return DEFAULT_SEARCH_RADIUS_MI
+    try:
+        val = float(raw)
+    except (TypeError, ValueError):
+        return DEFAULT_SEARCH_RADIUS_MI
+    if val <= 0:
+        return DEFAULT_SEARCH_RADIUS_MI
+    return val
+
+
+def set_search_radius_mi(value):
+    """Persist the admin-tuned pharmacy search radius. Returns the stored
+    value (float) or None when the input isn't a positive number."""
+    try:
+        val = float(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+    if val <= 0:
+        return None
+    from ..models import SiteSetting
+    SiteSetting.objects.update_or_create(
+        key=_SEARCH_RADIUS_KEY, defaults={"value": str(val)})
+    return val
+
+
+
 def published_pharmacies():
     """Public search queryset — rows from pharmacies_publishable that are
     actually published. Public browse pages query this instead of the live
@@ -228,6 +269,22 @@ _STATE_NAMES = {
     "TX":"Texas","UT":"Utah","VT":"Vermont","VA":"Virginia","WA":"Washington",
     "WV":"West Virginia","WI":"Wisconsin","WY":"Wyoming","DC":"D.C.","PR":"Puerto Rico",
 }
+
+# Reverse lookup: lowercase full state name → 2-letter code, so a user-supplied
+# "pennsylvania" (or "Pennsylvania") can be normalized to "PA" for filtering.
+_STATE_NAME_TO_CODE = {name.lower(): code for code, name in _STATE_NAMES.items()}
+
+
+def _state_code(value):
+    """Normalize a state token to its 2-letter code, or None if unrecognized.
+    Accepts both forms: "PA" / "pa" and "Pennsylvania" / "pennsylvania"."""
+    if not value:
+        return None
+    v = value.strip()
+    code = v.upper()
+    if code in _STATE_NAMES:
+        return code
+    return _STATE_NAME_TO_CODE.get(v.lower())
 
 
 BRAND_PATTERNS = [

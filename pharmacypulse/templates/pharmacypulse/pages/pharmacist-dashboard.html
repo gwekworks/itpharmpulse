@@ -374,25 +374,25 @@
 
   <!-- Member list -->
   <div style="background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden">
-    <div style="padding: 0.75rem 1.25rem; border-bottom: 1px solid #e5e7eb; display: flex; gap: 1rem; font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em">
-      <span style="flex: 1">Member</span>
-      <span style="width: 80px">Role</span>
-      <span style="width: 100px">Joined</span>
-      {% if item2.my_role == "owner" %}<span style="width: 60px">Actions</span>{% endif %}
+    <div class="member-head" style="padding: 0.75rem 1.25rem; border-bottom: 1px solid #e5e7eb; font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em">
+      <span class="member-name" style="flex: 1">Member</span>
+      <span class="member-col" style="width: 80px">Role</span>
+      <span class="member-col" style="width: 100px">Joined</span>
+      {% if item2.my_role == "owner" %}<span class="member-col" style="width: 60px">Actions</span>{% endif %}
     </div>
 
     
     {% for item3 in members %}
-    <div style="padding: 0.75rem 1.25rem; border-bottom: 1px solid #f8fafc; display: flex; gap: 1rem; align-items: center; font-size: 0.8125rem">
-      <div style="flex: 1; min-width: 0">
+    <div class="member-row" style="padding: 0.75rem 1.25rem; border-bottom: 1px solid #f8fafc; font-size: 0.8125rem">
+      <div class="member-name" style="flex: 1; min-width: 0">
         <span style="font-weight: 600; color: #0f172a">{% if item3.first_name %}{{ item3.first_name }} {{ item3.last_name }}{% else %}{{ item3.email }}{% endif %}</span>
         {% if not item3.accepted_at %}<span style="font-size: 0.5625rem; font-weight: 700; text-transform: uppercase; padding: 0.125rem 0.375rem; border-radius: 9999px; background: #fef9c3; color: #a16207; margin-left: 0.375rem">Pending</span>{% endif %}
         {% if item3.first_name %}<p style="font-size: 0.6875rem; color: #94a3b8; margin-top: 0.125rem">{{ item3.email }}</p>{% endif %}
       </div>
-      <span style="width: 80px; font-size: 0.75rem; font-weight: 600; color: {% if item3.role == "owner" %}#7c3aed{% else %}#64748b{% endif %}">{{ item3.role|title }}</span>
-      <span style="width: 100px; font-size: 0.6875rem; color: #94a3b8">{% if item3.accepted_at %}{{ item3.accepted_at|timesince }}{% else %}Invited {{ item3.invited_at|timesince }}{% endif %}</span>
+      <span class="member-col" style="width: 80px; font-size: 0.75rem; font-weight: 600; color: {% if item3.role == "owner" %}#7c3aed{% else %}#64748b{% endif %}">{{ item3.role|title }}</span>
+      <span class="member-col" style="width: 100px; font-size: 0.6875rem; color: #94a3b8">{% if item3.accepted_at %}{{ item3.accepted_at|timesince }}{% else %}Invited {{ item3.invited_at|timesince }}{% endif %}</span>
       {% if item3.my_role == "owner" %}
-      <span style="width: 60px">
+      <span class="member-col" style="width: 60px">
         {% if item3.role != "owner" %}
         <form method="POST" action="/api/flow/team/remove/{{ item3.id }}" style="display: inline">
           {% csrf_token %}
@@ -621,7 +621,7 @@
           <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="plan_name" value="Tricare" style="accent-color: #008F82"> Tricare</label>
           <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: #0f172a; cursor: pointer"><input type="checkbox" name="plan_name" value="Veterans Affairs (VA)" style="accent-color: #008F82"> Veterans Affairs (VA)</label>
         </div>
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem; margin-top: 0.75rem">
+        <div class="plan-add-grid" style="margin-top: 0.75rem">
           <input type="text" name="plan_name_custom" placeholder="Add a custom plan &mdash; e.g. SilverScript, Humana Walmart Value" style="padding: 0.625rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #0f172a; background: white; outline: none">
           <select name="plan_type" style="padding: 0.625rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #0f172a; background: white; outline: none">
             <option value="">Type (optional)</option>
@@ -650,7 +650,7 @@
       {% csrf_token %}
       {% for item2 in hours_pid %}<input type="hidden" name="pharmacy_id" value="{{ item2.id }}">{% endfor %}
 
-      <div style="display: grid; grid-template-columns: 9rem 1fr 1fr 5rem; gap: 0.5rem; align-items: center; padding-bottom: 0.5rem; border-bottom: 1px solid #e5e7eb">
+      <div class="hours-row-grid" style="padding-bottom: 0.5rem; border-bottom: 1px solid #e5e7eb">
         <span style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em">Day</span>
         <span style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em">Open</span>
         <span style="font-size: 0.6875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em">Close</span>
@@ -659,7 +659,7 @@
 
       {% for d in "0123456" %}
       {% with hd=hours_map|get_item:d %}
-      <div style="display: grid; grid-template-columns: 9rem 1fr 1fr 5rem; gap: 0.5rem; align-items: center">
+      <div class="hours-row-grid">
         {% if d == "0" %}<span style="font-size: 0.8125rem; font-weight: 500; color: #0f172a">Monday</span>{% endif %}
         {% if d == "1" %}<span style="font-size: 0.8125rem; font-weight: 500; color: #0f172a">Tuesday</span>{% endif %}
         {% if d == "2" %}<span style="font-size: 0.8125rem; font-weight: 500; color: #0f172a">Wednesday</span>{% endif %}
@@ -669,7 +669,7 @@
         {% if d == "6" %}<span style="font-size: 0.8125rem; font-weight: 500; color: #0f172a">Sunday</span>{% endif %}
         <input type="text" name="day_{{ d }}_open" placeholder="e.g. 9:00 AM" value="{{ hd.open_time|default:'' }}" style="padding: 0.5rem 0.625rem; border: 1.5px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.8125rem; color: #0f172a; background: white; outline: none">
         <input type="text" name="day_{{ d }}_close" placeholder="e.g. 9:00 PM" value="{{ hd.close_time|default:'' }}" style="padding: 0.5rem 0.625rem; border: 1.5px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.8125rem; color: #0f172a; background: white; outline: none">
-        <input type="checkbox" name="day_{{ d }}_closed" value="1" {% if hd.is_closed %}checked{% endif %} style="accent-color: #008F82; justify-self: center">
+        <input type="checkbox" name="day_{{ d }}_closed" value="1" {% if hd.is_closed %}checked{% endif %} style="accent-color: #008F82">
       </div>
       {% endwith %}
       {% endfor %}
@@ -703,7 +703,7 @@
     </div>
     {% endif %}
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem">
+    <div class="plan-cards-grid" style="gap: 1rem">
       <!-- Free plan -->
       <div style="padding: 1.5rem; background: white; border: 1px solid #E5E7EB; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
         <p style="font-size: 0.6875rem; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem">Free</p>

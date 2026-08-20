@@ -227,14 +227,14 @@
         <div class="rv-progress-bar"></div>
       </div>
 
-      <div class="rv-section-label"><span class="rv-num">1.</span> PURPOSE OF VISIT</div>
+      <div class="rv-section-label"><span class="rv-num">1.</span> PURPOSE OF VISIT <span class="rv-label-hint">Select all that apply</span></div>
       <div class="rv-chips" id="rv-purpose">
-        <label class="rv-chip selected" data-val="refill"><input type="radio" name="visit_purpose" value="refill" checked>🔄 Refill pickup</label>
-        <label class="rv-chip" data-val="new_rx"><input type="radio" name="visit_purpose" value="new_rx">📋 New prescription</label>
-        <label class="rv-chip" data-val="transfer"><input type="radio" name="visit_purpose" value="transfer">🔁 Transfer</label>
-        <label class="rv-chip" data-val="vaccine"><input type="radio" name="visit_purpose" value="vaccine">💉 Vaccine</label>
-        <label class="rv-chip" data-val="consultation"><input type="radio" name="visit_purpose" value="consultation">💬 Consultation</label>
-        <label class="rv-chip" data-val="other"><input type="radio" name="visit_purpose" value="other">••• Other / OTC</label>
+        <label class="rv-chip selected" data-val="refill"><input type="checkbox" name="visit_purpose" value="refill" checked>🔄 Refill pickup</label>
+        <label class="rv-chip" data-val="new_rx"><input type="checkbox" name="visit_purpose" value="new_rx">📋 New prescription</label>
+        <label class="rv-chip" data-val="transfer"><input type="checkbox" name="visit_purpose" value="transfer">🔁 Transfer</label>
+        <label class="rv-chip" data-val="vaccine"><input type="checkbox" name="visit_purpose" value="vaccine">💉 Vaccine</label>
+        <label class="rv-chip" data-val="consultation"><input type="checkbox" name="visit_purpose" value="consultation">💬 Consultation</label>
+        <label class="rv-chip" data-val="other"><input type="checkbox" name="visit_purpose" value="other">••• Other / OTC</label>
       </div>
 
       <div class="rv-section-label"><span class="rv-num">2.</span> ESTIMATED WAIT TIME</div>
@@ -543,7 +543,23 @@
       });
     });
   }
-  wireChips('rv-purpose');
+  /* Multi-select variant: chips toggle independently (used for visit purpose). */
+  function wireChipsMulti(containerId) {
+    var el = document.getElementById(containerId);
+    if (!el) return;
+    el.querySelectorAll('.rv-chip').forEach(function(chip) {
+      var box = chip.querySelector('input[type=checkbox]');
+      if (!box) return;
+      function sync() { chip.classList.toggle('selected', box.checked); dirty = true; }
+      chip.addEventListener('click', function(e) {
+        e.preventDefault();
+        box.checked = !box.checked;
+        sync();
+      });
+      box.addEventListener('change', sync);
+    });
+  }
+  wireChipsMulti('rv-purpose');
   wireChips('rv-wait');
   wireChips('rv-stock');
   wireChips('rv-timeframe');
@@ -739,7 +755,10 @@
     var pharmId = modal.getAttribute('data-pharm-id');
     var pharmName = modal.getAttribute('data-pharm-name');
 
-    var purpose = selectedValue(document.getElementById('rv-purpose'), 'visit_purpose') || 'refill';
+    var purposeBoxes = document.querySelectorAll('#rv-purpose input[name="visit_purpose"]:checked');
+    var purposes = Array.prototype.map.call(purposeBoxes, function(i){ return i.value; });
+    if (!purposes.length) purposes = ['refill'];
+    var purpose = purposes.join(',');
     var waitTime = selectedValue(document.getElementById('rv-wait'), 'wait_time') || '3';
     var stock = selectedValue(document.getElementById('rv-stock'), 'stock_status') || 'yes_all';
     var care = selectedValue(document.getElementById('rv-care'), 'care_rating') || '5';

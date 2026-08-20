@@ -12,11 +12,15 @@
     <div class="lp-search-section">
       <span class="lp-eyebrow">FIND A PHARMACY NEAR YOU</span>
       <form action="/list" method="GET" class="lp-search-form search-wrap">
-        <input type="text" name="q" data-autocomplete placeholder="City, state, or ZIP (e.g. 60601)" value="{{param_q}}" class="lp-search-input" autocomplete="off">
+        <input type="text" name="q" data-autocomplete placeholder="Pharmacy name" value="{{param_q}}" class="lp-search-input" autocomplete="off">
+        <div class="lp-search-loc-wrap pp-loc-field">
+          <input type="text" name="loc" data-pp-loc placeholder="City, state, or ZIP" value="{{param_loc}}" class="lp-search-input" autocomplete="off">
+        </div>
         <button type="submit" class="lp-search-btn">Search</button>
         <div class="search-dropdown"></div>
       </form>
       {% include "pharmacypulse/partials/search-autocomplete.html" %}
+      {% include "pharmacypulse/partials/location-autocomplete.html" %}
 
       <div class="lp-filters-row">
         <div class="lp-filter-pills">
@@ -73,9 +77,13 @@
           </div>
         </div>
         <div class="lp-scores">
-          <span class="lp-score lp-score-stock">{% if item.total_reviews %}{{ item.stock_confidence }}{% else %}&mdash;{% endif %}</span>
-          <span class="lp-score lp-score-wait">{% if item.total_reviews %}{{ item.avg_wait_time }}{% else %}&mdash;{% endif %}</span>
-          <span class="lp-score lp-score-care">{% if item.total_reviews %}{{ item.avg_service_rating }}{% else %}&mdash;{% endif %}</span>
+          {% if item.total_reviews %}
+          <span class="lp-score lp-score-stock">{{ item.stock_confidence }}</span>
+          <span class="lp-score lp-score-wait">{{ item.avg_wait_time }}</span>
+          <span class="lp-score lp-score-care">{{ item.avg_service_rating }}</span>
+          {% else %}
+          <span class="lp-score lp-score-none" title="Scores appear after the first patient review">No reviews yet</span>
+          {% endif %}
         </div>
         <span class="lp-dist">{% if item.distance_mi is not None %}~{{ item.distance_mi|floatformat:1 }} mi{% else %}—{% endif %}</span>
         <button type="button" class="lp-star-btn {% if item.id in saved_ids %}lp-star-saved{% endif %}" data-pharmacy-id="{{ item.id }}" onclick="event.preventDefault();event.stopPropagation();toggleFavorite(this);" aria-label="Save to favorites">

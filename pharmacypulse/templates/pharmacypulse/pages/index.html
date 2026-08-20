@@ -1,7 +1,8 @@
 {% extends "pharmacypulse/layouts/blank.html" %}
 {% load pharmacypulse %}
 {% block title %}PharmacyPulse — Find a Pharmacy You Can Trust{% endblock %}
-{% block meta_description %}Compare, review, and find trustworthy pharmacies near you. Real patient reviews, stock confidence, wait times, and service ratings. Community-powered pharmacy transparency.{% endblock %}
+{% block meta_description %}Compare, review, and find trustworthy pharmacies near you. Real patient reviews, stock
+confidence, wait times, and service ratings. Community-powered pharmacy transparency.{% endblock %}
 {% block content %}
 <script type="application/ld+json">
 {
@@ -40,7 +41,10 @@
 
     <div class="pp-hero-grid">
       <div class="pp-hero-badge">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+        </svg>
         <span class="pp-hero-badge-text" data-t="hero.badge">Community Healthcare Access</span>
       </div>
 
@@ -50,25 +54,36 @@
       </h1>
 
       <p class="pp-hero-sub" data-t="hero.sub">
-        Know before you go. Compare verified stock confidence, real counter wait times, and compassionate staff care from neighbors right in your community.
+        Know before you go. Compare verified stock confidence, real counter wait times, and compassionate staff care
+        from neighbors right in your community.
       </p>
 
       <div class="pp-hero-form-wrap">
         <form class="pp-hero-search" action="/list" method="get">
           <div class="pp-hero-search-fields">
-            <div class="pp-hero-search-field">
-              <label>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+            <div class="pp-hero-search-field search-wrap">
+              <!-- <label>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 12l2 2 4-4" />
+                  <circle cx="12" cy="12" r="10" />
+                </svg>
                 <span data-t="hero.field1_label">Pharmacy Name</span>
-              </label>
-              <input name="q" id="pp-hero-search" placeholder="Pharmacy Name"/>
+              </label> -->
+              <input name="q" id="pp-hero-search" placeholder="Pharmacy Name" data-autocomplete autocomplete="off" />
+              <div class="search-dropdown"></div>
             </div>
-            <div class="pp-hero-search-field">
-              <label>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                <span data-t="hero.field2_label">Location / ZIP</span>
-              </label>
-              <input name="location" placeholder="Location / ZIP Code"/>
+            <div class="pp-hero-search-field pp-loc-field">
+              <!-- <label>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                <span data-t="hero.field2_label">Location</span>
+              </label> -->
+              <input name="loc" id="pp-hero-location" placeholder="City, state, or ZIP" data-pp-loc autocomplete="off"
+                aria-label="City, state, or ZIP" />
             </div>
             <!-- Hidding the service field untill we have enough data
              <div class="pp-hero-search-field">
@@ -90,12 +105,17 @@
             -->
           </div>
           <button type="submit" class="pp-hero-search-btn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
             <span data-t="hero.cta">Find Community Care</span>
           </button>
         </form>
       </div>
 
+      <!-- 
       <div class="pp-quick-search">
         <span class="pp-quick-search-label" data-t="hero.quick_label">Quick Search:</span>
         <a href="/signup?type=prescription" class="pp-quick-chip">
@@ -113,7 +133,8 @@
         <a href="/signup?type=short-wait" class="pp-quick-chip">
           <span class="pp-dot-pink">●</span> <span data-t="hero.quick5">Short Wait Times</span>
         </a>
-      </div>
+      </div> 
+      -->
 
       <div class="pp-trust-row">
         <div class="pp-trust-item">
@@ -141,7 +162,11 @@
 
       <a href="/signup" class="pp-stat-card">
         <div class="pp-stat-icon pp-stat-icon-teal">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#008F82" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#008F82" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
         </div>
         <div>
           <div class="pp-stat-num">{{stat_pharm.0.n}}</div>
@@ -151,7 +176,13 @@
 
       <a href="/signup" class="pp-stat-card">
         <div class="pp-stat-icon pp-stat-icon-amber">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
         </div>
         <div>
           <div class="pp-stat-num">{{stat_zip.0.n}}</div>
@@ -170,39 +201,53 @@
     <div class="pp-section-head">
       <div class="pp-eyebrow" data-t="cards.eyebrow">Find your pharmacies</div>
       <h2 class="pp-section-title" data-t="cards.title">pharmacy near you</h2>
-      <p class="pp-section-sub" data-t="cards.sub">Sort by what matters most &mdash; wait times, staff care, or stock confidence. Local distances are approximate, not real location data.</p>
+      <p class="pp-section-sub" data-t="cards.sub">Sort by what matters most &mdash; wait times, staff care, or stock
+        confidence. Local distances are approximate, not real location data.</p>
     </div>
 
     <!-- Filter Tabs -->
     <div class="pp-sort-bar" id="pp-sort-bar">
-      <button type="button" data-sort="default" class="pp-sort-btn pp-sort-active"><span data-t="sort.all">All Pharmacies</span></button>
-      <button type="button" data-sort="wait" class="pp-sort-btn"><span data-t="sort.wait">⏱ Shortest Wait Times</span></button>
-      <button type="button" data-sort="staff" class="pp-sort-btn"><span data-t="sort.staff">❤ Highest Staff Care</span></button>
-      <button type="button" data-sort="stock" class="pp-sort-btn"><span data-t="sort.stock">✓ Verified Stock Confidence</span></button>
+      <button type="button" data-sort="default" class="pp-sort-btn pp-sort-active"><span data-t="sort.all">All
+          Pharmacies</span></button>
+      <button type="button" data-sort="wait" class="pp-sort-btn"><span data-t="sort.wait">⏱ Shortest Wait
+          Times</span></button>
+      <button type="button" data-sort="staff" class="pp-sort-btn"><span data-t="sort.staff">❤ Highest Staff
+          Care</span></button>
+      <button type="button" data-sort="stock" class="pp-sort-btn"><span data-t="sort.stock">✓ Verified Stock
+          Confidence</span></button>
     </div>
 
     <!-- Pharmacy List -->
     <div id="pp-cards-list" class="pp-cards-list">
 
       {% for item in cards %}
-      <a href="/signup" class="pp-card" data-type="{% if item.is_digital %}online{% endif %}{% if not item.is_digital %}retail{% endif %}" data-rating="{{ item.avg_service_rating }}" data-wait="{{ item.avg_wait_time }}" data-stock="{{ item.stock_confidence }}" data-reviews="{{ item.total_reviews }}">
+      <a href="/signup" class="pp-card"
+        data-type="{% if item.is_digital %}online{% endif %}{% if not item.is_digital %}retail{% endif %}"
+        data-rating="{{ item.avg_service_rating }}" data-wait="{{ item.avg_wait_time }}"
+        data-stock="{{ item.stock_confidence }}" data-reviews="{{ item.total_reviews }}">
 
         <div class="pp-card-info">
           <div class="pp-card-title-row">
             <span class="pp-card-name">{{ item.name }}</span>
             {% if item.listing_verified %}
-            <span class="pp-listing-verified-badge" title="Verified — this pharmacy completed its listing setup">&#10003; Verified</span>
+            <span class="pp-listing-verified-badge"
+              title="Verified — this pharmacy completed its listing setup">&#10003; Verified</span>
             {% endif %}
             {% if item.claimed_by %}
             <span class="pp-verified-badge">✓ Verified</span>
             {% endif %}
           </div>
           <div class="pp-card-meta">
-            {% if not item.is_digital %}Independent{% endif %}{% if item.is_digital %}Online Pharmacy{% endif %} &middot; {% if item.city %}{{ item.city }}, {{ item.state }}{% endif %}
+            {% if not item.is_digital %}Independent{% endif %}{% if item.is_digital %}Online Pharmacy{% endif %}
+            &middot; {% if item.city %}{{ item.city }}, {{ item.state }}{% endif %}
           </div>
           <div class="pp-card-sub-row">
             <span class="pp-open-today">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
               Open today
             </span>
             <span class="pp-view-review">View review</span>
@@ -228,7 +273,11 @@
           </div>
           <div class="pp-metric-wide">
             <span class="pp-metric-label" data-t="card.dist">DISTANCE</span>
-            <span class="pp-metric-value pp-metric-value-plain">~2.7 mi</span>
+            {% if item.distance_mi is not None %}
+            <span class="pp-metric-value pp-metric-value-plain">~{{ item.distance_mi }} mi</span>
+            {% else %}
+            <span class="pp-metric-value pp-metric-value-plain">&mdash;</span>
+            {% endif %}
           </div>
         </div>
 
@@ -236,7 +285,8 @@
       {% endfor %}
       {% if not cards %}
       <div class="pp-cards-empty">
-        <span data-t="cards.empty">No pharmacies in your area yet</span> &mdash; <a href="/signup" data-t="cards.signup_add">sign up to add one &rarr;</a>
+        <span data-t="cards.empty">No pharmacies in your area yet</span> &mdash; <a href="/signup"
+          data-t="cards.signup_add">sign up to add one &rarr;</a>
       </div>
       {% endif %}
 
@@ -255,33 +305,48 @@
     <div class="pp-how-inner">
       <div class="pp-how-head">
         <div class="pp-how-eyebrow" data-t="how.eyebrow">How it works</div>
-        <h2 class="pp-how-title" data-t="how.title2">Stock confidence, wait time, empathetic care &mdash; explained.</h2>
+        <h2 class="pp-how-title" data-t="how.title2">Stock confidence, wait time, empathetic care &mdash; explained.
+        </h2>
       </div>
 
       <div class="pp-how-grid">
 
         <div class="pp-how-item">
           <div class="pp-how-icon pp-how-icon-teal">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#008F82" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#008F82" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+            </svg>
           </div>
           <h3 data-t="how.stock">Stock Confidence</h3>
-          <p data-t="how.stockd2">Community-reported confidence that a pharmacy is likely to have your medication in stock. Based on recent patient visits, not live inventory.</p>
+          <p data-t="how.stockd2">Community-reported confidence that a pharmacy is likely to have your medication in
+            stock. Based on recent patient visits, not live inventory.</p>
         </div>
 
         <div class="pp-how-item">
           <div class="pp-how-icon pp-how-icon-amber">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
           </div>
           <h3 data-t="how.wait">Wait Time</h3>
-          <p data-t="how.waitd2">Time from arriving to pickup, based on what patients actually experienced on their most recent visit.</p>
+          <p data-t="how.waitd2">Time from arriving to pickup, based on what patients actually experienced on their most
+            recent visit.</p>
         </div>
 
         <div class="pp-how-item">
           <div class="pp-how-icon pp-how-icon-red">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
           </div>
           <h3 data-t="how.staff">Empathetic Care</h3>
-          <p data-t="how.staffd2">How patients rate the respect, dignity, and attention they received at the counter. The part no star rating has ever captured.</p>
+          <p data-t="how.staffd2">How patients rate the respect, dignity, and attention they received at the counter.
+            The part no star rating has ever captured.</p>
         </div>
 
       </div>
@@ -294,8 +359,10 @@
   <section class="pp-cta-section">
     <div class="pp-cta-inner">
       <p class="pp-cta-eyebrow" data-t="cta.eyebrow">For Pharmacy Owners</p>
-      <h2 class="pp-cta-title"><span data-t="cta.title1">Your patients are already talking.</span><br/><span data-t="cta.title2">The difference is we're keeping score.</span></h2>
-      <p class="pp-cta-body" data-t="cta.body2">Not a general review buried in a star rating &mdash; a separate score for stock confidence, wait time, and empathetic care.</p>
+      <h2 class="pp-cta-title"><span data-t="cta.title1">Your patients are already talking.</span><br /><span
+          data-t="cta.title2">The difference is we're keeping score.</span></h2>
+      <p class="pp-cta-body" data-t="cta.body2">Not a general review buried in a star rating &mdash; a separate score
+        for stock confidence, wait time, and empathetic care.</p>
 
       <a href="/signup" class="pp-cta-btn" data-t="cta.btn1">Claim your pharmacy free</a>
     </div>
@@ -328,229 +395,151 @@
     </div>
   </section>
 
-  <!-- Sticky Floating Buttons -->
-  <button type="button" class="pp-sticky-btn pp-sticky-text-size" onclick="this.classList.add('pp-hidden');document.querySelector('.pp-font-size-panel').classList.remove('hidden')">
-    <span class="pp-sticky-btn-icon">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
-    </span>
-    <span class="pp-sticky-btn-text">Text Size</span>
-  </button>
-
-  <!-- Font Size Panel (hidden by default) -->
-  <div class="pp-font-size-panel hidden">
-    <button type="button" onclick="ppFontSize(-2)" class="pp-font-size-btn">
-      <span class="pp-font-size-btn-a">A</span>
-      <span class="pp-font-size-btn-arrow">↓</span>
-    </button>
-    <div class="pp-font-size-center">
-      <span id="pp-font-pct" class="pp-font-size-pct">100%</span>
-      <span class="pp-font-size-label">SIZE</span>
-    </div>
-    <button type="button" onclick="ppFontSize(2)" class="pp-font-size-btn">
-      <span class="pp-font-size-btn-a">A</span>
-      <span class="pp-font-size-btn-arrow">↑</span>
-    </button>
-    <div class="pp-font-size-divider"></div>
-    <button type="button" onclick="ppCloseFontSize()" class="pp-font-size-close">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-  </div>
-
   {% include "pharmacypulse/partials/footer.html" %}
   {% include "pharmacypulse/partials/bottom-nav.html" %}
 </div>
 
 <script>
-var ppFontSizes = [12, 14, 16, 18, 20];
-var ppFontIdx = 2;
-function ppFontSize(delta) {
-  ppFontIdx = Math.max(0, Math.min(ppFontSizes.length - 1, ppFontIdx + delta));
-  var s = ppFontSizes[ppFontIdx];
-  document.documentElement.style.fontSize = s + 'px';
-  document.getElementById('pp-font-pct').textContent = Math.round(s / 16 * 100) + '%';
-}
-function ppCloseFontSize() {
-  document.querySelector('.pp-font-size-panel').classList.add('hidden');
-  document.querySelector('.pp-sticky-text-size').classList.remove('pp-hidden');
-}
-window.PP_I18N_ES = {
-  "powered_by": "Impulsado por tu comunidad",
-  "hero.badge": "Acceso Comunitario a la Salud",
-  "hero.h_a": "Encuentra atención farmacéutica local de",
-  "hero.h_c": "confianza, cuando más la",
-  "hero.h_d": "necesitas.",
-  "hero.sub": "Infórmate antes de ir. Compara la confianza de stock verificada, los tiempos de espera reales y la atención compasiva del personal de vecinos en tu comunidad.",
-  "hero.field1_label": "Nombre de la farmacia",
-  "hero.field2_label": "Ubicación / Código Postal",
-  "hero.field3_label": "Servicio",
-  "hero.field3_all": "Cualquier servicio",
-  "hero.cta": "Encontrar Cuidado Comunitario",
-  "hero.quick_label": "Búsqueda Rápida:",
-  "hero.quick1": "Recargas de Prescripción",
-  "hero.quick2": "Vacunas",
-  "hero.quick3": "Transferir Rx",
-  "hero.quick4": "Consultas",
-  "hero.quick5": "Tiempos de Espera Cortos",
-  "hero.trust1": "100% Gratis para buscar",
-  "hero.trust2": "Farmacias locales verificadas",
-  "hero.trust3": "Tiempos de espera verificados por la comunidad",
-  "stats.pharm": "farmacias rastreadas en nuestra red comunitaria",
-  "stats.zip": "códigos postales cubiertos con información en tiempo real",
-  "cards.eyebrow": "Encuentra tus farmacias",
-  "cards.title": "farmacias cerca de ti",
-  "cards.sub": "Ordena por lo que más importa — tiempos de espera, atención o confianza de stock. Las distancias locales son aproximadas, no datos de ubicación real.",
-  "cards.empty": "Aún no hay farmacias en tu área",
-  "cards.signup_add": "regístrate para añadir una →",
-  "cards.browseall": "Ver todas las farmacias →",
-  "sort.all": "Todas las Farmacias",
-  "sort.wait": "⏱ Tiempos de Espera Más Cortos",
-  "sort.staff": "❤ Mayor Atención del Personal",
-  "sort.stock": "✓ Confianza de Stock Verificada",
-  "card.stock": "STOCK",
-  "card.wait": "ESPERA",
-  "card.care": "ATENCIÓN",
-  "card.foot": "TRÁFICO",
-  "card.dist": "DISTANCIA",
-  "how.eyebrow": "Cómo funciona",
-  "how.title2": "Confianza de stock, tiempo de espera, atención empática — explicado.",
-  "how.stock": "Confianza de Stock",
-  "how.stockd2": "Confianza reportada por la comunidad de que una farmacia tendrá tu medicamento. Basado en visitas recientes de pacientes, no inventario en vivo.",
-  "how.wait": "Tiempo de Espera",
-  "how.waitd2": "Tiempo desde que llegas hasta que recoges tu medicamento, basado en lo que los pacientes experimentaron realmente en su visita más reciente.",
-  "how.staff": "Atención Empática",
-  "how.staffd2": "Cómo califican los pacientes el respeto, la dignidad y la atención que recibieron en el mostrador. La parte que ninguna calificación de estrellas ha capturado jamás.",
-  "cta.eyebrow": "Para Dueños de Farmacia",
-  "cta.title1": "Tus pacientes ya están hablando.",
-  "cta.title2": "La diferencia es que nosotros estamos llevando la cuenta.",
-  "cta.body2": "No una reseña general enterrada en una calificación de estrellas — una puntuación separada para confianza de stock, tiempo de espera y atención empática.",
-  "cta.btn1": "Reclama tu farmacia gratis",
-  "testimonials.eyebrow": "Experiencias reales, personas reales",
-  "testimonials.title": "Lo que tus vecinos realmente dijeron"
-};
-(function(){
-  var map = {};
-  document.querySelectorAll('[data-t]').forEach(function(el){
-    var key = el.getAttribute('data-t');
-    if (!map[key]) map[key] = el.textContent;
-  });
-  window.PP_I18N_EN = map;
-  var heroInput = document.getElementById('pp-hero-search');
-  window.PP_I18N_EN['hero.placeholder'] = heroInput ? heroInput.placeholder : 'Search pharmacy or ZIP code…';
-  window.ppApplyLang = function(lang){
-    var dict = (lang === 'es') ? window.PP_I18N_ES : window.PP_I18N_EN;
-    document.querySelectorAll('[data-t]').forEach(function(el){
-      var key = el.getAttribute('data-t');
-      if (dict[key]) el.textContent = dict[key];
-    });
-    var hi = document.getElementById('pp-hero-search');
-    if (hi && dict['hero.placeholder']) hi.placeholder = dict['hero.placeholder'];
+  window.PP_I18N_ES = {
+    "powered_by": "Impulsado por tu comunidad",
+    "hero.badge": "Acceso Comunitario a la Salud",
+    "hero.h_a": "Encuentra atención farmacéutica local de",
+    "hero.h_c": "confianza, cuando más la",
+    "hero.h_d": "necesitas.",
+    "hero.sub": "Infórmate antes de ir. Compara la confianza de stock verificada, los tiempos de espera reales y la atención compasiva del personal de vecinos en tu comunidad.",
+    "hero.field1_label": "Nombre de la farmacia",
+    "hero.field2_label": "Ubicación",
+    "hero.field3_label": "Servicio",
+    "hero.field3_all": "Cualquier servicio",
+    "hero.cta": "Encontrar Cuidado Comunitario",
+    "hero.quick_label": "Búsqueda Rápida:",
+    "hero.quick1": "Recargas de Prescripción",
+    "hero.quick2": "Vacunas",
+    "hero.quick3": "Transferir Rx",
+    "hero.quick4": "Consultas",
+    "hero.quick5": "Tiempos de Espera Cortos",
+    "hero.trust1": "100% Gratis para buscar",
+    "hero.trust2": "Farmacias locales verificadas",
+    "hero.trust3": "Tiempos de espera verificados por la comunidad",
+    "stats.pharm": "farmacias rastreadas en nuestra red comunitaria",
+    "stats.zip": "códigos postales cubiertos con información en tiempo real",
+    "cards.eyebrow": "Encuentra tus farmacias",
+    "cards.title": "farmacias cerca de ti",
+    "cards.sub": "Ordena por lo que más importa — tiempos de espera, atención o confianza de stock. Las distancias locales son aproximadas, no datos de ubicación real.",
+    "cards.empty": "Aún no hay farmacias en tu área",
+    "cards.signup_add": "regístrate para añadir una →",
+    "cards.browseall": "Ver todas las farmacias →",
+    "sort.all": "Todas las Farmacias",
+    "sort.wait": "⏱ Tiempos de Espera Más Cortos",
+    "sort.staff": "❤ Mayor Atención del Personal",
+    "sort.stock": "✓ Confianza de Stock Verificada",
+    "card.stock": "STOCK",
+    "card.wait": "ESPERA",
+    "card.care": "ATENCIÓN",
+    "card.foot": "TRÁFICO",
+    "card.dist": "DISTANCIA",
+    "how.eyebrow": "Cómo funciona",
+    "how.title2": "Confianza de stock, tiempo de espera, atención empática — explicado.",
+    "how.stock": "Confianza de Stock",
+    "how.stockd2": "Confianza reportada por la comunidad de que una farmacia tendrá tu medicamento. Basado en visitas recientes de pacientes, no inventario en vivo.",
+    "how.wait": "Tiempo de Espera",
+    "how.waitd2": "Tiempo desde que llegas hasta que recoges tu medicamento, basado en lo que los pacientes experimentaron realmente en su visita más reciente.",
+    "how.staff": "Atención Empática",
+    "how.staffd2": "Cómo califican los pacientes el respeto, la dignidad y la atención que recibieron en el mostrador. La parte que ninguna calificación de estrellas ha capturado jamás.",
+    "cta.eyebrow": "Para Dueños de Farmacia",
+    "cta.title1": "Tus pacientes ya están hablando.",
+    "cta.title2": "La diferencia es que nosotros estamos llevando la cuenta.",
+    "cta.body2": "No una reseña general enterrada en una calificación de estrellas — una puntuación separada para confianza de stock, tiempo de espera y atención empática.",
+    "cta.btn1": "Reclama tu farmacia gratis",
+    "testimonials.eyebrow": "Experiencias reales, personas reales",
+    "testimonials.title": "Lo que tus vecinos realmente dijeron"
   };
-  var m = document.cookie.match(/(?:^|;\s*)lang=([^;]+)/);
-  if (m && m[1] === 'es') window.ppApplyLang('es');
-})();
-</script>
-
-<script>
-(function(){
-  var sortBar = document.getElementById('pp-sort-bar');
-  var cardsList = document.getElementById('pp-cards-list');
-  if (sortBar && cardsList) {
-    var keyMap = {
-      'default': function(a,b){ return parseFloat(b.dataset.rating)-parseFloat(a.dataset.rating); },
-      'wait':    function(a,b){ return (parseFloat(a.dataset.wait)||999)-(parseFloat(b.dataset.wait)||999); },
-      'staff':   function(a,b){ return parseFloat(b.dataset.rating)-parseFloat(a.dataset.rating); },
-      'stock':   function(a,b){ return parseFloat(b.dataset.stock)-parseFloat(a.dataset.stock); }
-    };
-    var state = { sort: 'default' };
-    function setActive(btn, group) {
-      group.forEach(function(b){
-        b.classList.remove('pp-sort-active');
+  (function () {
+    var map = {};
+    document.querySelectorAll('[data-t]').forEach(function (el) {
+      var key = el.getAttribute('data-t');
+      if (!map[key]) map[key] = el.textContent;
+    });
+    window.PP_I18N_EN = map;
+    var heroInput = document.getElementById('pp-hero-search');
+    window.PP_I18N_EN['hero.placeholder'] = heroInput ? heroInput.placeholder : 'Search pharmacy or ZIP code…';
+    window.ppApplyLang = function (lang) {
+      var dict = (lang === 'es') ? window.PP_I18N_ES : window.PP_I18N_EN;
+      document.querySelectorAll('[data-t]').forEach(function (el) {
+        var key = el.getAttribute('data-t');
+        if (dict[key]) el.textContent = dict[key];
       });
-      btn.classList.add('pp-sort-active');
-    }
-    function applyFilters() {
-      var cards = Array.prototype.slice.call(cardsList.querySelectorAll('.pp-card'));
-      var visible = cards.filter(function(c){ return c.style.display !== 'none'; });
-      visible.sort(keyMap[state.sort] || keyMap['default']);
-      visible.forEach(function(c){ cardsList.appendChild(c); });
-    }
-    sortBar.addEventListener('click', function(e){
-      var sortBtn = e.target.closest('.pp-sort-btn');
-      if (sortBtn) {
-        setActive(sortBtn, sortBar.querySelectorAll('.pp-sort-btn'));
-        state.sort = sortBtn.dataset.sort;
-        applyFilters();
-      }
-    });
-  }
-})();
+      var hi = document.getElementById('pp-hero-search');
+      if (hi && dict['hero.placeholder']) hi.placeholder = dict['hero.placeholder'];
+    };
+    var m = document.cookie.match(/(?:^|;\s*)lang=([^;]+)/);
+    if (m && m[1] === 'es') window.ppApplyLang('es');
+  })();
 </script>
 
 <script>
-// Hero search submits a real pharmacy search to /list. The location field
-// maps to /list's own params: a 5-digit ZIP → ?zip=, any other location →
-// ?city= (state suffix stripped, so "Chicago, IL" → city=Chicago). /list?city
-// matches pharmacies whose city, address, OR name contains the location word
-// (so "chicago" hits NPPES "CHICAGO" rows and a pharmacy named "Chicago
-// Pharmacy" elsewhere). The plain q field searches pharmacy name / city / ZIP
-// server-side.
-(function () {
-  var form = document.querySelector('form.pp-hero-search');
-  if (!form) return;
-  form.addEventListener('submit', function () {
-    var locEl = form.querySelector('[name="location"]');
-    var loc = (locEl && locEl.value || '').trim();
-    if (loc) {
-      var hidden = document.createElement('input');
-      hidden.type = 'hidden';
-      if (/^\d{5}$/.test(loc)) {
-        hidden.name = 'zip';
-        hidden.value = loc;
-      } else {
-        hidden.name = 'city';
-        hidden.value = loc.split(',')[0].trim();
+  (function () {
+    var sortBar = document.getElementById('pp-sort-bar');
+    var cardsList = document.getElementById('pp-cards-list');
+    if (sortBar && cardsList) {
+      var keyMap = {
+        'default': function (a, b) { return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating); },
+        'wait': function (a, b) { return (parseFloat(a.dataset.wait) || 999) - (parseFloat(b.dataset.wait) || 999); },
+        'staff': function (a, b) { return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating); },
+        'stock': function (a, b) { return parseFloat(b.dataset.stock) - parseFloat(a.dataset.stock); }
+      };
+      var state = { sort: 'default' };
+      function setActive(btn, group) {
+        group.forEach(function (b) {
+          b.classList.remove('pp-sort-active');
+        });
+        btn.classList.add('pp-sort-active');
       }
-      form.appendChild(hidden);
+      function applyFilters() {
+        var cards = Array.prototype.slice.call(cardsList.querySelectorAll('.pp-card'));
+        var visible = cards.filter(function (c) { return c.style.display !== 'none'; });
+        visible.sort(keyMap[state.sort] || keyMap['default']);
+        visible.forEach(function (c) { cardsList.appendChild(c); });
+      }
+      sortBar.addEventListener('click', function (e) {
+        var sortBtn = e.target.closest('.pp-sort-btn');
+        if (sortBtn) {
+          setActive(sortBtn, sortBar.querySelectorAll('.pp-sort-btn'));
+          state.sort = sortBtn.dataset.sort;
+          applyFilters();
+        }
+      });
     }
-    var planEl = form.querySelector('[name="plan"]');
-    if (planEl && planEl.value) {
-      var svc = document.createElement('input');
-      svc.type = 'hidden';
-      svc.name = 'service';
-      svc.value = planEl.value;
-      form.appendChild(svc);
-    }
-    // Never submit empty fields (and the raw location / plan fields — they're
-    // mapped to zip/city/service above), so /list only sees parameters the
-    // user actually filled.
-    form.querySelectorAll('input, select').forEach(function (el) {
-      if (el.type === 'hidden') return;
-      var v = (el.value || '').trim();
-      if (!v || el.name === 'location' || el.name === 'plan') el.name = '';
-    });
-  });
-})();
+  })();
 </script>
 
 <script>
-// One-time geolocation prompt — sets pp_loc cookie ("lat,lng") so the
-// server can sort the 3 hero pharmacy cards by distance. Skips if we
-// already have a location, the user previously declined, or the browser
-// doesn't support geolocation.
-(function () {
-  if (document.cookie.match(/(?:^|;\s*)pp_loc=/)) return;
-  if (sessionStorage.getItem('pp_loc_declined') === '1') return;
-  if (!navigator.geolocation) return;
-  navigator.geolocation.getCurrentPosition(
-    function (pos) {
-      var lat = pos.coords.latitude.toFixed(4);
-      var lng = pos.coords.longitude.toFixed(4);
-      document.cookie = 'pp_loc=' + lat + ',' + lng + '; path=/; max-age=2592000; SameSite=Lax';
-      window.location.reload();
-    },
-    function () { sessionStorage.setItem('pp_loc_declined', '1'); },
-    { timeout: 5000, maximumAge: 600000 }
-  );
-})();
+  // Location: never auto-request permission. Only use browser geolocation when
+  // the user has ALREADY granted it (e.g. from /list's "Enable location"
+  // button) — then set the pp_loc cookie so the server sorts by true distance.
+  // If permission was never granted (or denied), we do nothing and the server
+  // falls back to IP-based geolocation for the hero cards.
+  (function () {
+    if (document.cookie.match(/(?:^|;\s*)pp_loc=/)) return;
+    if (sessionStorage.getItem('pp_loc_declined') === '1') return;
+    if (!navigator.geolocation) return;
+    if (!navigator.permissions || !navigator.permissions.query) return;
+    navigator.permissions.query({ name: 'geolocation' }).then(function (status) {
+      if (status.state !== 'granted') return;
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          var lat = pos.coords.latitude.toFixed(4);
+          var lng = pos.coords.longitude.toFixed(4);
+          document.cookie = 'pp_loc=' + lat + ',' + lng + '; path=/; max-age=2592000; SameSite=Lax';
+          window.location.reload();
+        },
+        function () { sessionStorage.setItem('pp_loc_declined', '1'); },
+        { timeout: 5000, maximumAge: 600000 }
+      );
+    }).catch(function () { });
+  })();
 </script>
+
+{% include "pharmacypulse/partials/location-autocomplete.html" %}
+{% include "pharmacypulse/partials/search-autocomplete.html" %}
 {% endblock %}

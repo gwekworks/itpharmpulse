@@ -93,7 +93,9 @@ class Command(BaseCommand):
                             help="Wipe existing rows before seeding.")
 
     @transaction.atomic
-    def handle(self, *args, reset: bool = False, **kwargs):
+    def handle(self, *args, **options):
+        # Extract the reset option from Django's options dictionary
+        reset = options.get("reset", False)
         if reset:
             self.stdout.write("Resetting existing data…")
             Review.objects.all().delete()

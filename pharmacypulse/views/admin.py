@@ -5,12 +5,18 @@ from django.shortcuts import redirect, render
 from django.views.decorators.cache import never_cache
 
 from .. import page_data
+from ..domains.common import set_search_radius_mi
 from ..models import PharmacyFact
 from .common import admin_required, render_page
 
 
 @admin_required
 def admin_dashboard(request):
+    if request.method == "POST":
+        action = request.POST.get("action", "")
+        if action == "set_search_radius":
+            set_search_radius_mi(request.POST.get("radius", ""))
+            return redirect("/admin-dashboard")
     return render_page(request, "admin-dashboard.html", page_data.page_admin_dashboard)
 
 

@@ -20,7 +20,7 @@ from .common import (
     Row, with_get_params, _safe_int, _pharmacy_dict, _review_dict,
     _shortage_dict, _compare_winners, _normalize_validation_error,
     _TAXONOMY_BADGE, _TAXONOMY_LABEL, _STATE_NAMES, BRAND_PATTERNS,
-    BRAND_PATTERNS_BY_KEY, DEFUNCT_CHAIN_KEYS,
+    BRAND_PATTERNS_BY_KEY, DEFUNCT_CHAIN_KEYS, get_search_radius_mi,
 )
 
 
@@ -290,6 +290,7 @@ def page_admin_dashboard(request):
         ],
         "top_pharms": [_pharmacy_dict(p) for p in top_pharms],
         "sparkline": sparkline,
+        "search_radius_mi": get_search_radius_mi(),
     }
 
 

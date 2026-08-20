@@ -43,4 +43,4 @@ from .domains.flows.newsletter import (
     newsletter_subscribe, newsletter_unsubscribe, newsletter_unsubscribe_public,
     make_unsubscribe_url,
 )
-from .domains.flows.search import search_pharmacies
+from .domains.flows.search import search_pharmacies, suggest_locations, place_details

@@ -8,7 +8,7 @@
       </span>
       <span class="pp-topbar-logo-text">Pharmacy<span class="pp-topbar-logo-accent">Pulse</span></span>
     </a>
-    <nav class="md:flex items-center gap-0.5">
+    <nav class="pp-topbar-nav items-center gap-0.5">
       <a href="/list" id="top-list" class="pp-topbar-nav-link">{% trans "Find a pharmacy" %}</a>
       <a href="/compare" id="top-compare" class="pp-topbar-nav-link">{% trans "Compare" %}</a>
       <a href="/for-pharmacies" id="top-for-pharmacies" class="pp-topbar-nav-link">{% trans "For pharmacies" %}</a>
@@ -69,6 +69,7 @@
           </form>
           {% else %}
           <a href="/login" class="pp-topbar-menu-link">{% trans "Log in" %}</a>
+          <a href="/claim" class="pp-topbar-menu-link pp-topbar-menu-link-accent">{% trans "Claim a pharmacy" %}</a>
           <a href="/signup" class="pp-topbar-menu-link pp-topbar-menu-link-accent">{% trans "Sign up" %}</a>
           {% endif %}
         </div>

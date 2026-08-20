@@ -399,8 +399,8 @@ input, select, textarea { background: white !important; color: var(--text) !impo
 
   /* Inputs: prevent iOS zoom */
   input, select, textarea { font-size: 16px !important; }
-  /* Copilot: tighten position on mobile */
-  .pp-sticky-copilot { bottom: 1rem; right: 0.75rem; }
+  /* Copilot: tighten position on mobile (clears bottom-nav + cookie banner) */
+  .pp-sticky-copilot { bottom: 4.5rem; right: 0.75rem; }
 }
 
 /* ===== RESPONSIVE ===== */

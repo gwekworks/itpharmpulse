@@ -19,9 +19,9 @@ from ..models import (
 from .common import (
     Row, with_get_params, _safe_int, _pharmacy_dict, _review_dict,
     _shortage_dict, _compare_winners, _normalize_validation_error,
-    _distance_mi_expr, _zip_city_state, _TAXONOMY_BADGE, _TAXONOMY_LABEL, _STATE_NAMES,
+    _distance_mi_expr, _zip_city_state, _state_code, _TAXONOMY_BADGE, _TAXONOMY_LABEL, _STATE_NAMES,
     BRAND_PATTERNS, BRAND_PATTERNS_BY_KEY, DEFUNCT_CHAIN_KEYS,
-    published_pharmacies,
+    published_pharmacies, get_search_radius_mi,
 )
 
 
@@ -52,6 +52,8 @@ def page_list(request):
     zip_filter = (request.GET.get("zip") or "").strip()
     service = (request.GET.get("service") or "").strip()
     sort = (request.GET.get("sort") or "").strip()
+    # Hero search state dropdown → ?state=PA (accepts full names too).
+    state_code = _state_code(request.GET.get("state") or "")
 
     # Normalize a ZIP-like query ("60601", "60601-1234", " 60601 ") → the
     # leading 5 digits, so ZIP searches work regardless of formatting.
@@ -63,7 +65,7 @@ def page_list(request):
     # auto-loc banner so users can escape localization without typing a query.
     show_all = request.GET.get("show_all") == "1"
     auto_loc = resolve_loc(request)
-    if not (q or zip_filter or city or show_all):
+    if not (q or zip_filter or city or state_code or show_all):
         if auto_loc.zip:
             zip_filter = auto_loc.zip
 
@@ -78,8 +80,16 @@ def page_list(request):
         # Search across name/city/address AND ZIP. Without the zip clause a
         # search like '60601' (Chicago downtown) returned nothing — neither
         # name nor city contains the digits, and our NPPES addresses don't
-        # always include the full ZIP in the address line.
-        q_filter = Q(name__icontains=q) | Q(city__icontains=q) | Q(address__icontains=q)
+        # always include the full ZIP in the address line. Name matching is
+        # token-ANDed so "rite aid" finds "RITE-AID PHARMACY" (NPPES
+        # hyphenates many chains); city/address stay substring matches.
+        q_filter = Q(city__icontains=q) | Q(address__icontains=q)
+        name_tokens = re.findall(r"[a-zA-Z0-9]+", q)
+        name_q = Q()
+        for token in name_tokens:
+            name_q &= Q(name__icontains=token)
+        if name_tokens:
+            q_filter |= name_q
         if len(zip_query) >= 3:
             q_filter |= Q(zip__startswith=zip_query)
         # Full 5-digit ZIP → resolve it to a location NAME first, then match
@@ -103,24 +113,26 @@ def page_list(request):
                                longitude__gte=lng - 0.095, longitude__lte=lng + 0.095))
         qs = qs.filter(q_filter)
     if city:
-        # Hero search maps the location field to ?city=. Beyond the exact city
-        # match, also surface pharmacies whose name or address contains the
-        # location word — a search for "Chicago" should catch a pharmacy named
-        # "Chicago Medical Pharmacy" in a neighboring town, and partial names
-        # like "Chicago Heights" match rows iexact can't.
-        qs = qs.filter(
-            Q(city__icontains=city)
-            | Q(name__icontains=city)
-            | Q(address__icontains=city)
-        )
+        # Hero / list location field maps typed cities (and unpicked addresses)
+        # to ?city=. Filter by the pharmacy's OWN location only. A plain city
+        # search matches the city field — a "Chicago" search must never surface
+        # a "Chicago Medical Pharmacy" in another town, nor a pharmacy on a
+        # street named after the city ("Baltimore Pike"). Only when the text
+        # actually reads like a street address do we also match the address
+        # line (for the rare case an address wasn't geo-resolved to lat/lng).
+        from .flows.search import _looks_like_address
+        loc_q = Q(city__icontains=city)
+        if _looks_like_address(city):
+            loc_q |= Q(address__icontains=city)
+        qs = qs.filter(loc_q)
     if zip_filter:
         # ?zip= param (or the user's profile / detected ZIP) — resolve a full
         # ZIP to its city name too, so it works even though pharmacies don't
         # store ZIPs.
         zc = _zip_city_state(zip_filter[:5])
         if zc:
-            city_name, state_code = zc
-            exact_q = Q(city__iexact=city_name, state__iexact=state_code)
+            city_name, zc_state = zc
+            exact_q = Q(city__iexact=city_name, state__iexact=zc_state)
             if qs.filter(exact_q).exists():
                 # Exact city match — e.g. "60601 → Chicago, IL".
                 qs = qs.filter(exact_q)
@@ -143,7 +155,7 @@ def page_list(request):
             prefix_q = Q(zip__startswith=zip_filter[:3])
             if qs.filter(prefix_q).exists():
                 qs = qs.filter(prefix_q)
-    elif not (q or city or show_all) and auto_loc and auto_loc.lat and auto_loc.lng:
+    elif not (q or city or state_code or show_all) and auto_loc and auto_loc.lat and auto_loc.lng:
         # We have a lat/lng but no clean ZIP from the IP lookup (some IPs lack
         # postal_code in ipapi.co's response). Fall back to a ~50-mile bounding-
         # box filter — far more useful than rendering an arbitrary global list.
@@ -158,6 +170,10 @@ def page_list(request):
         # back to global so we don't render an empty page.
         if bbox_qs.count() >= 5:
             qs = bbox_qs
+    if state_code:
+        # Explicit state selection (hero search dropdown) — narrows to
+        # pharmacies whose NPPES state matches the selected code.
+        qs = qs.filter(state__iexact=state_code)
     # Service filter — driven by NPPES taxonomy code. Each option matches
     # both the primary taxonomy_code and the secondary_taxonomies CSV, so
     # a Community/Retail pharmacy that ALSO does compounding shows up under
@@ -236,6 +252,15 @@ def page_list(request):
             eff_lat=Coalesce(F("latitude"), cen_lat),
             eff_lng=Coalesce(F("longitude"), cen_lng),
         ).annotate(distance_mi=_distance_mi_expr(origin_lat, origin_lng, "eff_lat", "eff_lng"))
+        # Radius cap — only show pharmacies within the admin-tunable search
+        # radius (default 1.86 mi) of the resolved reference point. Applied to
+        # the auto-localized view AND to explicit location references
+        # (?zip=, ?lat&lng=) since those all mean "near here". Broad keyword /
+        # state searches (name, city, state, show_all) keep their broader
+        # intent. Rows with no coordinates/ZIP-centroid have a NULL distance
+        # and are excluded.
+        if not (q or city or state_code or show_all):
+            qs = qs.filter(distance_mi__lte=get_search_radius_mi())
     elif sort == "distance":
         sort = ""  # no reference point → the distance annotation doesn't exist
     primary = sort_map.get(sort) or ("distance_mi" if origin_lat is not None else "-avg_service_rating")
@@ -249,12 +274,27 @@ def page_list(request):
     if request.user.is_authenticated:
         saved_ids = list(SavedComparison.objects.filter(
             user=request.user).values_list("pharmacy_id", flat=True))
+    # The location field's prefill: whichever location filter is active, in a
+    # human-friendly form ("Chicago, IL" / "19103" / "PA" / "").
+    if city:
+        param_loc = f"{city}, {state_code}" if state_code else city
+    else:
+        param_loc = zip_filter or state_code or ""
+
     return {
         "pharmacies": pharmacies,
         "most_reviewed": most_reviewed,
         "total_count": Row({"total": len(pharmacies)}),
         "q": q, "city": city, "zip": zip_filter,
         "service": service, "sort": sort,
+        "state": state_code or "",
+        "param_loc": param_loc,
+        # Location-field autocomplete needs the US state list for its
+        # state-name → code map (same source as the homepage hero).
+        "hero_us_states": [
+            {"code": code, "name": name}
+            for code, name in sorted(_STATE_NAMES.items(), key=lambda kv: kv[1])
+        ],
         "saved_ids": saved_ids,
         # Tells the template whether to show "near {zip} (auto-detected)" copy.
         "auto_loc_zip":    auto_loc.zip    if auto_loc else "",

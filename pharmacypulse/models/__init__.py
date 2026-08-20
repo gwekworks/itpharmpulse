@@ -43,6 +43,7 @@ from .community import (
     SavedComparison,
 )
 from .facts import PharmacyFact
+from .settings import SiteSetting
 
 __all__ = [
     "User",
@@ -69,4 +70,5 @@ __all__ = [
     "NewsletterSubscriber",
     "SavedComparison",
     "PharmacyFact",
+    "SiteSetting",
 ]

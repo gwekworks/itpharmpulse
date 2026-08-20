@@ -29,7 +29,7 @@
     {% endif %}
 
     <!-- Stats -->
-    <div class="grid grid-cols-3 md:grid-cols-6 gap-3 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
       <div class="stat-card p-4 text-center">
         <p class="stat-lbl mb-2">Total</p>
         <p class="stat-num" style="font-size: 1.75rem; color: #008F82">{{ stat_total.n }}</p>
@@ -72,7 +72,7 @@
     </div>
 
     <!-- Search + sort -->
-    <form action="/admin-users" method="GET" class="flex gap-2 mb-4">
+    <form action="/admin-users" method="GET" class="flex flex-wrap gap-2 mb-4">
       {% if param_role %}<input type="hidden" name="role" value="{{ param_role }}">{% endif %}
       <div class="relative flex-1">
         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" class="absolute left-3 top-1/2 -translate-y-1/2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -95,7 +95,7 @@
     </p>
 
     <!-- Users table -->
-    <div class="glass-card overflow-hidden">
+    <div class="glass-card admin-table-wrap">
       <table class="admin-table">
         <thead>
           <tr>

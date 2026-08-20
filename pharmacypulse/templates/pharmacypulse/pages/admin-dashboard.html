@@ -88,7 +88,7 @@
     </div>
 
     <!-- ── Secondary metrics ── -->
-    <div class="grid grid-cols-3 gap-4 mb-6">
+    <div class="grid stat-row-3 gap-4 mb-6">
       <div class="stat-card p-5 text-center">
         <p class="stat-lbl mb-3">Avg Rating</p>
         <p class="stat-num"><span class="star-filled" style="font-size: 1.5rem">★</span> {{avg_rating.0.avg}}</p>
@@ -104,7 +104,7 @@
     </div>
 
     <!-- ── Main 2-col layout ── -->
-    <div class="grid gap-5" style="grid-template-columns: 1fr 340px">
+    <div class="grid gap-5 admin-split-grid">
 
       <!-- Left: Activity + Attention items -->
       <div class="space-y-5">
@@ -284,6 +284,26 @@
           {% if not top_pharms %}
           <p class="text-sm text-center py-4" style="color: #94a3b8">No pharmacy data yet.</p>
           {% endif %}
+        </div>
+
+        <!-- Platform settings -->
+        <div class="glass-card p-5">
+          <h2 class="admin-card-heading">Platform Settings</h2>
+          <form method="POST" action="/admin-dashboard" class="space-y-3">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="set_search_radius">
+            <div>
+              <label for="search-radius" class="text-xs font-semibold block mb-1" style="color: #475569">Pharmacy search radius (miles)</label>
+              <p class="text-xs mb-2" style="color: #94a3b8">Max distance a pharmacy can be from the visitor's location to appear in the "near me" pharmacy list.</p>
+              <div class="flex gap-2">
+                <input type="number" id="search-radius" name="radius" value="{{ search_radius_mi }}" step="0.01" min="0.1" max="500" required
+                       class="flex-1 w-full px-3 py-2 rounded-lg text-sm"
+                       style="background: #f8fafc; border: 1px solid #e8edf4; color: #0f172a">
+                <button type="submit" class="text-xs py-2 px-4 rounded-lg font-semibold whitespace-nowrap"
+                        style="background: #008F82; color: #fff; border: none; cursor: pointer">Save</button>
+              </div>
+            </div>
+          </form>
         </div>
 
         <!-- Quick actions -->
