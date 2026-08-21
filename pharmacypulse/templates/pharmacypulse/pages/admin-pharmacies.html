@@ -147,6 +147,92 @@ heroku run python manage.py sync_pharmacies --state TX --app pharmacypulse-byond
           {% endif %}
         </div>
 
+        <!-- Pending Pharmacies (not yet published) -->
+        {% if pending_pharmacies %}
+        <div class="glass-card admin-table-wrap mb-6">
+          <div class="p-5 pb-4 flex items-center justify-between gap-3 flex-wrap">
+            <h2 class="admin-card-heading" style="margin-bottom: 0">Pending Pharmacies ({{ pending_paginator.count }})</h2>
+            <p class="text-xs" style="color: #64748b">Sorted newest first. Select pharmacies to publish.</p>
+          </div>
+          <form method="POST" action="/api/flow/bulk-publish-pharmacies" id="bulk-publish-form"
+            onsubmit="return confirm('Publish selected pharmacies? They will become visible in public search.')">
+            {% csrf_token %}
+            <div
+              style="padding: 0 1.25rem 0.75rem; display: flex; align-items: center; gap: 0.75rem; font-size: 0.75rem; color: #64748b">
+              <span id="pending-bulk-count">0 selected</span>
+              <button type="submit" class="btn-primary text-xs py-1 px-3" disabled
+                id="pending-publish-btn">Publish selected</button>
+            </div>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th style="width: 32px"><input type="checkbox" id="pending-select-all"
+                      onclick="ppPendingToggleAll(this.checked)"></th>
+                  <th>Pharmacy</th>
+                  <th>Location</th>
+                  <th>Added</th>
+                  <th>Status</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in pending_pharmacies %}
+                <tr id="pend-row-{{ item.id }}" data-name="{{ item.name }}" data-address="{{ item.address }}"
+                  data-city="{{ item.city }}" data-state="{{ item.state }}" data-zip="{{ item.zip }}"
+                  data-phone="{{ item.phone }}" data-website="{{ item.website }}" data-digital="{{ item.is_digital }}">
+                  <td><input type="checkbox" name="pharmacy_id" value="{{ item.id }}" class="pending-row"
+                      onclick="ppPendingBulkUpdate()"></td>
+                  <td>
+                    <a href="/pharmacy/{{ item.id }}/" class="font-semibold no-underline" style="color: #0f172a">{{ item.name }}</a>
+                    {% if item.is_digital %}<span class="ml-1.5 text-xs px-1.5 py-0.5 rounded"
+                      style="background: #ede9fe; color: #6d28d9">Digital</span>{% endif %}
+                    {% if item.is_new %}<span class="ml-1.5 text-xs px-1.5 py-0.5 rounded"
+                      style="background: #dcfce7; color: #15803d">NEW</span>{% endif %}
+                  </td>
+                  <td class="text-xs" style="color: #64748b">{{ item.address }}{% if item.address %}<br>{% endif %}{{ item.city }}{% if item.city or item.state %}, {% endif %}{{ item.state }} {{ item.zip }}</td>
+                  <td class="text-xs" style="color: #64748b">{{ item.created_at|date:"M d, Y H:i" }}</td>
+                  <td><span class="text-xs" style="color: #d97706">Pending</span></td>
+                  <td class="text-right">
+                    <a href="/pharmacy/{{ item.id }}/" class="btn-ghost text-xs py-1 px-2 no-underline">View</a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </form>
+          <!-- Pagination -->
+          {% if pending_paginator.num_pages > 1 %}
+          <div class="p-4 flex items-center justify-between gap-2 flex-wrap border-t" style="border-color: #e5e7eb">
+            <span class="text-xs" style="color: #64748b">
+              Page {{ pending_page_obj.number }} of {{ pending_paginator.num_pages }} ({{ pending_paginator.count }} total)
+            </span>
+            <nav class="flex items-center gap-1">
+              {% if pending_page_obj.has_previous %}
+              <a href="?pending_page={{ pending_page_obj.previous_page_number }}" class="btn-ghost text-xs py-1 px-2">Previous</a>
+              {% endif %}
+              {% for p in pending_paginator.page_range %}
+                {% if p == pending_page_obj.number %}
+                <span class="px-2 py-1 text-xs font-semibold" style="color: #008F82">{{ p }}</span>
+                {% elif p > pending_page_obj.number|add:"-3" and p < pending_page_obj.number|add:"3" %}
+                <a href="?pending_page={{ p }}" class="btn-ghost text-xs py-1 px-2">{{ p }}</a>
+                {% endif %}
+              {% endfor %}
+              {% if pending_page_obj.has_next %}
+              <a href="?pending_page={{ pending_page_obj.next_page_number }}" class="btn-ghost text-xs py-1 px-2">Next</a>
+              {% endif %}
+            </nav>
+          </div>
+          {% endif %}
+        </div>
+        {% else %}
+        <div class="glass-card admin-table-wrap mb-6">
+          <div class="p-5 text-center">
+            <p class="font-semibold mb-1" style="color: #0f172a">No pending pharmacies</p>
+            <p class="text-sm" style="color: #94a3b8">All pharmacies are published. Import new pharmacies via ZIP code above.</p>
+          </div>
+        </div>
+        {% endif %}
+
         <!-- Pharmacies table -->
         <div class="glass-card admin-table-wrap">
           <div class="p-5 pb-4 flex items-center justify-between gap-3 flex-wrap">
@@ -232,6 +318,16 @@ heroku run python manage.py sync_pharmacies --state TX --app pharmacypulse-byond
           function ppBulkToggleAll(checked) {
             document.querySelectorAll('.bulk-row').forEach(function (c) { c.checked = checked; });
             ppBulkUpdate();
+          }
+          /* Pending pharmacies bulk actions */
+          function ppPendingBulkUpdate() {
+            var rows = document.querySelectorAll('.pending-row:checked');
+            document.getElementById('pending-bulk-count').textContent = rows.length + ' selected';
+            document.getElementById('pending-publish-btn').disabled = rows.length === 0;
+          }
+          function ppPendingToggleAll(checked) {
+            document.querySelectorAll('.pending-row').forEach(function (c) { c.checked = checked; });
+            ppPendingBulkUpdate();
           }
           function ppOpenEdit(id) {
             var tr = document.getElementById('pub-row-' + id);

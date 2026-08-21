@@ -424,6 +424,28 @@ def page_admin_pharmacies(request):
         d["publish_status"] = p.publish_status
         return d
 
+    # Pending pharmacies: source pharmacies that don't have a publishable row yet.
+    # Ordered newest first so admins see the latest imports at the top.
+    from django.core.paginator import Paginator
+    pending_page = int(request.GET.get("pending_page") or 1)
+    pending_qs = Pharmacy.objects.filter(
+        status="active", deleted_at__isnull=True
+    ).exclude(
+        publishable__isnull=False
+    ).order_by("-created_at")
+    pending_paginator = Paginator(pending_qs, 25)
+    pending_page_obj = pending_paginator.get_page(pending_page)
+
+    def _src_dict(p):
+        """Dict for a source Pharmacy (pending) — includes created_at and is_new flag."""
+        from django.utils import timezone
+        d = _pharmacy_dict(p)
+        d["created_at"] = p.created_at
+        d["publish_status"] = "pending"
+        # NEW tag for pharmacies created within the last 7 days
+        d["is_new"] = (timezone.now() - p.created_at).days < 7
+        return d
+
     return {
         "pharmacies": [_pub_dict(p) for p in qs[:500]],
         "total_count": Row({"total": qs.count()}),
@@ -439,6 +461,10 @@ def page_admin_pharmacies(request):
                        pub.filter(status="active")
                        .order_by("name")[:100]],
         "chain_rows": chain_rows,
+        # Pending pharmacies (not yet published)
+        "pending_pharmacies": [_src_dict(p) for p in pending_page_obj],
+        "pending_page_obj": pending_page_obj,
+        "pending_paginator": pending_paginator,
     }
 
 

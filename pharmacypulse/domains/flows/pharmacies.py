@@ -28,6 +28,75 @@ from ...models import (
 
 from .common import admin_required, _activity
 
+# Columns copied from Pharmacy → PharmacyPublishable (mirrors sync_publish_pharmacies)
+_PUBLISH_COPY_FIELDS = [
+    "name", "address", "city", "state", "zip", "phone",
+    "latitude", "longitude", "stock_confidence", "avg_wait_time",
+    "avg_service_rating", "total_reviews", "is_digital", "website",
+    "npi_number", "place_id", "taxonomy_code", "enumeration_date",
+    "authorized_official_name", "authorized_official_title",
+    "secondary_taxonomies", "chain_size", "claimed_by", "org_id",
+    "phone_wait_time", "delivery_wait_time", "delivery_rating",
+    "customer_service_hours", "listing_completed_at",
+]
+
+
+@admin_required
+@require_POST
+def bulk_publish_pharmacies(request):
+    """Create PharmacyPublishable rows for selected pharmacies from the source table.
+
+    Selected pharmacies get publish_status='published' and are immediately visible
+    in public search. If a publishable row already exists, it's updated (unless
+    admin_edited=True, in which case it's skipped to preserve curator edits).
+    """
+    from ...models import Pharmacy, PharmacyPublishable
+
+    ids = request.POST.getlist("pharmacy_id")
+    ids = [int(x) for x in ids if x.isdigit()][:500]  # hard cap
+    if not ids:
+        return redirect("/admin-pharmacies?error=No+pharmacies+selected")
+
+    src_qs = Pharmacy.objects.filter(id__in=ids)
+    existing = {
+        r.pharmacy_id: r
+        for r in PharmacyPublishable.objects.filter(pharmacy_id__in=ids).iterator()
+    }
+
+    to_create, to_update, skipped = [], [], 0
+    for src in src_qs.iterator():
+        data = {f: getattr(src, f) for f in _PUBLISH_COPY_FIELDS}
+        data["status"] = "active"
+        row = existing.get(src.id)
+        if row is None:
+            data["publish_status"] = "published"
+            to_create.append(PharmacyPublishable(pharmacy_id=src.id, **data))
+        elif row.admin_edited:
+            skipped += 1  # admin owns this row → don't overwrite
+        else:
+            for field, value in data.items():
+                setattr(row, field, value)
+            row.publish_status = "published"
+            to_update.append(row)
+
+    with transaction.atomic():
+        if to_create:
+            PharmacyPublishable.objects.bulk_create(to_create, batch_size=1000)
+        if to_update:
+            PharmacyPublishable.objects.bulk_update(
+                to_update, fields=_PUBLISH_COPY_FIELDS + ["status", "publish_status"], batch_size=1000
+            )
+
+    created = len(to_create)
+    updated = len(to_update)
+    msg = f"Published {created} new, updated {updated} existing"
+    if skipped:
+        msg += f", skipped {skipped} admin-edited"
+    _activity(request, "pharmacy_bulk_publish",
+              f"{request.user.email} bulk published {created}+{updated} pharmacies "
+              f"(ids {min(ids)}–{max(ids)})")
+    return redirect(f"/admin-pharmacies?success={msg}")
+
 
 @admin_required
 def bulk_delete_pharmacies(request):
