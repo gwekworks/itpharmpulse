@@ -13,11 +13,11 @@
       <span class="lp-eyebrow">FIND A PHARMACY NEAR YOU</span>
       <form action="/list" method="GET" class="lp-search-form search-wrap">
         <input type="text" name="q" data-autocomplete placeholder="Pharmacy name" value="{{param_q}}" class="lp-search-input" autocomplete="off">
+        <div class="search-dropdown"></div>
         <div class="lp-search-loc-wrap pp-loc-field">
           <input type="text" name="loc" data-pp-loc placeholder="City, state, or ZIP" value="{{param_loc}}" class="lp-search-input" autocomplete="off">
         </div>
         <button type="submit" class="lp-search-btn">Search</button>
-        <div class="search-dropdown"></div>
       </form>
       {% include "pharmacypulse/partials/search-autocomplete.html" %}
       {% include "pharmacypulse/partials/location-autocomplete.html" %}

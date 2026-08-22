@@ -113,7 +113,7 @@
         Get Directions
       </button>
 
-      <div id="pd-dir-modal" class="pd-dir-modal" data-dest="{{ item.map_query }}">
+      <div id="pd-dir-modal" class="pd-dir-modal" data-dest="{{ item.map_query }}" data-lat="{{ item.latitude }}" data-lng="{{ item.longitude }}">
         <div class="pd-dir-backdrop" onclick="pdDirClose()"></div>
         <div class="pd-dir-panel" role="dialog" aria-modal="true" aria-label="Get directions">
           <div class="pd-dir-header">
@@ -130,6 +130,7 @@
                   GOOGLE MAPS GUARDED
                 </div>
                 <div class="pd-dir-assistant-title">Directions to {{ item.name }}</div>
+                <div class="pd-dir-route-summary" style="display:none; font-size:0.8125rem; color:#64748b; margin-top:0.25rem;"></div>
               </div>
             </div>
             <div class="pd-dir-header-actions">
@@ -144,6 +145,10 @@
           <div class="pd-dir-footer">
             <span class="pd-dir-footer-label">PharmacyPulse Guarded Maps</span>
             <div class="pd-dir-footer-actions">
+              <button type="button" class="pd-dir-nav-btn" onclick="pdToggleNavigation()" aria-label="Toggle turn-by-turn navigation">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                <span id="pd-nav-btn-text">Start Navigation</span>
+              </button>
               <a class="pd-dir-open" href="https://www.google.com/maps/dir/?api=1&destination={{ item.map_query }}" target="_blank" rel="noopener">Open in Google Maps</a>
               <button type="button" onclick="pdDirClose()" class="pd-dir-close-assistant">Close Directions</button>
             </div>
@@ -151,33 +156,205 @@
         </div>
       </div>
       <script>
+      // Haversine distance calculation (returns meters)
+      function pdHaversineMeters(lat1, lon1, lat2, lon2) {
+        var R = 6371000;
+        var dLat = (lat2 - lat1) * Math.PI / 180;
+        var dLon = (lon2 - lon1) * Math.PI / 180;
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+      }
+
+      var pdReviewTriggered = false;
+      var pdDirectionsRenderer = null;
+      var pdMap = null;
+      var pdWatchId = null;
+
       function pdDirOpen() {
         var modal = document.getElementById('pd-dir-modal');
         if (!modal) return;
         modal.classList.add('pd-dir-open');
         document.body.style.overflow = 'hidden';
         var frame = document.getElementById('pd-dir-frame');
-        frame.innerHTML = '<div class="pd-dir-loading">Loading directions…</div>';
         var dest = modal.getAttribute('data-dest') || '';
+        var pharmLat = parseFloat(modal.getAttribute('data-lat') || '0');
+        var pharmLng = parseFloat(modal.getAttribute('data-lng') || '0');
         var key = '{{ google_places_key }}';
-        function embed(origin) {
-          var src = origin
-            ? 'https://www.google.com/maps/embed/v1/directions?key=' + key +
-              '&origin=' + encodeURIComponent(origin) + '&destination=' + dest
-            : 'https://www.google.com/maps/embed/v1/place?key=' + key + '&q=' + dest;
-          frame.innerHTML = '<iframe src="' + src + '" width="100%" height="100%" style="border:0;border-radius:0.75rem" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>';
-        }
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(function(pos) {
-            embed(pos.coords.latitude + ',' + pos.coords.longitude);
-          }, function() { embed(''); }, { timeout: 6000, maximumAge: 300000 });
+        var destination = { lat: pharmLat, lng: pharmLng };
+
+        frame.innerHTML = '<div id="pd-map-canvas" style="width:100%;height:100%;min-height:300px;"></div>' +
+          '<div id="pd-directions-panel" class="pd-directions-panel" style="display:none;"></div>';
+
+        // Load Google Maps JS API if not already loaded
+        if (typeof google === 'undefined' || !google.maps) {
+          var script = document.createElement('script');
+          script.src = 'https://maps.googleapis.com/maps/api/js?key=' + key + '&libraries=places&callback=pdInitDirectionsMap';
+          script.async = true;
+          script.defer = true;
+          window.pdInitDirectionsMap = function() { pdInitMap(pharmLat, pharmLng); };
+          document.head.appendChild(script);
         } else {
-          embed('');
+          pdInitMap(pharmLat, pharmLng);
+        }
+
+        function pdInitMap(lat, lng) {
+          destination = { lat: lat, lng: lng };
+          pdMap = new google.maps.Map(document.getElementById('pd-map-canvas'), {
+            center: destination,
+            zoom: 14,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: true,
+            zoomControl: true,
+            styles: [
+              { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+              { featureType: 'transit', stylers: [{ visibility: 'off' }] }
+            ]
+          });
+
+          pdDirectionsRenderer = new google.maps.DirectionsRenderer({
+            map: pdMap,
+            panel: document.getElementById('pd-directions-panel'),
+            suppressMarkers: false,
+            polylineOptions: { strokeColor: '#008F82', strokeWeight: 5, strokeOpacity: 0.8 },
+            preserveViewport: false
+          });
+
+          var destMarker = new google.maps.Marker({
+            position: destination,
+            map: pdMap,
+            title: '{{ item.name|escapejs }}',
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 10,
+              fillColor: '#008F82',
+              fillOpacity: 1,
+              strokeWeight: 3,
+              strokeColor: '#fff'
+            }
+          });
+
+          // Try to get user location and show route
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              function(pos) {
+                var origin = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                calcAndDisplayRoute(origin, destination);
+                startArrivalWatch(pos);
+              },
+              function() {
+                // No user location - just show destination
+                startArrivalWatch(null);
+              },
+              { timeout: 6000, maximumAge: 300000 }
+            );
+          } else {
+            startArrivalWatch(null);
+          }
+        }
+
+        // Make pdInitMap available globally for the callback
+        window.pdInitMap = pdInitMap;
+      }
+
+      function calcAndDisplayRoute(origin, destination) {
+        if (!pdDirectionsRenderer || !pdMap) return;
+        var directionsService = new google.maps.DirectionsService();
+        directionsService.route({
+          origin: origin,
+          destination: destination,
+          travelMode: google.maps.TravelMode.DRIVING,
+          provideRouteAlternatives: false
+        }, function(response, status) {
+          if (status === 'OK') {
+            pdDirectionsRenderer.setDirections(response);
+            // Show distance/duration in the header
+            var route = response.routes[0];
+            var leg = route.legs[0];
+            var header = document.querySelector('.pd-dir-assistant-title');
+            var summaryEl = document.querySelector('.pd-dir-route-summary');
+            if (header) {
+              header.innerHTML = 'Directions to {{ item.name|escapejs }}';
+            }
+            if (summaryEl) {
+              summaryEl.textContent = leg.distance.text + ' · ' + leg.duration.text;
+              summaryEl.style.display = 'block';
+            }
+          } else {
+            console.warn('Directions request failed:', status);
+          }
+        });
+      }
+
+      function startArrivalWatch(initialPos) {
+        if (pdReviewTriggered) return;
+        if (!navigator.geolocation) return;
+        var modal = document.getElementById('pd-dir-modal');
+        var pharmLat = parseFloat(modal.getAttribute('data-lat') || '0');
+        var pharmLng = parseFloat(modal.getAttribute('data-lng') || '0');
+        if (!pharmLat || !pharmLng) return;
+
+        if (initialPos) {
+          var dist = pdHaversineMeters(initialPos.coords.latitude, initialPos.coords.longitude, pharmLat, pharmLng);
+          if (dist <= 100) { triggerReviewPrompt(); return; }
+        }
+
+        pdWatchId = navigator.geolocation.watchPosition(
+          function(pos) {
+            if (pdReviewTriggered) { stopArrivalWatch(); return; }
+            var dist = pdHaversineMeters(pos.coords.latitude, pos.coords.longitude, pharmLat, pharmLng);
+            if (dist <= 100) { triggerReviewPrompt(); }
+          },
+          function(err) { /* ignore */ },
+          { enableHighAccuracy: true, maximumAge: 30000, timeout: 10000 }
+        );
+      }
+
+      function stopArrivalWatch() {
+        if (pdWatchId !== null) {
+          navigator.geolocation.clearWatch(pdWatchId);
+          pdWatchId = null;
         }
       }
+
+      function triggerReviewPrompt() {
+        pdReviewTriggered = true;
+        stopArrivalWatch();
+        pdDirClose();
+        var pharmId = '{{ item.id }}';
+        var pharmName = '{{ item.name|escapejs }}';
+        var pharmAddr = '{{ item.address|escapejs }}{% if item.city %}, {{ item.city }}{% endif %}{% if item.state %} {{ item.state }}{% endif %}';
+        if (window.setPharmacy && window.showStep) {
+          window.setPharmacy(pharmId, pharmName, pharmAddr);
+          window.showStep('rv-step1');
+        }
+      }
+
+      function pdToggleNavigation() {
+        var panel = document.getElementById('pd-directions-panel');
+        var btnText = document.getElementById('pd-nav-btn-text');
+        if (!panel || !btnText) return;
+        var isOpen = panel.style.display !== 'none';
+        panel.style.display = isOpen ? 'none' : 'block';
+        btnText.textContent = isOpen ? 'Start Navigation' : 'Hide Directions';
+        // Adjust map height when panel shows/hides (panel is below map in DOM, but we can trigger resize)
+        if (pdMap) {
+          setTimeout(function() { google.maps.event.trigger(pdMap, 'resize'); }, 100);
+        }
+      }
+
       function pdDirClose() {
         var modal = document.getElementById('pd-dir-modal');
         if (!modal) return;
+        stopArrivalWatch();
+        if (pdDirectionsRenderer) {
+          pdDirectionsRenderer.setMap(null);
+          pdDirectionsRenderer = null;
+        }
+        pdMap = null;
         modal.classList.remove('pd-dir-open');
         document.body.style.overflow = '';
         document.getElementById('pd-dir-frame').innerHTML = '';
