@@ -11,7 +11,7 @@
     <nav class="pp-topbar-nav items-center gap-0.5">
       <a href="/list" id="top-list" class="pp-topbar-nav-link">{% trans "Find a pharmacy" %}</a>
       <a href="/compare" id="top-compare" class="pp-topbar-nav-link">{% trans "Compare" %}</a>
-      <a href="/for-pharmacies" id="top-for-pharmacies" class="pp-topbar-nav-link">{% trans "For pharmacies" %}</a>
+      <a href="/pharmacist-dashboard" id="top-for-pharmacies" class="pp-topbar-nav-link">{% trans "For pharmacies" %}</a>
     </nav>
     <div class="flex items-center gap-3">
       {% if user.role == "pharmacist" %}
@@ -51,7 +51,7 @@
         <div class="pp-topbar-menu">
           <a href="/list" class="pp-topbar-menu-link">{% trans "Find a pharmacy" %}</a>
           <a href="/compare" class="pp-topbar-menu-link">{% trans "Compare" %}</a>
-          <a href="/for-pharmacies" class="pp-topbar-menu-link">{% trans "For pharmacies" %}</a>
+          <a href="/pharmacist-dashboard" class="pp-topbar-menu-link">{% trans "For pharmacies" %}</a>
           <div class="pp-topbar-divider"></div>
           {% if user.role == "pharmacist" %}
           <a href="/pharmacist-dashboard" style="display: block; padding: 0.625rem 0.75rem; font-size: 0.875rem; font-weight: 600; color: #008F82; text-decoration: none">{% trans "Dashboard" %}</a>

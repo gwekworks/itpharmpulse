@@ -426,9 +426,20 @@ def page_pharmacy_detail(request, pharmacy_id=None):
     # etc. This way every page renders the same NPPES badges (verified,
     # established, services, chain). Add detail-page-only fields on top.
     pharmacy_row = _pharmacy_dict(p)
+    from ..geo import resolve as resolve_loc
+    auto_loc = resolve_loc(request)
+    distance_mi = None
+    if auto_loc.lat is not None and auto_loc.lng is not None and p.latitude is not None and p.longitude is not None:
+        from math import radians, sin, cos, asin, sqrt
+        la1, lo1, la2, lo2 = map(radians, (auto_loc.lat, auto_loc.lng, p.latitude, p.longitude))
+        a = sin((la2 - la1) / 2)**2 + cos(la1) * cos(la2) * sin((lo2 - lo1) / 2)**2
+        km = 2 * 6371 * asin(sqrt(a))
+        distance_mi = round(km * 0.621371, 1)
+
     pharmacy_row.update({
         "authorized_official_name": p.authorized_official_name or "",
         "authorized_official_title": p.authorized_official_title or "",
+        "distance_mi": distance_mi,
     })
 
     # Map embed + directions query: coords when we have them, else the full

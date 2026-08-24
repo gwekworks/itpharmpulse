@@ -23,6 +23,7 @@ from .common import (
     get_search_radius_mi,
 )
 
+from ..text_utils import pharmacy_slug
 
 _INDEX_AGG_CACHE_KEY = "page_index:aggregates:v1"
 
@@ -223,9 +224,11 @@ def _index_cards(active, approved_reviews, loc):
     cards = []
     for p in top3:
         latest = latest_by_pid.get(p.id)
+        slug = pharmacy_slug(p.name)
         cards.append({
             "id": p.id, "name": p.name, "city": p.city, "state": p.state,
             "zip": p.zip, "address": p.address,
+            "slug": slug, "url": f"/pharmacy/{p.id}/{slug}/",
             "stock_confidence": p.stock_confidence,
             "avg_wait_time": p.avg_wait_time,
             "avg_service_rating": p.avg_service_rating,

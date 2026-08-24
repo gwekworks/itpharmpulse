@@ -58,7 +58,6 @@
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
     Back to All Results
   </a>
-
   {% for item in pharmacy %}
   <div class="pd-layout">
 
@@ -102,7 +101,7 @@
           </div>
           <div class="pd-score-pill">
             <span class="pd-score-label">DISTANCE</span>
-            <span class="pd-score-val">~0.8 mi</span>
+            <span class="pd-score-val">{% if item.distance_mi is not None %}~{{ item.distance_mi|floatformat:1 }} mi{% else %}&mdash;{% endif %}</span>
           </div>
         </div>
       </div>
@@ -260,6 +259,24 @@
         window.pdInitMap = pdInitMap;
       }
 
+      function pdRequestUserLocation() {
+        if (!navigator.geolocation) {
+          alert('Geolocation is not supported by your browser.');
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          function(pos) {
+            var lat = pos.coords.latitude.toFixed(4);
+            var lng = pos.coords.longitude.toFixed(4);
+            document.cookie = 'pp_loc=' + lat + ',' + lng + '; path=/; max-age=2592000; SameSite=Lax';
+            location.reload();
+          },
+          function(err) {
+            alert('Could not access location. Please check your browser site permissions.');
+          }
+        );
+      }
+
       function calcAndDisplayRoute(origin, destination) {
         if (!pdDirectionsRenderer || !pdMap) return;
         var directionsService = new google.maps.DirectionsService();
@@ -407,7 +424,7 @@
             <div class="pd-distance-section">
               <h4 class="pd-distance-title">See your distance</h4>
               <p class="pd-distance-desc">Share your approximate location only when you choose. It stays in this browser session.</p>
-              <button class="pd-location-btn">
+              <button type="button" class="pd-location-btn" onclick="pdRequestUserLocation()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
                 Use my location
               </button>

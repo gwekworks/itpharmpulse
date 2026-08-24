@@ -219,9 +219,8 @@ confidence, wait times, and service ratings. Community-powered pharmacy transpar
 
     <!-- Pharmacy List -->
     <div id="pp-cards-list" class="pp-cards-list">
-
       {% for item in cards %}
-      <a href="/signup" class="pp-card"
+      <a href="{{ item.url }}" class="pp-card"
         data-type="{% if item.is_digital %}online{% endif %}{% if not item.is_digital %}retail{% endif %}"
         data-rating="{{ item.avg_service_rating }}" data-wait="{{ item.avg_wait_time }}"
         data-stock="{{ item.stock_confidence }}" data-reviews="{{ item.total_reviews }}">
@@ -257,15 +256,15 @@ confidence, wait times, and service ratings. Community-powered pharmacy transpar
         <div class="pp-card-metrics">
           <div class="pp-metric-min">
             <span class="pp-metric-label" data-t="card.stock">STOCK</span>
-            <span class="pp-metric-value pp-metric-value-teal">{{ item.stock_confidence }}</span>
+            <span class="pp-metric-value pp-metric-value-teal">{% if item.stock_confidence %}{{ item.stock_confidence }}{% else %}&mdash;{% endif %}</span>
           </div>
           <div class="pp-metric-min">
             <span class="pp-metric-label" data-t="card.wait">WAIT</span>
-            <span class="pp-metric-value pp-metric-value-amber">{{ item.avg_wait_time }}</span>
+            <span class="pp-metric-value pp-metric-value-amber">{% if item.avg_wait_time %}{{ item.avg_wait_time }}{% else %}&mdash;{% endif %}</span>
           </div>
           <div class="pp-metric-min">
             <span class="pp-metric-label" data-t="card.care">CARE</span>
-            <span class="pp-metric-value pp-metric-value-purple">{{ item.avg_service_rating }}</span>
+            <span class="pp-metric-value pp-metric-value-purple">{% if item.avg_service_rating %}{{ item.avg_service_rating }}{% else %}&mdash;{% endif %}</span>
           </div>
           <div class="pp-metric-wide">
             <span class="pp-metric-label" data-t="card.foot">FOOT TRAFFIC</span>
@@ -293,7 +292,7 @@ confidence, wait times, and service ratings. Community-powered pharmacy transpar
     </div>
 
     <div class="pp-browse-all-row">
-      <a href="/signup" class="pp-browse-all" data-t="cards.browseall">Browse all pharmacies &rarr;</a>
+      <a href="/list" class="pp-browse-all" data-t="cards.browseall">Browse all pharmacies &rarr;</a>
     </div>
 
   </section>
