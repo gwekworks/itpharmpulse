@@ -14,10 +14,12 @@
       <span class="pp-bottom-icon">💬</span>
       <span>{% trans "Reviews" %}</span>
     </a>
+    {% comment %}
     <a href="/shortages" data-nav="shortages">
       <span class="pp-bottom-icon">⚠️</span>
       <span>{% trans "Shortages" %}</span>
     </a>
+    {% endcomment %}
     <a href="/account" data-nav="account" class="relative">
       <span class="pp-bottom-icon">👤</span>
       {% if notification_count %}<span class="pp-bottom-badge">{{notification_count}}</span>{% endif %}

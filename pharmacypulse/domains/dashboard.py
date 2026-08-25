@@ -9,7 +9,7 @@ from django.db.models import Avg, Case, Count, F, Q, Sum, Value, When
 from django.utils import timezone as djtz
 
 from ..models import (
-    ActivityLog, DataRequest, DrugShortage, ModerationKeyword,
+    ActivityLog, ClosedFlag, DataRequest, DrugShortage, ModerationKeyword,
     NewsletterSubscriber, Notification, Pharmacy, PharmacyClaim,
     PharmacyCoveragePlan, PharmacyHours, PharmacyInsuranceProvider, PharmacyOrg,
     PharmacyPublishable, PharmacyTeamMember, ResponseCount, Review,
@@ -271,6 +271,7 @@ def page_admin_dashboard(request):
         "stat_mod_pending": Row({"total": n_mod}),
         "stat_flagged": Row({"total": n_flagged}),
         "stat_shortages": Row({"total": n_short}),
+        "stat_closed_flags": Row({"total": ClosedFlag.objects.filter(status="pending").count()}),
         # Legacy aliases (admin-dashboard.html still references these in some tiles)
         "pharm_cnt":   [{"n": n_pharm}],
         "user_cnt":    [{"n": n_users}],
@@ -446,12 +447,29 @@ def page_admin_pharmacies(request):
         d["is_new"] = (timezone.now() - p.created_at).days < 7
         return d
 
+    flags_qs = ClosedFlag.objects.filter(status="pending").select_related("pharmacy", "reporter_user").order_by("-created_at")
+    flags_list = []
+    for f in flags_qs[:200]:
+        flags_list.append({
+            "id": f.id,
+            "pharmacy_id": f.pharmacy_id,
+            "pharmacy_name": f.pharmacy.name if f.pharmacy else "Unknown",
+            "pharmacy_city": f.pharmacy.city if f.pharmacy else "",
+            "pharmacy_state": f.pharmacy.state if f.pharmacy else "",
+            "pharmacy_address": f.pharmacy.address if f.pharmacy else "",
+            "pharmacy_url": f"/pharmacy?id={f.pharmacy_id}",
+            "reporter": f.reporter_user.email if f.reporter_user else (f"Anonymous ({f.reporter_ip})" if f.reporter_ip else "Anonymous"),
+            "note": f.note,
+            "created_at": f.created_at,
+        })
+
     return {
         "pharmacies": [_pub_dict(p) for p in qs[:500]],
         "total_count": Row({"total": qs.count()}),
         "success": request.GET.get("success"),
         "error": request.GET.get("error"),
         "q": q,
+        "tab": request.GET.get("tab", ""),
         # Legacy stat tiles + main list
         "phys_cnt": [{"n": active.filter(is_digital=0).count()}],
         "dig_cnt":  [{"n": active.filter(is_digital=1).count()}],
@@ -465,6 +483,9 @@ def page_admin_pharmacies(request):
         "pending_pharmacies": [_src_dict(p) for p in pending_page_obj],
         "pending_page_obj": pending_page_obj,
         "pending_paginator": pending_paginator,
+        # Flagged as closed
+        "closed_flags": flags_list,
+        "closed_flags_count": flags_qs.count(),
     }
 
 

@@ -44,3 +44,21 @@ def get_item(value, key):
         return value.get(key)
     except (AttributeError, TypeError):
         return None
+
+
+@register.simple_tag(takes_context=True)
+def url_replace(context, **kwargs):
+    """Return current request query string with specified parameters updated/added/removed.
+    Passing a parameter as '' or None removes it from the query string.
+    """
+    request = context.get("request")
+    if not request:
+        return ""
+    query = request.GET.copy()
+    for k, v in kwargs.items():
+        if v is None or v == "":
+            query.pop(k, None)
+        else:
+            query[k] = str(v)
+    encoded = query.urlencode()
+    return f"?{encoded}" if encoded else "?"

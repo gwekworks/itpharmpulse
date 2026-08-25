@@ -29,7 +29,7 @@
     <a href="/admin-users" id="admin-nav-users"><span class="pp-emoji">👥</span> Users</a>
     <a href="/admin-pharmacies" id="admin-nav-pharmacies"><span class="pp-emoji">🏪</span> Pharmacies</a>
     <a href="/admin-pharmacies#chains" id="admin-nav-chains"><span class="pp-emoji">🏢</span> Chains</a>
-    <a href="/admin-shortages" id="admin-nav-shortages"><span class="pp-emoji">⚠️</span> Shortages</a>
+    {% comment %}<a href="/admin-shortages" id="admin-nav-shortages"><span class="pp-emoji">⚠️</span> Shortages</a>{% endcomment %}
     <!-- Logout -->
     <form method="POST" action="/logout" style="margin-top: 0.5rem">
       {% csrf_token %}

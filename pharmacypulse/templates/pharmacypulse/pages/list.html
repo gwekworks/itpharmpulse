@@ -12,11 +12,14 @@
     <div class="lp-search-section">
       <span class="lp-eyebrow">FIND A PHARMACY NEAR YOU</span>
       <form action="/list" method="GET" class="lp-search-form search-wrap">
-        <input type="text" name="q" data-autocomplete placeholder="Pharmacy name" value="{{param_q}}" class="lp-search-input" autocomplete="off">
+        <input type="text" name="q" data-autocomplete placeholder="Pharmacy name" value="{{param_q|default:q|default:''}}" class="lp-search-input" autocomplete="off">
         <div class="search-dropdown"></div>
         <div class="lp-search-loc-wrap pp-loc-field">
-          <input type="text" name="loc" data-pp-loc placeholder="City, state, or ZIP" value="{{param_loc}}" class="lp-search-input" autocomplete="off">
+          <input type="text" name="loc" data-pp-loc placeholder="City, state, or ZIP" value="{{param_loc|default:''}}" class="lp-search-input" autocomplete="off">
         </div>
+        {% if param_sort %}<input type="hidden" name="sort" value="{{ param_sort }}">{% endif %}
+        {% if param_ownership %}<input type="hidden" name="ownership" value="{{ param_ownership }}">{% endif %}
+        {% if param_service %}<input type="hidden" name="service" value="{{ param_service }}">{% endif %}
         <button type="submit" class="lp-search-btn">Search</button>
       </form>
       {% include "pharmacypulse/partials/search-autocomplete.html" %}
@@ -25,20 +28,20 @@
       <div class="lp-filters-row">
         <div class="lp-filter-pills">
           <span class="lp-filter-label">Filter:</span>
-          <a href="/list?q={{param_q}}&sort={{param_sort}}" class="lp-pill {% if not param_ownership %}lp-pill-active{% endif %}">All</a>
-          <a href="/list?q={{param_q}}&ownership=independent&sort={{param_sort}}" class="lp-pill {% if param_ownership == 'independent' %}lp-pill-active{% endif %}">Independent</a>
-          <a href="/list?q={{param_q}}&ownership=chain&sort={{param_sort}}" class="lp-pill {% if param_ownership == 'chain' or param_ownership == 'big_chain' %}lp-pill-active{% endif %}">Chain</a>
+          <a href="{% url_replace ownership='' %}" class="lp-pill {% if not param_ownership %}lp-pill-active{% endif %}">All</a>
+          <a href="{% url_replace ownership='independent' %}" class="lp-pill {% if param_ownership == 'independent' %}lp-pill-active{% endif %}">Independent</a>
+          <a href="{% url_replace ownership='chain' %}" class="lp-pill {% if param_ownership == 'chain' or param_ownership == 'big_chain' %}lp-pill-active{% endif %}">Chain</a>
         </div>
         <div class="lp-sort">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="16" y2="12"/><line x1="4" y1="18" x2="12" y2="18"/></svg>
           <span class="lp-sort-label">Sort by:</span>
           <select onchange="window.location=this.value" class="lp-sort-select">
-            <option value="/list?q={{param_q}}&ownership={{param_ownership}}" {% if not param_sort or param_sort == 'distance' %}selected{% endif %}>Closest</option>
-            <option value="/list?q={{param_q}}&ownership={{param_ownership}}&sort=reviews" {% if param_sort == 'reviews' %}selected{% endif %}>Most Reviewed</option>
-            <option value="/list?q={{param_q}}&ownership={{param_ownership}}&sort=stock" {% if param_sort == 'stock' %}selected{% endif %}>Best Stock</option>
-            <option value="/list?q={{param_q}}&ownership={{param_ownership}}&sort=wait" {% if param_sort == 'wait' %}selected{% endif %}>Shortest Wait</option>
-            <option value="/list?q={{param_q}}&ownership={{param_ownership}}&sort=service" {% if param_sort == 'service' %}selected{% endif %}>Best Service</option>
-            <option value="/list?q={{param_q}}&ownership={{param_ownership}}&sort=name" {% if param_sort == 'name' %}selected{% endif %}>A&ndash;Z</option>
+            <option value="{% url_replace sort='' %}" {% if not param_sort or param_sort == 'distance' %}selected{% endif %}>Closest</option>
+            <option value="{% url_replace sort='reviews' %}" {% if param_sort == 'reviews' %}selected{% endif %}>Most Reviewed</option>
+            <option value="{% url_replace sort='stock' %}" {% if param_sort == 'stock' %}selected{% endif %}>Best Stock</option>
+            <option value="{% url_replace sort='wait' %}" {% if param_sort == 'wait' %}selected{% endif %}>Shortest Wait</option>
+            <option value="{% url_replace sort='service' %}" {% if param_sort == 'service' %}selected{% endif %}>Best Service</option>
+            <option value="{% url_replace sort='name' %}" {% if param_sort == 'name' %}selected{% endif %}>A&ndash;Z</option>
           </select>
         </div>
       </div>

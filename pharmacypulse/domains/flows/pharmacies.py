@@ -20,7 +20,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from ...models import (
-    ActivityLog, DataRequest, DrugShortage, NewsletterSubscriber, Notification,
+    ActivityLog, ClosedFlag, DataRequest, DrugShortage, NewsletterSubscriber, Notification,
     Pharmacy, PharmacyClaim, PharmacyCoveragePlan, PharmacyHours,
     PharmacyInsuranceProvider, PharmacyOrg, PharmacyTeamMember, ResponseCount,
     Review, ReviewResponse, SavedComparison, User, UserConsent,
@@ -212,6 +212,95 @@ def report_pharmacy_data(request, pharmacy_id: int):
     # (7) Never honor `next` from the request — always send back to the
     # pharmacy page. Closes the open-redirect vector.
     return redirect(f"{safe_next}&report=ok")
+
+
+def flag_as_closed(request, pharmacy_id: int):
+    from ...views_extra import is_rate_limited
+    safe_next = f"/pharmacy?id={pharmacy_id}"
+
+    if request.method != "POST":
+        return redirect(safe_next)
+
+    # Honeypot guard
+    if (request.POST.get("hp_email") or "").strip():
+        return redirect(f"{safe_next}&flagged=ok")
+
+    # Fast submission guard
+    try:
+        ts = int(request.POST.get("ts") or "0")
+        if ts and (djtz.now().timestamp() - ts) < 2:
+            return redirect(f"{safe_next}&flagged=ok")
+    except (TypeError, ValueError):
+        pass
+
+    # Rate limits
+    if is_rate_limited(request, "flag_closed", limit=10, window_s=3600):
+        return redirect(f"{safe_next}&error=Too+many+requests.+Please+try+again+later.")
+    if is_rate_limited(request, f"flag_closed_p{pharmacy_id}", limit=2, window_s=3600):
+        return redirect(f"{safe_next}&error=You+have+already+flagged+this+pharmacy.")
+
+    note = _clean_note(request.POST.get("note") or "")
+
+    pharm = Pharmacy.objects.filter(id=pharmacy_id).only("id", "name").first()
+    if not pharm:
+        return redirect(f"{safe_next}&flagged=ok")
+
+    actor = request.user.email if request.user.is_authenticated else "anonymous"
+    user_id = request.user.id if request.user.is_authenticated else None
+    actor_ip = request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[0].strip() or request.META.get("REMOTE_ADDR", "")
+
+    ClosedFlag.objects.create(
+        pharmacy=pharm,
+        reporter_user_id=user_id,
+        reporter_ip=actor_ip,
+        note=note,
+        status="pending",
+    )
+
+    safe_name = _clean_note(pharm.name)[:100]
+    ActivityLog.objects.create(
+        type="pharmacy_closed_flag",
+        user_id=user_id,
+        message=f"#{pharmacy_id} {safe_name} flagged as closed by {actor}" + (f": {note}" if note else ""),
+    )
+
+    return redirect(f"{safe_next}&flagged=ok")
+
+
+@admin_required
+@require_POST
+def dismiss_closed_flag(request, flag_id: int):
+    flag = ClosedFlag.objects.filter(id=flag_id).first()
+    if flag:
+        flag.status = "dismissed"
+        flag.reviewed_at = djtz.now()
+        flag.reviewed_by = request.user
+        flag.save(update_fields=["status", "reviewed_at", "reviewed_by"])
+        _activity(request, "dismiss_closed_flag", f"{request.user.email} dismissed closed flag #{flag_id}")
+    return redirect("/admin-pharmacies?tab=flags&success=Flag+dismissed")
+
+
+@admin_required
+@require_POST
+def delete_flagged_pharmacy(request, pharmacy_id: int):
+    from ...models import PharmacyPublishable
+    pharm = Pharmacy.objects.filter(id=pharmacy_id).first()
+    if not pharm:
+        return redirect("/admin-pharmacies?tab=flags&error=Pharmacy+not+found")
+    
+    pharm_name = pharm.name
+    with transaction.atomic():
+        ClosedFlag.objects.filter(pharmacy_id=pharmacy_id, status="pending").update(
+            status="dismissed",
+            reviewed_at=djtz.now(),
+            reviewed_by=request.user,
+        )
+        PharmacyPublishable.objects.filter(pharmacy_id=pharmacy_id).delete()
+        Pharmacy.objects.filter(id=pharmacy_id).delete()
+
+    _activity(request, "pharmacy_flagged_delete", f"{request.user.email} deleted flagged pharmacy #{pharmacy_id} ({pharm_name})")
+    return redirect("/admin-pharmacies?tab=flags&success=Pharmacy+permanently+deleted")
+
 
 
 @login_required

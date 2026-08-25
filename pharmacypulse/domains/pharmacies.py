@@ -55,6 +55,16 @@ def page_list(request):
     # Hero search state dropdown → ?state=PA (accepts full names too).
     state_code = _state_code(request.GET.get("state") or "")
 
+    raw_loc = (request.GET.get("loc") or "").strip()
+    if raw_loc and not (city or zip_filter or state_code):
+        digits = re.sub(r"\D", "", raw_loc)
+        if len(digits) == 5:
+            zip_filter = digits
+        elif _state_code(raw_loc):
+            state_code = _state_code(raw_loc)
+        else:
+            city = raw_loc
+
     # Normalize a ZIP-like query ("60601", "60601-1234", " 60601 ") → the
     # leading 5 digits, so ZIP searches work regardless of formatting.
     zip_query = re.sub(r"\D", "", q)[:5] if q else ""
@@ -91,7 +101,7 @@ def page_list(request):
         if name_tokens:
             q_filter |= name_q
         if len(zip_query) >= 3:
-            q_filter |= Q(zip__startswith=zip_query)
+            q_filter |= Q(zip__startswith=zip_query) | Q(zip=zip_query)
         # Full 5-digit ZIP → resolve it to a location NAME first, then match
         # pharmacies within that location. NPPES rows often have no ZIP, so a
         # digit-only clause alone returns nothing.
@@ -126,35 +136,24 @@ def page_list(request):
             loc_q |= Q(address__icontains=city)
         qs = qs.filter(loc_q)
     if zip_filter:
-        # ?zip= param (or the user's profile / detected ZIP) — resolve a full
-        # ZIP to its city name too, so it works even though pharmacies don't
-        # store ZIPs.
-        zc = _zip_city_state(zip_filter[:5])
+        zip_clean = zip_filter[:5]
+        zip_conditions = Q(zip__startswith=zip_clean) | Q(zip=zip_clean)
+        zc = _zip_city_state(zip_clean)
         if zc:
             city_name, zc_state = zc
-            exact_q = Q(city__iexact=city_name, state__iexact=zc_state)
-            if qs.filter(exact_q).exists():
-                # Exact city match — e.g. "60601 → Chicago, IL".
-                qs = qs.filter(exact_q)
-            else:
-                # No pharmacies in that city (sparse NPPES coverage / small
-                # town) — widen to a ~10-15 mi radius around the ZIP centroid
-                # so the page doesn't read "No pharmacies found".
-                cen = ZipCentroid.objects.filter(zip=zip_filter[:5]).first()
-                if cen and cen.latitude and cen.longitude:
-                    lat, lng = cen.latitude, cen.longitude
-                    radius_q = Q(
-                        latitude__gte=lat - 0.15, latitude__lte=lat + 0.15,
-                        longitude__gte=lng - 0.2, longitude__lte=lng + 0.2)
-                    if qs.filter(radius_q).exists():
-                        qs = qs.filter(radius_q)
-                # Otherwise leave localization off → show the global list.
+            exact_city_q = Q(city__iexact=city_name, state__iexact=zc_state)
+            zip_conditions |= exact_city_q
+            cen = ZipCentroid.objects.filter(zip=zip_clean).first()
+            if cen and cen.latitude and cen.longitude:
+                lat, lng = cen.latitude, cen.longitude
+                radius_q = Q(
+                    latitude__gte=lat - 0.15, latitude__lte=lat + 0.15,
+                    longitude__gte=lng - 0.2, longitude__lte=lng + 0.2)
+                zip_conditions |= radius_q
         else:
-            # Partial ZIP / unresolvable → match the same ZIP-3 prefix area,
-            # dropping the constraint if it would return an empty page.
-            prefix_q = Q(zip__startswith=zip_filter[:3])
-            if qs.filter(prefix_q).exists():
-                qs = qs.filter(prefix_q)
+            if len(zip_clean) >= 3:
+                zip_conditions |= Q(zip__startswith=zip_clean[:3])
+        qs = qs.filter(zip_conditions)
     elif not (q or city or state_code or show_all) and auto_loc and auto_loc.lat and auto_loc.lng:
         # We have a lat/lng but no clean ZIP from the IP lookup (some IPs lack
         # postal_code in ipapi.co's response). Fall back to a ~50-mile bounding-
@@ -259,12 +258,23 @@ def page_list(request):
         # state searches (name, city, state, show_all) keep their broader
         # intent. Rows with no coordinates/ZIP-centroid have a NULL distance
         # and are excluded.
-        if not (q or city or state_code or show_all):
+        if not (q or city or state_code or zip_filter or raw_loc or show_all):
             qs = qs.filter(distance_mi__lte=get_search_radius_mi())
     elif sort == "distance":
         sort = ""  # no reference point → the distance annotation doesn't exist
     primary = sort_map.get(sort) or ("distance_mi" if origin_lat is not None else "-avg_service_rating")
-    qs = qs.order_by(primary, "-total_reviews", "pk")
+    if zip_filter:
+        from django.db.models import Case, When, Value, IntegerField
+        zip_clean = zip_filter[:5]
+        qs = qs.annotate(
+            is_exact_zip=Case(
+                When(zip__startswith=zip_clean, then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            )
+        ).order_by("is_exact_zip", primary, "-total_reviews", "pk")
+    else:
+        qs = qs.order_by(primary, "-total_reviews", "pk")
 
     pharmacies = [_pharmacy_dict(p) for p in qs[:200]]
     most_reviewed = [_pharmacy_dict(p) for p in
@@ -276,7 +286,9 @@ def page_list(request):
             user=request.user).values_list("pharmacy_id", flat=True))
     # The location field's prefill: whichever location filter is active, in a
     # human-friendly form ("Chicago, IL" / "19103" / "PA" / "").
-    if city:
+    if raw_loc:
+        param_loc = raw_loc
+    elif city:
         param_loc = f"{city}, {state_code}" if state_code else city
     else:
         param_loc = zip_filter or state_code or ""
@@ -481,6 +493,8 @@ def page_pharmacy_detail(request, pharmacy_id=None):
         "hours":     hours,
         "breakdown": breakdown,
         "reviews":   reviews,
+        "flagged":   request.GET.get("flagged"),
+        "error":     request.GET.get("error"),
     }
 
 

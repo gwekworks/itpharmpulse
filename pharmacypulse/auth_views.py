@@ -262,6 +262,12 @@ def reset_password_view(request, uidb64: str, token: str):
 def google_start(request):
     if not settings.GOOGLE_OAUTH_CLIENT_ID:
         return redirect("/login?error=Google+sign-in+is+not+configured")
+    next_url = request.GET.get("next") or "/home"
+    if not url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure(),
+    ):
+        next_url = "/home"
+    request.session["oauth_next_url"] = next_url
     state = secrets.token_urlsafe(24)
     request.session["google_oauth_state"] = state
     params = {
@@ -324,7 +330,13 @@ def google_callback(request):
         user.save()
     login(request, user)
     request.session.set_expiry(settings.SESSION_COOKIE_AGE)
-    return redirect("/home")
+    # return redirect("/home")
+    next_url = request.session.pop("oauth_next_url", "/home")
+    if not url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure(),
+    ):
+        next_url = "/home"
+    return redirect(next_url)
 
 
 # --------------- Facebook OAuth (manual flow, no third-party dep) ------------
@@ -332,6 +344,12 @@ def google_callback(request):
 def facebook_start(request):
     if not settings.FACEBOOK_OAUTH_APP_ID:
         return redirect("/login?error=Facebook+sign-in+is+not+configured")
+    next_url = request.GET.get("next") or "/home"
+    if not url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure(),
+    ):
+        next_url = "/home"
+    request.session["oauth_next_url"] = next_url
     state = secrets.token_urlsafe(24)
     request.session["facebook_oauth_state"] = state
     redirect_uri = request.build_absolute_uri(reverse("facebook_callback"))
@@ -394,4 +412,10 @@ def facebook_callback(request):
         user.save()
     login(request, user)
     request.session.set_expiry(settings.SESSION_COOKIE_AGE)
-    return redirect("/home")
+    # return redirect("/home")
+    next_url = request.session.pop("oauth_next_url", "/home")
+    if not url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure(),
+    ):
+        next_url = "/home"
+    return redirect(next_url)

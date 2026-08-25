@@ -233,25 +233,63 @@ def suggest_locations(request):
         if addr:
             results = addr + results
 
-    # 1. ZIP matches (prefix when the query looks numeric, otherwise city) from
-    #    the ZipCentroid table.
-    zip_qs = ZipCentroid.objects.all()
+    # 1. ZIP matches from ZipCentroid and published pharmacies
     if digits and not is_addr:
-        zip_qs = zip_qs.filter(zip__startswith=digits[:3])
+        target_prefix = digits[:5]
+        from django.db.models import Case, When, Value, IntegerField
+        zip_qs = ZipCentroid.objects.filter(zip__startswith=target_prefix).annotate(
+            is_exact=Case(
+                When(zip=target_prefix, then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            )
+        ).order_by("is_exact", "zip")
+        for zc in zip_qs[:10]:
+            label = f"{zc.zip} — {zc.city}, {zc.state}" if zc.city else zc.zip
+            if zc.zip in seen:
+                continue
+            seen.add(zc.zip)
+            results.append({
+                "label": label, "type": "zip", "zip": zc.zip,
+                "city": zc.city, "state": zc.state,
+                "state_name": _STATE_NAMES.get(zc.state, zc.state),
+            })
+            if len(results) >= 8:
+                return JsonResponse({"results": results})
+
+        # Supplement with any ZIPs stored on published pharmacies
+        pharm_zips = (published_pharmacies()
+                      .filter(zip__startswith=target_prefix)
+                      .exclude(zip="")
+                      .values("zip", "city", "state")
+                      .distinct()[:8])
+        for pz in pharm_zips:
+            pz_clean = (pz["zip"] or "").strip()[:5]
+            if not pz_clean or pz_clean in seen:
+                continue
+            seen.add(pz_clean)
+            label = f"{pz_clean} — {pz['city']}, {pz['state']}" if pz.get("city") else pz_clean
+            results.append({
+                "label": label, "type": "zip", "zip": pz_clean,
+                "city": pz.get("city", ""), "state": pz.get("state", ""),
+                "state_name": _STATE_NAMES.get(pz.get("state"), pz.get("state")),
+            })
+            if len(results) >= 8:
+                return JsonResponse({"results": results})
     else:
-        zip_qs = zip_qs.filter(city__icontains=q)
-    for zc in zip_qs.order_by("zip")[:8]:
-        label = f"{zc.zip} — {zc.city}, {zc.state}" if zc.city else zc.zip
-        if zc.zip in seen:
-            continue
-        seen.add(zc.zip)
-        results.append({
-            "label": label, "type": "zip", "zip": zc.zip,
-            "city": zc.city, "state": zc.state,
-            "state_name": _STATE_NAMES.get(zc.state, zc.state),
-        })
-        if len(results) >= 8:
-            return JsonResponse({"results": results})
+        zip_qs = ZipCentroid.objects.filter(city__icontains=q)
+        for zc in zip_qs.order_by("zip")[:8]:
+            label = f"{zc.zip} — {zc.city}, {zc.state}" if zc.city else zc.zip
+            if zc.zip in seen:
+                continue
+            seen.add(zc.zip)
+            results.append({
+                "label": label, "type": "zip", "zip": zc.zip,
+                "city": zc.city, "state": zc.state,
+                "state_name": _STATE_NAMES.get(zc.state, zc.state),
+            })
+            if len(results) >= 8:
+                return JsonResponse({"results": results})
 
     # 2. City matches from the published pharmacy set — real cities that have
     #    pharmacies, deduped by city+state.

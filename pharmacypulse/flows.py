@@ -26,6 +26,7 @@ from .domains.flows.reviews import (
 )
 from .domains.flows.pharmacies import (
     bulk_delete_pharmacies, bulk_delete_chain, report_pharmacy_data,
+    flag_as_closed, dismiss_closed_flag, delete_flagged_pharmacy,
     pharmacy_services_add, pharmacy_services_remove,
     coverage_plan_add, coverage_plan_remove,
     insurance_provider_add, insurance_provider_remove, insurance_plans_add,

@@ -227,7 +227,18 @@
                 {% if stat_claims_pending.total %}{{ stat_claims_pending.total }} pending{% else %}All clear{% endif %}
               </a>
             </div>
-
+            
+            <div class="flex items-center justify-between py-2" style="border-bottom: 1px solid #f1f5f9">
+              <div class="flex items-center gap-2.5">
+                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background: {% if stat_closed_flags.total %}#ef4444{% else %}#10b981{% endif %}"></div>
+                <span class="text-sm" style="color: #475569">Closed Pharmacy Reports</span>
+              </div>
+              <a href="/admin-pharmacies#flagged-closed" class="text-xs font-bold no-underline" style="color: {% if stat_closed_flags.total %}#dc2626{% else %}#15803d{% endif %}">
+                {% if stat_closed_flags.total %}{{ stat_closed_flags.total }} pending{% else %}All clear{% endif %}
+              </a>
+            </div>
+            
+            {% comment %}
             <div class="flex items-center justify-between py-2" style="border-bottom: 1px solid #f1f5f9">
               <div class="flex items-center gap-2.5">
                 <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background: {% if stat_shortages.total %}#ef4444{% else %}#10b981{% endif %}"></div>
@@ -245,7 +256,8 @@
               </div>
               <span class="text-xs font-bold" style="color: #15803d">Daily · Auto</span>
             </div>
-
+            {% endcomment %}
+            
             <div class="flex items-center justify-between py-2" style="border-bottom: 1px solid #f1f5f9">
               <div class="flex items-center gap-2.5">
                 <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background: #10b981"></div>
@@ -330,6 +342,7 @@
                 <span class="text-sm font-medium" style="color: #0f172a">View Analytics</span>
               </div>
             </a>
+            {% comment %}
             <a href="/admin-shortages" class="flex items-center justify-between p-3 rounded-lg no-underline transition-all" style="background: #f8fafc; border: 1px solid #e8edf4" onmouseover="this.style.borderColor='#ef4444'" onmouseout="this.style.borderColor='#e8edf4'">
               <div class="flex items-center gap-2.5">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -337,6 +350,7 @@
               </div>
               {% if stat_shortages.total %}<span class="badge-current">{{ stat_shortages.total }}</span>{% endif %}
             </a>
+            {% endcomment %}
           </div>
         </div>
 

@@ -38,6 +38,7 @@ from .shortages import (
     PinnedShortage,
 )
 from .community import (
+    ClosedFlag,
     ModerationKeyword,
     NewsletterSubscriber,
     SavedComparison,
@@ -69,6 +70,7 @@ __all__ = [
     "ModerationKeyword",
     "NewsletterSubscriber",
     "SavedComparison",
+    "ClosedFlag",
     "PharmacyFact",
     "SiteSetting",
 ]

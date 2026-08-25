@@ -60,7 +60,7 @@ def sitemap_xml(request):
         ("/list",        "daily",   "0.9"),
         ("/map",         "weekly",  "0.8"),
         ("/online",      "weekly",  "0.8"),
-        ("/shortages",   "daily",   "0.8"),
+        # ("/shortages",   "daily",   "0.8"),
         ("/reviews",     "daily",   "0.7"),
         ("/compare",     "weekly",  "0.6"),
         ("/for-pharmacies", "monthly", "0.5"),
