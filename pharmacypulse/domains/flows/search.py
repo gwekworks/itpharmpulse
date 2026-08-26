@@ -149,10 +149,20 @@ def place_details(request):
 
 
 def search_pharmacies(request):
-    from django.db.models import Q as _Q
-    from ...domains.common import published_pharmacies
+    from django.db.models import Q as _Q, OuterRef, Subquery, F
+    from django.db.models.functions import Coalesce
+    from ...domains.common import published_pharmacies, _distance_mi_expr, _zip_city_state
+    from ...geo import resolve as resolve_loc
+    from ...models import ZipCentroid
+    from ...domains.pharmacies import _resolve_origin
+
     q = (request.GET.get("q") or "").strip()
     qs = published_pharmacies()
+
+    # Resolve location for distance-aware ordering
+    loc = resolve_loc(request)
+    origin_lat, origin_lng = _resolve_origin(loc, loc.zip)
+
     if q:
         # Review picker + search autocomplete both call with a query string.
         zip_q = re.sub(r"\D", "", q)[:5]
@@ -175,20 +185,38 @@ def search_pharmacies(request):
             if zip_city:
                 city_name, state_code = zip_city
                 q_filter |= _Q(city__iexact=city_name, state__iexact=state_code)
+            cen = ZipCentroid.objects.filter(zip=zip_q).first()
+            if cen and cen.latitude and cen.longitude:
+                lat, lng = cen.latitude, cen.longitude
+                q_filter |= (_Q(latitude__gte=lat - 0.15, latitude__lte=lat + 0.15,
+                               longitude__gte=lng - 0.2, longitude__lte=lng + 0.2))
         qs = qs.filter(q_filter)
     elif request.GET.get("popular") == "1":
-        # Review picker seeds its list with the most-reviewed pharmacies when
-        # no query has been typed yet. No other caller omits `q`.
-        qs = qs.filter(total_reviews__gt=0)
+        # Review picker initial load: show nearest published pharmacies
+        pass
     else:
         return JsonResponse({"results": []})
-    qs = qs.order_by("-total_reviews", "name")[:8]
+
+    if origin_lat is not None and origin_lng is not None:
+        cen_lat = Subquery(
+            ZipCentroid.objects.filter(zip=OuterRef("zip")).values("latitude")[:1])
+        cen_lng = Subquery(
+            ZipCentroid.objects.filter(zip=OuterRef("zip")).values("longitude")[:1])
+        qs = qs.annotate(
+            eff_lat=Coalesce(F("latitude"), cen_lat),
+            eff_lng=Coalesce(F("longitude"), cen_lng),
+        ).annotate(distance_mi=_distance_mi_expr(origin_lat, origin_lng, "eff_lat", "eff_lng"))
+        qs = qs.order_by("distance_mi", "-total_reviews", "name")[:8]
+    else:
+        qs = qs.order_by("-total_reviews", "name")[:8]
+
     from ...text_utils import pharmacy_slug
     results = [{
         "id": p.id, "name": p.name, "address": p.address, "city": p.city,
         "state": p.state, "zip": p.zip, "phone": p.phone,
         "avg_service_rating": p.avg_service_rating,
         "total_reviews": p.total_reviews, "is_digital": p.is_digital,
+        "distance_mi": round(getattr(p, "distance_mi"), 1) if getattr(p, "distance_mi", None) is not None else None,
         "slug": pharmacy_slug(p.name),
     } for p in qs]
     return JsonResponse({"results": results})

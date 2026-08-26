@@ -624,6 +624,10 @@
 
   /* Direct mode: pharmacy known from the page context. */
   window.openReviewModal = function(pharmId, pharmName, pharmAddr) {
+    if (!pharmId) {
+      openReviewModalSelect();
+      return;
+    }
     selectMode = false;
     document.getElementById('rv-step1-back').hidden = true;
     setPharmacy(pharmId, pharmName, pharmAddr);
@@ -640,7 +644,7 @@
     dirty = false; submitted = false;
     openModalShell();
     restoreDraft();
-    showStep('rv-step0');
+    rvGoStep(0);
   };
 
   /* Re-open picker to change the pharmacy (Step 1 back + Step 2 Change). */
@@ -673,7 +677,8 @@
       var nameSafe = (p.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
       var addrSafe = addr.replace(/'/g, "\\'").replace(/"/g, '&quot;');
       var meta = '';
-      if (p.total_reviews) meta += p.total_reviews + ' reviews';
+      if (p.distance_mi != null) meta += '~' + p.distance_mi + ' mi';
+      if (p.total_reviews) meta += (meta ? ' · ' : '') + p.total_reviews + ' reviews';
       if (p.total_reviews && p.avg_service_rating) meta += ' · ★ ' + p.avg_service_rating;
       html += '<button type="button" class="rv-picker-item" role="option" '
         + 'onclick="rvPickPharmacy(' + p.id + ',\'' + nameSafe + '\',\'' + addrSafe + '\')">'
@@ -691,8 +696,26 @@
     if (!input || !list) return;
     var q = (input.value || '').trim();
     list.innerHTML = '<div class="rv-picker-loading">Finding pharmacies…</div>';
-    var url = '/api/flow/search?popular=1';
-    if (q) url = '/api/flow/search?q=' + encodeURIComponent(q);
+
+    var coords = null;
+    var m = document.cookie.match(/(?:^|;\s*)pp_loc=([^;]+)/);
+    if (m && m[1]) {
+      var parts = m[1].split(',');
+      if (parts.length === 2 && parts[0] && parts[1]) {
+        coords = { lat: parts[0].trim(), lng: parts[1].trim() };
+      }
+    }
+
+    var params = [];
+    if (q) params.push('q=' + encodeURIComponent(q));
+    else params.push('popular=1');
+
+    if (coords && coords.lat && coords.lng) {
+      params.push('lat=' + encodeURIComponent(coords.lat));
+      params.push('lng=' + encodeURIComponent(coords.lng));
+    }
+
+    var url = '/api/flow/search?' + params.join('&');
     fetch(url)
       .then(function(r) { return r.json(); })
       .then(function(data) { renderPicker(data.results || []); })

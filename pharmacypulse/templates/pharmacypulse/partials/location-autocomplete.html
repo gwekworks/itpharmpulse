@@ -67,6 +67,20 @@
     document.cookie = 'pp_loc=' + lat + ',' + lng + '; path=/; max-age=2592000; SameSite=Lax';
   }
 
+  function getPpLocCoords() {
+    if (input.dataset.lat && input.dataset.lng) {
+      return { lat: input.dataset.lat, lng: input.dataset.lng };
+    }
+    var m = document.cookie.match(/(?:^|;\s*)pp_loc=([^;]+)/);
+    if (m && m[1]) {
+      var parts = m[1].split(',');
+      if (parts.length === 2 && parts[0] && parts[1]) {
+        return { lat: parts[0].trim(), lng: parts[1].trim() };
+      }
+    }
+    return null;
+  }
+
   function resolveAddress(placeId) {
     fetch('/api/flow/place-detail?place_id=' + encodeURIComponent(placeId))
       .then(function (r) { return r.json(); })
@@ -218,6 +232,11 @@
       var picked = locEl.dataset;
       if (picked.picked === 'zip' && picked.zip) {
         addHidden('zip', picked.zip);
+        var coords = getPpLocCoords();
+        if (coords) {
+          addHidden('lat', coords.lat);
+          addHidden('lng', coords.lng);
+        }
       } else if (picked.picked === 'state' && picked.state) {
         addHidden('state', picked.state);
       } else if (picked.picked === 'city' && picked.city) {
@@ -230,6 +249,11 @@
         var digits = locVal.replace(/[^0-9]/g, '');
         if (/^\d{5}$/.test(digits)) {
           addHidden('zip', digits);
+          var coords = getPpLocCoords();
+          if (coords) {
+            addHidden('lat', coords.lat);
+            addHidden('lng', coords.lng);
+          }
         } else if (window.PP_STATE_CODES && window.PP_STATE_CODES[locVal.toLowerCase()]) {
           addHidden('state', window.PP_STATE_CODES[locVal.toLowerCase()]);
         } else {

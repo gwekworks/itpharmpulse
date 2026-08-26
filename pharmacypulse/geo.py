@@ -141,41 +141,62 @@ def resolve(request) -> Location:
     explicitly told us where they are. The geolocation prompt cookie can
     drift (set on a different device, on a VPN, etc.) and shouldn't
     override the user's stated preference."""
-    # 1. Explicit ?zip= override — highest precedence.
     zip_q = (request.GET.get("zip") or "").strip()
-    if zip_q and zip_q.isdigit() and len(zip_q) >= 5:
-        return Location(zip=zip_q[:5], source="param")
+    zip_param = zip_q[:5] if (zip_q and zip_q.isdigit() and len(zip_q) >= 5) else ""
 
-    # 2. ?lat= / ?lng= GET params.
+    # Parse explicit ?lat= / ?lng= GET params.
+    lat_q, lng_q = None, None
     try:
         lat_q = float(request.GET.get("lat", ""))
         lng_q = float(request.GET.get("lng", ""))
-        return Location(lat=lat_q, lng=lng_q, source="param")
     except (TypeError, ValueError):
         pass
 
-    # 3. Authed user's stored zip — wins over pp_loc cookie because the user
-    # has actively set this in their profile, while the cookie may be from a
-    # one-time prompt on a different network/device.
+    # Parse pp_loc cookie.
+    cookie = request.COOKIES.get("pp_loc", "")
+    lat_c, lng_c = None, None
+    if "," in cookie:
+        try:
+            c_lat, c_lng = cookie.split(",", 1)
+            lat_c, lng_c = float(c_lat), float(c_lng)
+        except ValueError:
+            pass
+
+    lat_res = lat_q if lat_q is not None else lat_c
+    lng_res = lng_q if lng_q is not None else lng_c
+    coord_src = "param" if lat_q is not None else ("cookie" if lat_c is not None else "")
+
+    if zip_param:
+        return Location(
+            zip=zip_param,
+            lat=lat_res,
+            lng=lng_res,
+            source="param"
+        )
+
+    if lat_q is not None and lng_q is not None:
+        return Location(lat=lat_q, lng=lng_q, source="param")
+
     user = getattr(request, "user", None)
     if user is not None and getattr(user, "is_authenticated", False):
         z = (getattr(user, "zip_code", "") or "").strip()
         if z and z[:5].isdigit():
-            return Location(zip=z[:5], source="user")
+            return Location(zip=z[:5], lat=lat_res, lng=lng_res, source="user")
 
-    # 4. pp_loc cookie (browser geolocation prompt).
-    cookie = request.COOKIES.get("pp_loc", "")
-    if "," in cookie:
-        try:
-            lat, lng = cookie.split(",", 1)
-            return Location(lat=float(lat), lng=float(lng), source="cookie")
-        except ValueError:
-            pass
+    if lat_c is not None and lng_c is not None:
+        return Location(lat=lat_c, lng=lng_c, source="cookie")
 
-    # 5. IP fallback.
     ip = _client_ip(request)
     ip_loc = _ip_lookup(ip)
     if ip_loc is not None:
+        if lat_res is not None and lng_res is not None and (ip_loc.lat is None or ip_loc.lng is None):
+            return Location(
+                zip=ip_loc.zip, city=ip_loc.city, state=ip_loc.state,
+                lat=lat_res, lng=lng_res, source=coord_src or ip_loc.source
+            )
         return ip_loc
+
+    if lat_res is not None and lng_res is not None:
+        return Location(lat=lat_res, lng=lng_res, source=coord_src)
 
     return _EMPTY
