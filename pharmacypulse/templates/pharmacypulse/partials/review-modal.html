@@ -205,7 +205,13 @@
         <div class="rv-progress-bar"></div>
       </div>
 
-      <label class="rv-label" for="rv-picker-search">SEARCH PHARMACY</label>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.375rem;">
+        <label class="rv-label" for="rv-picker-search" style="margin-bottom:0">SEARCH PHARMACY</label>
+        <button type="button" onclick="rvPickerUseCurrentLocation(this)" style="display:inline-flex; align-items:center; gap:0.25rem; background:none; border:none; color:#008F82; font-size:0.75rem; font-weight:600; cursor:pointer; padding:0;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span id="rv-loc-btn-text">Use my current location</span>
+        </button>
+      </div>
       <input class="rv-input" type="search" id="rv-picker-search" placeholder="Search by pharmacy name, city, or ZIP..." autocomplete="off" aria-label="Search pharmacies">
       <div class="rv-picker-list" id="rv-picker-list" role="listbox" aria-label="Pharmacy results"></div>
 
@@ -723,6 +729,25 @@
         list.innerHTML = '<div class="rv-picker-empty">Could not load pharmacies. Please try again.</div>';
       });
   }
+
+  window.rvPickerUseCurrentLocation = function(btn) {
+    if (!navigator.geolocation) {
+      loadPickerList();
+      return;
+    }
+    var txt = document.getElementById('rv-loc-btn-text');
+    if (txt) txt.textContent = 'Locating\u2026';
+    navigator.geolocation.getCurrentPosition(function(pos) {
+      var lat = pos.coords.latitude.toFixed(4);
+      var lng = pos.coords.longitude.toFixed(4);
+      document.cookie = 'pp_loc=' + lat + ',' + lng + '; path=/; max-age=2592000; SameSite=Lax';
+      if (txt) txt.textContent = '📍 Location Set';
+      loadPickerList();
+    }, function() {
+      if (txt) txt.textContent = 'Use my current location';
+      alert('Could not get location. Search by name, city, or ZIP instead.');
+    }, { timeout: 10000, maximumAge: 600000 });
+  };
 
   var pickerInput = document.getElementById('rv-picker-search');
   if (pickerInput) {

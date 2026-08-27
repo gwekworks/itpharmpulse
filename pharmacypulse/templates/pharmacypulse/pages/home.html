@@ -45,11 +45,24 @@
 
     <!-- Quick Actions -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 pp-mb-24">
-      <a href="/map" class="pp-quick-card" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)'" onmouseout="this.style.boxShadow='none'">
+      <!-- <a href="/map" class="pp-quick-card" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)'" onmouseout="this.style.boxShadow='none'">
         <span class="pp-quick-icon">📍</span>
         <p class="pp-title-sm">Map View</p>
         <p class="pp-sub-sm">Browse nearby</p>
+      </a> -->
+      {% if user.is_authenticated %}
+      <a href="/claim" class="pp-quick-card" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)'" onmouseout="this.style.boxShadow='none'">
+        <span class="pp-quick-icon">🏥</span>
+        <p class="pp-title-sm">Claim Pharmacy</p>
+        <p class="pp-sub-sm">Own a pharmacy?</p>
       </a>
+      {% else %}
+      <a href="/signup?next=/claim" class="pp-quick-card" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)'" onmouseout="this.style.boxShadow='none'">
+        <span class="pp-quick-icon">🏥</span>
+        <p class="pp-title-sm">Claim Pharmacy</p>
+        <p class="pp-sub-sm">Own a pharmacy?</p>
+      </a>
+      {% endif %}
       <a href="/online" class="pp-quick-card" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)'" onmouseout="this.style.boxShadow='none'">
         <span class="pp-quick-icon">🌐</span>
         <p class="pp-title-sm">Online</p>

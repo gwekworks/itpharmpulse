@@ -40,7 +40,7 @@
       </form>
       {% else %}
       <a href="/login" class="md:inline-flex items-center gap-1 pp-topbar-link">{% trans "Log in" %}</a>
-      <a href="/signup" class="inline-flex items-center gap-1.5 pp-topbar-claim-btn">
+      <a href="/signup?next=/claim" class="inline-flex items-center gap-1.5 pp-topbar-claim-btn">
         <span data-t="nav.claim">Claim a pharmacy</span>
       </a>
       {% endif %}
@@ -69,7 +69,7 @@
           </form>
           {% else %}
           <a href="/login" class="pp-topbar-menu-link">{% trans "Log in" %}</a>
-          <a href="/claim" class="pp-topbar-menu-link pp-topbar-menu-link-accent">{% trans "Claim a pharmacy" %}</a>
+          <a href="/signup?next=/claim" class="pp-topbar-menu-link pp-topbar-menu-link-accent">{% trans "Claim a pharmacy" %}</a>
           <a href="/signup" class="pp-topbar-menu-link pp-topbar-menu-link-accent">{% trans "Sign up" %}</a>
           {% endif %}
         </div>
