@@ -44,6 +44,10 @@
         <span data-t="nav.claim">Claim a pharmacy</span>
       </a>
       {% endif %}
+      <div class="pp-topbar-lang-toggle" data-t="lang-toggle">
+        <button type="button" class="pp-topbar-lang-btn" id="topbar-lang-en" onclick="ppSetLang('en')" aria-label="Switch to English">EN</button>
+        <button type="button" class="pp-topbar-lang-btn" id="topbar-lang-es" onclick="ppSetLang('es')" aria-label="Switch to Spanish">ES</button>
+      </div>
       <details class="md:hidden relative">
         <summary class="pp-topbar-burger">
           ☰
@@ -72,6 +76,13 @@
           <a href="/signup?next=/claim" class="pp-topbar-menu-link pp-topbar-menu-link-accent">{% trans "Claim a pharmacy" %}</a>
           <a href="/signup" class="pp-topbar-menu-link pp-topbar-menu-link-accent">{% trans "Sign up" %}</a>
           {% endif %}
+          <div class="pp-topbar-divider"></div>
+          <div style="padding:0.5rem 0.75rem;">
+            <div class="pp-topbar-lang-toggle" style="display:inline-flex;" aria-label="Language">
+              <button type="button" class="pp-topbar-lang-btn" id="topbar-lang-en-m" onclick="ppSetLang('en')" aria-label="Switch to English">EN</button>
+              <button type="button" class="pp-topbar-lang-btn" id="topbar-lang-es-m" onclick="ppSetLang('es')" aria-label="Switch to Spanish">ES</button>
+            </div>
+          </div>
         </div>
       </details>
     </div>
@@ -513,8 +524,13 @@ window.PP_EN_ES = window.PP_EN_ES || {
   function highlightLang(lang){
     ['en','es'].forEach(function(l){
       var btn = document.getElementById('pp-lang-' + l);
-      if (!btn) return;
-      btn.classList.toggle('active', l === lang);
+      if (btn) btn.classList.toggle('active', l === lang);
+      // topbar desktop switcher
+      var tbtn = document.getElementById('topbar-lang-' + l);
+      if (tbtn) tbtn.classList.toggle('active', l === lang);
+      // topbar mobile menu switcher
+      var mbtn = document.getElementById('topbar-lang-' + l + '-m');
+      if (mbtn) mbtn.classList.toggle('active', l === lang);
     });
   }
 

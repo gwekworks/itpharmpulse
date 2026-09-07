@@ -1927,26 +1927,34 @@ button.search-item.pp-loc-item.highlighted { background: #f0fdf4; }
   background: #F0FAF9;
 }
 .pp-topbar-lang-toggle {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #008F82;
   gap: 0;
   border: 1px solid #E5E7EB;
   border-radius: 9999px;
   padding: 2px;
-  background: #F9FAFB;
+  background: #fff;
 }
 .pp-topbar-lang-btn {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  padding: 0.1875rem 0.625rem;
+  padding: 0.25rem 0.75rem;
   border-radius: 9999px;
   background: transparent;
-  color: #6B7280;
+  color: #008F82;
   border: none;
   cursor: pointer;
   font-family: inherit;
+  letter-spacing: 0.04em;
+  transition: background 0.15s, color 0.15s;
+}
+.pp-topbar-lang-btn:hover {
+  background: #F0FAF9;
 }
 .pp-topbar-lang-btn.active {
   background: #008F82;
-  color: white;
+  color: #fff;
 }
 .pp-topbar-font-btn {
   font-size: 0.625rem;

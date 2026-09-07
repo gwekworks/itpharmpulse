@@ -1,72 +1,401 @@
 {% extends "pharmacypulse/layouts/blank.html" %}
 {% load pharmacypulse %}
-{% block title %}Privacy Policy{% endblock %}
-{% block meta_description %}PharmacyPulse privacy policy — how we collect, use, and protect your data, including our commitment to never sell personal information.{% endblock %}
+{% block title %}Privacy Policy — PharmacyPulse{% endblock %}
+{% block meta_description %}PharmacyPulse privacy policy — how ByondRx, Inc. collects, uses, and protects your data, including our commitment to never sell personal information for advertising.{% endblock %}
 {% block content %}
+{% include "pharmacypulse/partials/topbar.html" %}
 <div class="min-h-screen" style="background: hsl(210 20% 98%)">
   <div class="max-w-2xl mx-auto px-4 py-12">
+
     <a href="/" class="inline-flex items-center gap-1 text-sm mb-6 no-underline" style="color: hsl(215 20% 42%)">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
       Back to PharmacyPulse
     </a>
 
-    <h1 class="font-serif text-3xl mb-2" style="color: hsl(220 50% 10%)">Privacy Policy</h1>
-    <p class="text-sm mb-8" style="color: hsl(215 20% 42%)">Last updated: March 29, 2026</p>
+    <!-- Header -->
+    <p class="text-xs font-semibold mb-1" style="color:#008F82; text-transform:uppercase; letter-spacing:0.08em;">PHARMACYPULSE — a service of ByondRx, Inc.</p>
+    <h1 class="font-serif text-3xl mb-1" style="color: hsl(220 50% 10%)">Privacy Policy</h1>
+    <p class="text-sm mb-1" style="color: hsl(215 20% 42%)">Community Pharmacy Transparency Platform</p>
+    <p class="text-sm mb-8" style="color: hsl(215 20% 42%)">Effective Date: September 3, 2026</p>
 
+    <!-- Spanish-mode translation notice (hidden in EN, shown via JS in ES) -->
+    <!-- <div id="pp-privacy-draft-notice" style="display:none; background:#FFF9E6; border:1px solid #F5C842; border-radius:8px; padding:1rem 1.25rem; margin-bottom:1.5rem; font-size:0.8125rem; color:#5a4200;">
+      <strong>Aviso sobre esta Traducción / Notice Regarding This Translation</strong><br><br>
+      Esta es una traducción preliminar generada con asistencia de IA, proporcionada como punto de partida. Debe ser revisada y certificada por un traductor legal profesional y aprobada por un abogado con licencia antes de su publicación o uso como documento vinculante. En caso de discrepancia entre esta traducción y la versión oficial en inglés hasta que ese proceso de certificación se complete, la versión en inglés prevalecerá.<br><br>
+      <em>This is a preliminary, AI-assisted translation provided as a starting point. It must be reviewed and certified by a professional legal translator and approved by a licensed attorney before it is published or used as a binding document. Until that certification process is complete, the English-language version controls in the event of any discrepancy.</em>
+    </div> -->
+
+    <!-- Table of Contents -->
+    <nav style="background:#F0FDF9; border:1px solid #C6F1EA; border-radius:8px; padding:1rem 1.25rem; margin-bottom:2rem;">
+      <p class="text-xs font-semibold mb-2" style="color:#008F82; text-transform:uppercase; letter-spacing:0.08em;" id="toc-heading">Table of Contents</p>
+      <ol style="margin:0; padding-left:1.25rem; font-size:0.8125rem; color:hsl(215 20% 42%); line-height:1.9;">
+        <li><a href="#s1" style="color:#008F82; text-decoration:none;" id="toc-1">Introduction and Scope</a></li>
+        <li><a href="#s2" style="color:#008F82; text-decoration:none;" id="toc-2">Information We Collect</a></li>
+        <li><a href="#s3" style="color:#008F82; text-decoration:none;" id="toc-3">Health-Adjacent Information: How We Handle It</a></li>
+        <li><a href="#s4" style="color:#008F82; text-decoration:none;" id="toc-4">How We Use Information</a></li>
+        <li><a href="#s5" style="color:#008F82; text-decoration:none;" id="toc-5">How We Share Information</a></li>
+        <li><a href="#s6" style="color:#008F82; text-decoration:none;" id="toc-6">Cookie Notice</a></li>
+        <li><a href="#s7" style="color:#008F82; text-decoration:none;" id="toc-7">Your Choices and Privacy Rights</a></li>
+        <li><a href="#s8" style="color:#008F82; text-decoration:none;" id="toc-8">Data Retention</a></li>
+        <li><a href="#s9" style="color:#008F82; text-decoration:none;" id="toc-9">Data Security</a></li>
+        <li><a href="#s10" style="color:#008F82; text-decoration:none;" id="toc-10">Children's Privacy</a></li>
+        <li><a href="#s11" style="color:#008F82; text-decoration:none;" id="toc-11">Language Availability</a></li>
+        <li><a href="#s12" style="color:#008F82; text-decoration:none;" id="toc-12">Contact Us</a></li>
+        <li><a href="#s13" style="color:#008F82; text-decoration:none;" id="toc-13">Changes to This Policy</a></li>
+      </ol>
+    </nav>
+
+    <!-- Body -->
     <div class="prose prose-sm" style="color: hsl(215 20% 30%)">
 
-      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">1. Information We Collect</h2>
-      <p class="text-sm mb-3"><strong>Account Information:</strong> Phone number, name (optional). We do not collect email addresses, social security numbers, or financial information.</p>
-      <p class="text-sm mb-3"><strong>Review Data:</strong> Pharmacy ratings (stock availability, wait time, service quality), optional written comments, and caregiver status. Reviews are public and associated with your display name.</p>
-      <p class="text-sm mb-3"><strong>Usage Data:</strong> Pages visited, actions taken within the app, device type, and browser information for analytics and fraud prevention.</p>
-      <p class="text-sm mb-3"><strong>Location Data:</strong> With your permission, approximate location for finding nearby pharmacies. We do not store precise GPS coordinates.</p>
-      <p class="text-sm mb-3"><strong>IP-Based Location:</strong> When you visit our site without signing in, we may use your IP address to estimate your general location (city or ZIP code) so we can show pharmacies near you. We never persist the IP address itself — only the resolved general location, cached for 24 hours and keyed by an opaque hash. IP-derived location is never shared with third parties.</p>
+      <!-- 1 -->
+      <h2 id="s1" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">1. Introduction and Scope</h2>
+      <p class="text-sm mb-3">This Privacy Policy explains how ByondRx, Inc. ("ByondRx," "PharmacyPulse," "we," "us," or "our") collects, uses, discloses, and protects information in connection with the PharmacyPulse website, mobile experiences, and related services (collectively, the "Service"). PharmacyPulse is a community-driven pharmacy transparency platform that publishes patient-reported ratings on prescription fulfillment, wait time, and empathetic care so that people can make more informed decisions about where to fill a prescription.</p>
+      <p class="text-sm mb-3">This Policy applies to visitors, registered users, and pharmacy partners who interact with the Service. It does not apply to the internal systems of any pharmacy, health plan, or other third party, even where the Service links to or displays information about them.</p>
+      <p class="text-sm mb-3"><strong>Important:</strong> PharmacyPulse is not a pharmacy, a healthcare provider, a health plan, or a HIPAA "covered entity" or "business associate." We do not create, receive, maintain, or transmit information on behalf of a covered entity for treatment, payment, or health care operations, and the information we collect through user reviews is not "protected health information" under HIPAA. Section 3 below explains how we nonetheless treat health-adjacent information with heightened care.</p>
 
-      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">2. How We Use Your Information</h2>
+      <!-- 2 -->
+      <h2 id="s2" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">2. Information We Collect</h2>
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">2.1 Information You Provide Directly</h3>
       <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
-        <li>Verify your identity via phone number (SMS verification)</li>
-        <li>Display pharmacy reviews to the community</li>
-        <li>Calculate stock confidence and service ratings</li>
-        <li>Prevent fraud, fake reviews, and abuse</li>
-        <li>Comply with legal obligations</li>
+        <li><strong>Account information:</strong> name, email address, zip code or approximate location, password, and preferred language (English/Spanish).</li>
+        <li><strong>Structured post-visit reports:</strong> your rating and narrative responses regarding prescription fulfillment outcome, wait time, and empathetic care for a specific pharmacy visit.</li>
+        <li><strong>Free-text reviews, photos, and any other content</strong> you choose to submit.</li>
+        <li><strong>Communications with us,</strong> including support requests, pharmacy-partner inquiries, and survey responses.</li>
+        <li>If you register a pharmacy business account: business name, address, license or registration identifiers you choose to provide, and the identity of authorized representatives.</li>
+      </ul>
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">2.2 Information Collected Automatically</h3>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li><strong>Device and log data:</strong> IP address, browser type, operating system, device identifiers, referring URLs, and timestamps.</li>
+        <li><strong>Usage data:</strong> pages viewed, searches performed, listings viewed, and interactions with review and rating features.</li>
+        <li><strong>Approximate location</strong> derived from IP address or zip code you provide, used to return geographically relevant pharmacy results.</li>
+        <li>Cookies and similar technologies as described in Section 6.</li>
+      </ul>
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">2.3 Information From Other Sources</h3>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li>Publicly available information about pharmacies (name, address, hours, license status) compiled to build and maintain listings.</li>
+        <li>Information a pharmacy partner submits when responding in writing to a review, or when claiming and managing a listing.</li>
+        <li>Aggregated or de-identified information we may receive from research or analytics partners.</li>
       </ul>
 
-      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">3. Information Sharing</h2>
-      <p class="text-sm mb-3">We do <strong>not</strong> sell your personal information. We share data only with:</p>
+      <!-- 3 -->
+      <h2 id="s3" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">3. Health-Adjacent Information: How We Handle It</h2>
+      <p class="text-sm mb-3">Because PharmacyPulse reviews relate to pharmacy visits, some users choose to describe personal health circumstances in free-text reviews (for example, naming a condition or medication). We strongly discourage including this level of detail, and our submission flow prompts users to describe their experience (fulfillment, wait, and courtesy) without naming specific medications, diagnoses, or dosages.</p>
+      <p class="text-sm mb-3">If a user nonetheless includes sensitive health details in a public review, that content is treated as user-generated content under this Policy and our Terms and Conditions, not as medical records. You are solely responsible for what you choose to disclose publicly. We reserve the right, but do not assume an obligation, to redact or remove personally identifying medical detail from public-facing content as part of our content moderation process described in the Terms and Conditions.</p>
+      <p class="text-sm mb-3">We do not sell information that reveals a specific diagnosis, prescription, or treatment history, and we apply additional internal access restrictions to any such content that is submitted.</p>
+
+      <!-- 4 -->
+      <h2 id="s4" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">4. How We Use Information</h2>
       <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
-        <li><strong>Service providers:</strong> SMS verification (Twilio), hosting, analytics</li>
-        <li><strong>Legal requirements:</strong> When required by law, court order, or regulatory authority</li>
-        <li><strong>Public reviews:</strong> Your reviews (with display name) are publicly visible to promote pharmacy transparency</li>
+        <li>Operate, maintain, and improve the Service, including the confidence-scoring model used to summarize pharmacy performance.</li>
+        <li>Publish aggregated ratings and, where you elect to post publicly, your review content.</li>
+        <li>Communicate with you about your account, submissions, and service updates.</li>
+        <li>Detect, investigate, and prevent fraud, fake reviews, and other misuse, including through our three-tier moderation process.</li>
+        <li>Support pharmacy partners in responding to reviews and understanding aggregate, de-identified performance trends.</li>
+        <li>Develop de-identified or aggregated data products, including outcomes-data offerings for pharmacies, payers, employers, and manufacturers, consistent with Section 5.</li>
+        <li>Comply with legal obligations and enforce our Terms and Conditions.</li>
       </ul>
 
-      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">4. Health Information (PHI) Disclaimer</h2>
-      <p class="text-sm mb-3">PharmacyPulse is <strong>not</strong> a healthcare provider and is not subject to HIPAA. However, we take reasonable steps to prevent accidental disclosure of personal health information in reviews. Our content moderation system screens for medication names and medical conditions. <strong>Do not include specific medication names, diagnoses, or other health details in your reviews.</strong></p>
-
-      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">5. Your Rights (CCPA/CPRA)</h2>
-      <p class="text-sm mb-3">California residents have the right to:</p>
+      <!-- 5 -->
+      <h2 id="s5" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">5. How We Share Information</h2>
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">5.1 Public Display</h3>
+      <p class="text-sm mb-3">Reviews, ratings, and any display name or profile information you choose to make public are visible to other users and to search engines, unless you submit a report through a private or confidential channel we may offer.</p>
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">5.2 Pharmacy Partners</h3>
+      <p class="text-sm mb-3">Pharmacy partners can see the reviews and structured ratings submitted about their location so they can respond in writing, consistent with the transparency mission of the Service. We do not share your account credentials, private contact information, or precise location with pharmacy partners without your consent.</p>
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">5.3 Service Providers</h3>
+      <p class="text-sm mb-3">We share information with vendors who perform services on our behalf, such as hosting, analytics, customer support, and communications, under contractual confidentiality and data-protection obligations, including execution of a Business Associate Agreement or equivalent data-protection addendum where a vendor's role warrants it.</p>
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">5.4 Third-Party Mapping, Geolocation, and Pharmacy-Directory APIs</h3>
+      <p class="text-sm mb-3">PharmacyPulse integrates with third-party application programming interfaces ("APIs") to power core features of the Service. We share only the categories of information necessary for each integration to function:</p>
       <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
-        <li><strong>Know</strong> what personal data we collect and how it is used</li>
-        <li><strong>Access</strong> your personal data (export available in Account settings)</li>
-        <li><strong>Delete</strong> your personal data (request via Account settings, processed within 45 days)</li>
-        <li><strong>Opt out</strong> of sale of personal information (we do not sell data)</li>
-        <li><strong>Non-discrimination</strong> for exercising your privacy rights</li>
+        <li><strong>Mapping and geolocation API providers</strong> (for example, a Google Maps Platform–type mapping service): the zip code or address you enter, IP-derived approximate location, and your search query, so the Service can render a map and return geographically relevant pharmacy results.</li>
+        <li><strong>Pharmacy directory and licensing data providers</strong> (for example, state board-of-pharmacy license databases, the NPI registry, and chain-pharmacy location feeds): the search parameters needed to look up a pharmacy's name, address, hours, and license status. We do not send your name, account identifier, or contact information to these providers.</li>
+        <li><strong>Payment processor</strong> (for Pharmacy Partner subscriptions described in our Terms and Conditions): billing name, billing address, and payment method details needed to process a subscription payment. We do not store full payment card numbers on our own systems.</li>
       </ul>
+      <p class="text-sm mb-3">These providers act as our service providers or processors and are contractually restricted from using the shared data for their own independent purposes. Each provider's own privacy notice governs its handling of information once received, and we encourage you to review it for details specific to that provider.</p>
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">5.5 Aggregated and De-Identified Data</h3>
+      <p class="text-sm mb-3">Consistent with our published monetization roadmap, we may compile aggregated or de-identified data (for example, pharmacy-level fulfillment-rate trends) and license it to payers, employers, pharmacy operators, or manufacturers. Data shared in this manner is not reasonably capable of being linked back to an individual reviewer.</p>
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">5.6 Legal, Safety, and Business Transfers</h3>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li>To comply with law, legal process, or governmental request.</li>
+        <li>To protect the rights, property, or safety of PharmacyPulse, our users, or the public.</li>
+        <li>In connection with a merger, financing, acquisition, or sale of assets, subject to standard confidentiality protections.</li>
+      </ul>
+      <p class="text-sm mb-3">We do not sell personal information to third parties for cross-context behavioral advertising, and we do not share precise geolocation data with advertisers.</p>
 
-      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">6. Do Not Sell My Personal Information</h2>
-      <p class="text-sm mb-3">We do not sell, rent, or trade your personal information to third parties for monetary or other valuable consideration. This policy applies to all users regardless of location.</p>
+      <!-- 6 -->
+      <h2 id="s6" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">6. Cookie Notice</h2>
+      <p class="text-sm mb-3">This Cookie Notice explains how PharmacyPulse uses cookies, local storage, and similar tracking technologies (collectively, "cookies") when you visit the Service, and the choices available to you.</p>
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.1 What Cookies Are</h3>
+      <p class="text-sm mb-3">Cookies are small text files placed on your device that let a website recognize your browser, remember information about your visit, and, in some cases, track your activity across sites. We also use comparable technologies such as local storage and pixel tags, which this Notice refers to collectively as "cookies."</p>
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.2 Categories of Cookies We Use</h3>
+      <div style="overflow-x:auto; margin-bottom:1rem;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.8125rem; color:hsl(215 20% 30%);">
+          <thead>
+            <tr style="background:#F0FDF9; border-bottom:2px solid #C6F1EA;">
+              <th style="text-align:left; padding:0.5rem 0.75rem; font-weight:600; color:hsl(220 50% 10%);">Category</th>
+              <th style="text-align:left; padding:0.5rem 0.75rem; font-weight:600; color:hsl(220 50% 10%);">Examples</th>
+              <th style="text-align:left; padding:0.5rem 0.75rem; font-weight:600; color:hsl(220 50% 10%);">Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #E5E7EB;">
+              <td style="padding:0.5rem 0.75rem; vertical-align:top; font-weight:500;">Essential</td>
+              <td style="padding:0.5rem 0.75rem; vertical-align:top;">Session ID, authentication token, load-balancing cookie</td>
+              <td style="padding:0.5rem 0.75rem; vertical-align:top;">Required to sign in, submit a review, and keep the Service secure and functional. Cannot be disabled without losing core functionality.</td>
+            </tr>
+            <tr style="border-bottom:1px solid #E5E7EB;">
+              <td style="padding:0.5rem 0.75rem; vertical-align:top; font-weight:500;">Functional</td>
+              <td style="padding:0.5rem 0.75rem; vertical-align:top;">Language preference (English/Spanish), zip code/location entered by you</td>
+              <td style="padding:0.5rem 0.75rem; vertical-align:top;">Remembers your preferences so you don't have to re-enter them on each visit.</td>
+            </tr>
+            <tr>
+              <td style="padding:0.5rem 0.75rem; vertical-align:top; font-weight:500;">Analytics</td>
+              <td style="padding:0.5rem 0.75rem; vertical-align:top;">First-party usage-analytics identifier</td>
+              <td style="padding:0.5rem 0.75rem; vertical-align:top;">Helps us understand aggregate usage patterns (e.g., which searches or listings are viewed) so we can improve the Service.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-sm mb-3">We do not use advertising or cross-context behavioral-advertising cookies, and we do not permit third parties to place such cookies through the Service.</p>
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.3 Third-Party Cookies</h3>
+      <p class="text-sm mb-3">Certain service providers who support hosting, analytics, and error monitoring may set their own cookies when you use the Service, subject to their own privacy practices and our contractual confidentiality and data-protection requirements. We do not authorize these providers to use Service data for their own advertising purposes.</p>
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.4 Managing Your Cookie Preferences</h3>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li><strong>Browser controls:</strong> most browsers let you block or delete cookies through their settings menu; blocking essential cookies may prevent you from signing in or submitting a review.</li>
+        <li><strong>Cookie banner:</strong> on your first visit, you can accept or decline non-essential (functional and analytics) cookies through our cookie banner; you may change your choice at any time through the "Cookie Preferences" link in the Service footer.</li>
+        <li><strong>Mobile device settings:</strong> mobile operating systems provide controls to limit ad tracking and reset device identifiers, though these primarily affect third-party advertising, which we do not use.</li>
+      </ul>
+      <p class="text-sm mb-3">We do not currently respond to browser "Do Not Track" signals because no common industry standard for such signals has been adopted.</p>
 
-      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">7. Data Retention</h2>
-      <p class="text-sm mb-3">We retain your account data for as long as your account is active. Reviews remain public even after account deletion (anonymized as "Deleted User"). You may request full data deletion via the CCPA process.</p>
+      <!-- 7 -->
+      <h2 id="s7" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">7. Your Choices and Privacy Rights</h2>
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">7.1 Access, Correction, and Deletion</h3>
+      <p class="text-sm mb-3">You may access and update most account information directly in your account settings. You may request deletion of your account and associated personal information by contacting us as described in Section 12. Public reviews may be retained in de-identified or aggregated form after account deletion to preserve the integrity of pharmacy ratings, unless applicable law requires full deletion.</p>
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">7.2 California Residents</h3>
+      <p class="text-sm mb-3">If you are a California resident, the California Consumer Privacy Act, as amended by the California Privacy Rights Act ("CCPA"), gives you the right to know what personal information we collect, to request deletion or correction, to opt out of the sale or sharing of personal information (we do not sell or share personal information as those terms are defined by the CCPA), and to non-discrimination for exercising these rights. The categories of third parties with whom we share personal information for business purposes are described in Section 5, including service providers, mapping and geolocation API providers, pharmacy directory data providers, and payment processors. You may submit a verifiable request using the contact information in Section 12 or by asking a representative you have authorized to submit it on your behalf.</p>
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">7.3 Other U.S. State Rights</h3>
+      <p class="text-sm mb-3">Residents of other states with comprehensive privacy laws (including, as applicable, Colorado, Connecticut, Utah, Virginia, and others) may have similar rights to access, correct, delete, and obtain a portable copy of their personal information, and to opt out of targeted advertising, sale, or certain profiling. We honor applicable requests consistent with each state's law.</p>
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">7.4 Marketing Communications</h3>
+      <p class="text-sm mb-3">You may opt out of promotional emails using the unsubscribe link in each message. You cannot opt out of transactional or account-related messages necessary to operate the Service.</p>
 
-      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">8. Security</h2>
-      <p class="text-sm mb-3">We use industry-standard security measures including encryption in transit (TLS), encrypted sessions, rate limiting, and brute-force protection.</p>
+      <!-- 8 -->
+      <h2 id="s8" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">8. Data Retention</h2>
+      <p class="text-sm mb-3">We retain personal information for as long as your account is active and as needed to provide the Service, comply with legal obligations, resolve disputes, and enforce our agreements. Public review content may persist in aggregated or de-identified form to preserve historical pharmacy performance data even after an individual account is deleted.</p>
 
-      <h2 class="font-serif text-lg mt-6 mb-2" style="color: hsl(220 50% 10%)">9. Contact Us</h2>
-      <p class="text-sm mb-3">For privacy inquiries or to exercise your rights, contact: <strong>privacy@beyondrx.com</strong></p>
+      <!-- 9 -->
+      <h2 id="s9" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">9. Data Security</h2>
+      <p class="text-sm mb-3">We use administrative, technical, and physical safeguards designed to protect information against unauthorized access, alteration, disclosure, or destruction, including encryption in transit, access controls, and vendor due diligence. No method of transmission or storage is completely secure, and we cannot guarantee absolute security.</p>
 
-    </div>
-  </div>
-</div>
+      <!-- 10 -->
+      <h2 id="s10" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">10. Children's Privacy</h2>
+      <p class="text-sm mb-3">The Service is not directed to individuals under 18, and we do not knowingly collect personal information from children. If we learn that we have collected personal information from a child under 18 without appropriate consent, we will delete it.</p>
+
+      <!-- 11 -->
+      <h2 id="s11" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">11. Language Availability</h2>
+      <p class="text-sm mb-3">This Policy and the Service are available in English and Spanish, consistent with our Spanish-language locator toggle and our commitment to California's Spanish-speaking community. If there is a conflict between the English and Spanish versions, the English version controls, except that, as required by California Civil Code Section 1632, the Spanish-language version controls for a California consumer with whom the transaction was negotiated primarily in Spanish. We maintain the Spanish translation in step with the English version and will update both when this Policy changes.</p>
+
+      <!-- 12 -->
+      <h2 id="s12" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">12. Contact Us</h2>
+      <p class="text-sm mb-3">If you have questions about this Policy or wish to exercise a privacy right, contact us at:</p>
+      <p class="text-sm mb-1"><strong>ByondRx, Inc. / PharmacyPulse — Attn: Privacy</strong></p>
+      <p class="text-sm mb-1">Email: <a href="mailto:privacy@pharmacypulse.co" style="color:#008F82;">privacy@pharmacypulse.co</a></p>
+      <p class="text-sm mb-3">Website: <a href="https://pharmacypulse.co" style="color:#008F82;">pharmacypulse.co</a></p>
+
+      <!-- 13 -->
+      <h2 id="s13" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">13. Changes to This Policy</h2>
+      <p class="text-sm mb-3">We may update this Policy from time to time. If we make material changes, we will provide notice through the Service or by other reasonable means before the change takes effect. The "Effective Date" above reflects the last update.</p>
+
+    </div><!-- /prose -->
+  </div><!-- /max-w-2xl -->
+</div><!-- /min-h-screen -->
+
 {% include "pharmacypulse/partials/footer.html" %}
 {% include "pharmacypulse/partials/bottom-nav.html" %}
+
+<!-- ============================================================
+     Privacy page — Spanish translation strings.
+     Extends the global PP_EN_ES dict that topbar.html defines.
+     ppApplyUniversalLang('es') is called automatically on load
+     by the topbar script whenever lang cookie = 'es'.
+     ============================================================ -->
+<script>
+(function(){
+  if (!window.PP_EN_ES) return;
+  Object.assign(window.PP_EN_ES, {
+    // Page meta
+    "Privacy Policy": "Política de Privacidad",
+    "Community Pharmacy Transparency Platform": "Plataforma Comunitaria de Transparencia Farmacéutica",
+    "Effective Date: September 3, 2026": "Fecha de Vigencia: 3 de septiembre de 2026",
+    "PHARMACYPULSE — a service of ByondRx, Inc.": "PHARMACYPULSE — un servicio de ByondRx, Inc.",
+
+    // Table of contents
+    "Table of Contents": "Tabla de Contenidos",
+    "Introduction and Scope": "Introducción y Alcance",
+    "Information We Collect": "Información que Recopilamos",
+    "Health-Adjacent Information: How We Handle It": "Información Relacionada con la Salud: Cómo la Manejamos",
+    "How We Use Information": "Cómo Usamos la Información",
+    "How We Share Information": "Cómo Compartimos la Información",
+    "Cookie Notice": "Aviso de Cookies",
+    "Your Choices and Privacy Rights": "Sus Opciones y Derechos de Privacidad",
+    "Data Retention": "Retención de Datos",
+    "Data Security": "Seguridad de los Datos",
+    "Children's Privacy": "Privacidad de los Menores",
+    "Language Availability": "Disponibilidad de Idiomas",
+    "Contact Us": "Contáctenos",
+    "Changes to This Policy": "Cambios a esta Política",
+
+    // Section 1
+    "1. Introduction and Scope": "1. Introducción y Alcance",
+    "This Privacy Policy explains how ByondRx, Inc. (\"ByondRx,\" \"PharmacyPulse,\" \"we,\" \"us,\" or \"our\") collects, uses, discloses, and protects information in connection with the PharmacyPulse website, mobile experiences, and related services (collectively, the \"Service\"). PharmacyPulse is a community-driven pharmacy transparency platform that publishes patient-reported ratings on prescription fulfillment, wait time, and empathetic care so that people can make more informed decisions about where to fill a prescription.": "Esta Política de Privacidad explica cómo ByondRx, Inc. (\"ByondRx\", \"PharmacyPulse\", \"nosotros\" o \"nuestro\") recopila, usa, divulga y protege la información en relación con el sitio web, las experiencias móviles y los servicios relacionados de PharmacyPulse (colectivamente, el \"Servicio\"). PharmacyPulse es una plataforma comunitaria de transparencia farmacéutica que publica calificaciones reportadas por pacientes sobre el cumplimiento de recetas, el tiempo de espera y la atención empática, para que las personas puedan tomar decisiones más informadas sobre dónde surtir una receta.",
+    "This Policy applies to visitors, registered users, and pharmacy partners who interact with the Service. It does not apply to the internal systems of any pharmacy, health plan, or other third party, even where the Service links to or displays information about them.": "Esta Política se aplica a los visitantes, usuarios registrados y farmacias asociadas que interactúan con el Servicio. No se aplica a los sistemas internos de ninguna farmacia, plan de salud u otro tercero, aun cuando el Servicio enlace a ellos o muestre información sobre ellos.",
+    "Important:": "Importante:",
+    "PharmacyPulse is not a pharmacy, a healthcare provider, a health plan, or a HIPAA \"covered entity\" or \"business associate.\" We do not create, receive, maintain, or transmit information on behalf of a covered entity for treatment, payment, or health care operations, and the information we collect through user reviews is not \"protected health information\" under HIPAA. Section 3 below explains how we nonetheless treat health-adjacent information with heightened care.": "PharmacyPulse no es una farmacia, un proveedor de atención médica, un plan de salud, ni una \"entidad cubierta\" o \"asociado comercial\" bajo HIPAA. No creamos, recibimos, mantenemos ni transmitimos información en nombre de una entidad cubierta para fines de tratamiento, pago u operaciones de atención médica, y la información que recopilamos a través de las reseñas de usuarios no constituye \"información de salud protegida\" bajo HIPAA. La Sección 3 a continuación explica cómo, no obstante, tratamos con especial cuidado la información relacionada con la salud.",
+
+    // Section 2
+    "2. Information We Collect": "2. Información que Recopilamos",
+    "2.1 Information You Provide Directly": "2.1 Información que Usted Proporciona Directamente",
+    "Account information:": "Información de cuenta:",
+    "name, email address, zip code or approximate location, password, and preferred language (English/Spanish).": "nombre, correo electrónico, código postal o ubicación aproximada, contraseña e idioma preferido (inglés/español).",
+    "Structured post-visit reports:": "Reportes estructurados posteriores a la visita:",
+    "your rating and narrative responses regarding prescription fulfillment outcome, wait time, and empathetic care for a specific pharmacy visit.": "su calificación y respuestas narrativas sobre el resultado del cumplimiento de la receta, el tiempo de espera y la atención empática de una visita específica a una farmacia.",
+    "Free-text reviews, photos, and any other content": "Reseñas de texto libre, fotografías y cualquier otro contenido",
+    "you choose to submit.": "que decida enviar.",
+    "Communications with us,": "Comunicaciones con nosotros,",
+    "including support requests, pharmacy-partner inquiries, and survey responses.": "incluidas solicitudes de soporte, consultas de farmacias asociadas y respuestas a encuestas.",
+    "If you register a pharmacy business account: business name, address, license or registration identifiers you choose to provide, and the identity of authorized representatives.": "Si registra una cuenta comercial de farmacia: nombre comercial, dirección, identificadores de licencia o registro que decida proporcionar, y la identidad de los representantes autorizados.",
+    "2.2 Information Collected Automatically": "2.2 Información Recopilada Automáticamente",
+    "Device and log data:": "Datos del dispositivo y del registro:",
+    "IP address, browser type, operating system, device identifiers, referring URLs, and timestamps.": "dirección IP, tipo de navegador, sistema operativo, identificadores de dispositivo, URLs de referencia y marcas de tiempo.",
+    "Usage data:": "Datos de uso:",
+    "pages viewed, searches performed, listings viewed, and interactions with review and rating features.": "páginas visitadas, búsquedas realizadas, listados vistos e interacciones con las funciones de reseñas y calificaciones.",
+    "Approximate location": "Ubicación aproximada",
+    "derived from IP address or zip code you provide, used to return geographically relevant pharmacy results.": "derivada de la dirección IP o del código postal que usted proporciona, utilizada para mostrar resultados de farmacias relevantes geográficamente.",
+    "Cookies and similar technologies as described in Section 6.": "Cookies y tecnologías similares, según se describe en la Sección 6.",
+    "2.3 Information From Other Sources": "2.3 Información de Otras Fuentes",
+    "Publicly available information about pharmacies (name, address, hours, license status) compiled to build and maintain listings.": "Información disponible públicamente sobre farmacias (nombre, dirección, horario, estado de la licencia) recopilada para crear y mantener los listados.",
+    "Information a pharmacy partner submits when responding in writing to a review, or when claiming and managing a listing.": "Información que una farmacia asociada envía al responder por escrito a una reseña, o al reclamar y administrar un listado.",
+    "Aggregated or de-identified information we may receive from research or analytics partners.": "Información agregada o desidentificada que podamos recibir de socios de investigación o análisis.",
+
+    // Section 3
+    "3. Health-Adjacent Information: How We Handle It": "3. Información Relacionada con la Salud: Cómo la Manejamos",
+    "Because PharmacyPulse reviews relate to pharmacy visits, some users choose to describe personal health circumstances in free-text reviews (for example, naming a condition or medication). We strongly discourage including this level of detail, and our submission flow prompts users to describe their experience (fulfillment, wait, and courtesy) without naming specific medications, diagnoses, or dosages.": "Debido a que las reseñas de PharmacyPulse se relacionan con visitas a farmacias, algunos usuarios optan por describir circunstancias de salud personal en reseñas de texto libre (por ejemplo, nombrando una afección o medicamento). Desaconsejamos firmemente incluir este nivel de detalle, y nuestro flujo de envío indica a los usuarios que describan su experiencia (cumplimiento, espera y cortesía) sin nombrar medicamentos, diagnósticos o dosis específicas.",
+    "If a user nonetheless includes sensitive health details in a public review, that content is treated as user-generated content under this Policy and our Terms and Conditions, not as medical records. You are solely responsible for what you choose to disclose publicly. We reserve the right, but do not assume an obligation, to redact or remove personally identifying medical detail from public-facing content as part of our content moderation process described in the Terms and Conditions.": "Si un usuario, no obstante, incluye detalles sensibles de salud en una reseña pública, dicho contenido se trata como contenido generado por el usuario bajo esta Política y nuestros Términos y Condiciones, y no como un registro médico. Usted es el único responsable de lo que decida divulgar públicamente. Nos reservamos el derecho, sin asumir la obligación, de redactar o eliminar detalles médicos de identificación personal del contenido público como parte de nuestro proceso de moderación de contenido descrito en los Términos y Condiciones.",
+    "We do not sell information that reveals a specific diagnosis, prescription, or treatment history, and we apply additional internal access restrictions to any such content that is submitted.": "No vendemos información que revele un diagnóstico, receta o historial de tratamiento específico, y aplicamos restricciones de acceso interno adicionales a cualquier contenido de este tipo que se envíe.",
+
+    // Section 4
+    "4. How We Use Information": "4. Cómo Usamos la Información",
+    "Operate, maintain, and improve the Service, including the confidence-scoring model used to summarize pharmacy performance.": "Operar, mantener y mejorar el Servicio, incluido el modelo de puntuación de confianza utilizado para resumir el desempeño de las farmacias.",
+    "Publish aggregated ratings and, where you elect to post publicly, your review content.": "Publicar calificaciones agregadas y, cuando usted elija publicarlo, el contenido de su reseña.",
+    "Communicate with you about your account, submissions, and service updates.": "Comunicarnos con usted sobre su cuenta, sus envíos y actualizaciones del servicio.",
+    "Detect, investigate, and prevent fraud, fake reviews, and other misuse, including through our three-tier moderation process.": "Detectar, investigar y prevenir fraudes, reseñas falsas y otros usos indebidos, incluso mediante nuestro proceso de moderación de tres niveles.",
+    "Support pharmacy partners in responding to reviews and understanding aggregate, de-identified performance trends.": "Apoyar a las farmacias asociadas para que respondan a las reseñas y comprendan las tendencias de desempeño agregadas y desidentificadas.",
+    "Develop de-identified or aggregated data products, including outcomes-data offerings for pharmacies, payers, employers, and manufacturers, consistent with Section 5.": "Desarrollar productos de datos agregados o desidentificados, incluidas ofertas de datos de resultados para farmacias, aseguradoras, empleadores y fabricantes, conforme a la Sección 5.",
+    "Comply with legal obligations and enforce our Terms and Conditions.": "Cumplir con obligaciones legales y hacer cumplir nuestros Términos y Condiciones.",
+
+    // Section 5
+    "5. How We Share Information": "5. Cómo Compartimos la Información",
+    "5.1 Public Display": "5.1 Visualización Pública",
+    "Reviews, ratings, and any display name or profile information you choose to make public are visible to other users and to search engines, unless you submit a report through a private or confidential channel we may offer.": "Las reseñas, calificaciones y cualquier nombre de perfil o información de perfil que usted decida hacer pública son visibles para otros usuarios y para los motores de búsqueda, salvo que envíe un reporte a través de un canal privado o confidencial que podamos ofrecer.",
+    "5.2 Pharmacy Partners": "5.2 Farmacias Asociadas",
+    "Pharmacy partners can see the reviews and structured ratings submitted about their location so they can respond in writing, consistent with the transparency mission of the Service. We do not share your account credentials, private contact information, or precise location with pharmacy partners without your consent.": "Las farmacias asociadas pueden ver las reseñas y calificaciones estructuradas enviadas sobre su ubicación para poder responder por escrito, conforme a la misión de transparencia del Servicio. No compartimos sus credenciales de cuenta, información de contacto privada ni su ubicación precisa con las farmacias asociadas sin su consentimiento.",
+    "5.3 Service Providers": "5.3 Proveedores de Servicios",
+    "We share information with vendors who perform services on our behalf, such as hosting, analytics, customer support, and communications, under contractual confidentiality and data-protection obligations, including execution of a Business Associate Agreement or equivalent data-protection addendum where a vendor's role warrants it.": "Compartimos información con proveedores que realizan servicios en nuestro nombre, tales como alojamiento, análisis, atención al cliente y comunicaciones, sujetos a obligaciones contractuales de confidencialidad y protección de datos, incluida la firma de un Acuerdo de Asociado Comercial o un anexo equivalente de protección de datos cuando el rol del proveedor lo requiera.",
+    "5.4 Third-Party Mapping, Geolocation, and Pharmacy-Directory APIs": "5.4 APIs de Mapas, Geolocalización y Directorio de Farmacias de Terceros",
+    "PharmacyPulse integrates with third-party application programming interfaces (\"APIs\") to power core features of the Service. We share only the categories of information necessary for each integration to function:": "PharmacyPulse se integra con interfaces de programación de aplicaciones (\"APIs\") de terceros para habilitar funciones esenciales del Servicio. Compartimos únicamente las categorías de información necesarias para que cada integración funcione:",
+    "Mapping and geolocation API providers": "Proveedores de API de mapas y geolocalización",
+    "(for example, a Google Maps Platform–type mapping service): the zip code or address you enter, IP-derived approximate location, and your search query, so the Service can render a map and return geographically relevant pharmacy results.": "(por ejemplo, un servicio de mapas tipo Google Maps Platform): el código postal o dirección que usted ingresa, la ubicación aproximada derivada de su IP y su consulta de búsqueda, para que el Servicio pueda mostrar un mapa y devolver resultados de farmacias relevantes geográficamente.",
+    "Pharmacy directory and licensing data providers": "Proveedores de datos de directorio y licencias de farmacias",
+    "(for example, state board-of-pharmacy license databases, the NPI registry, and chain-pharmacy location feeds): the search parameters needed to look up a pharmacy's name, address, hours, and license status. We do not send your name, account identifier, or contact information to these providers.": "(por ejemplo, bases de datos de licencias de juntas estatales de farmacia, el registro NPI y fuentes de ubicación de cadenas de farmacias): los parámetros de búsqueda necesarios para consultar el nombre, la dirección, el horario y el estado de la licencia de una farmacia. No enviamos su nombre, identificador de cuenta ni información de contacto a estos proveedores.",
+    "Payment processor": "Procesador de pagos",
+    "(for Pharmacy Partner subscriptions described in our Terms and Conditions): billing name, billing address, and payment method details needed to process a subscription payment. We do not store full payment card numbers on our own systems.": "(para las suscripciones de Farmacias Asociadas descritas en nuestros Términos y Condiciones): nombre de facturación, dirección de facturación y datos del método de pago necesarios para procesar un pago de suscripción. No almacenamos números completos de tarjetas de pago en nuestros propios sistemas.",
+    "These providers act as our service providers or processors and are contractually restricted from using the shared data for their own independent purposes. Each provider's own privacy notice governs its handling of information once received, and we encourage you to review it for details specific to that provider.": "Estos proveedores actúan como nuestros proveedores de servicios o encargados del tratamiento y están contractualmente restringidos de usar los datos compartidos para sus propios fines independientes. El aviso de privacidad propio de cada proveedor rige el manejo de la información una vez recibida, y le recomendamos revisarlo para obtener detalles específicos de ese proveedor.",
+    "5.5 Aggregated and De-Identified Data": "5.5 Datos Agregados y Desidentificados",
+    "Consistent with our published monetization roadmap, we may compile aggregated or de-identified data (for example, pharmacy-level fulfillment-rate trends) and license it to payers, employers, pharmacy operators, or manufacturers. Data shared in this manner is not reasonably capable of being linked back to an individual reviewer.": "Conforme a nuestra hoja de ruta de monetización publicada, podemos compilar datos agregados o desidentificados (por ejemplo, tendencias de la tasa de cumplimiento a nivel de farmacia) y otorgar licencias sobre ellos a aseguradoras, empleadores, operadores de farmacias o fabricantes. Los datos compartidos de esta manera no pueden razonablemente vincularse con un usuario individual.",
+    "5.6 Legal, Safety, and Business Transfers": "5.6 Asuntos Legales, de Seguridad y Transferencias Comerciales",
+    "To comply with law, legal process, or governmental request.": "Para cumplir con la ley, un proceso legal o una solicitud gubernamental.",
+    "To protect the rights, property, or safety of PharmacyPulse, our users, or the public.": "Para proteger los derechos, la propiedad o la seguridad de PharmacyPulse, nuestros usuarios o el público.",
+    "In connection with a merger, financing, acquisition, or sale of assets, subject to standard confidentiality protections.": "En relación con una fusión, financiamiento, adquisición o venta de activos, sujeto a protecciones de confidencialidad estándar.",
+    "We do not sell personal information to third parties for cross-context behavioral advertising, and we do not share precise geolocation data with advertisers.": "No vendemos información personal a terceros para publicidad conductual entre contextos, ni compartimos datos de geolocalización precisos con anunciantes.",
+
+    // Section 6
+    "6. Cookie Notice": "6. Aviso de Cookies",
+    "This Cookie Notice explains how PharmacyPulse uses cookies, local storage, and similar tracking technologies (collectively, \"cookies\") when you visit the Service, and the choices available to you.": "Este Aviso de Cookies explica cómo PharmacyPulse utiliza cookies, almacenamiento local y tecnologías de seguimiento similares (colectivamente, \"cookies\") cuando usted visita el Servicio, y las opciones disponibles para usted.",
+    "6.1 What Cookies Are": "6.1 Qué son las Cookies",
+    "Cookies are small text files placed on your device that let a website recognize your browser, remember information about your visit, and, in some cases, track your activity across sites. We also use comparable technologies such as local storage and pixel tags, which this Notice refers to collectively as \"cookies.\"": "Las cookies son pequeños archivos de texto colocados en su dispositivo que permiten que un sitio web reconozca su navegador, recuerde información sobre su visita y, en algunos casos, rastree su actividad en distintos sitios. También utilizamos tecnologías comparables, como el almacenamiento local y las etiquetas de píxel, a las que este Aviso se refiere colectivamente como \"cookies\".",
+    "6.2 Categories of Cookies We Use": "6.2 Categorías de Cookies que Utilizamos",
+    "Category": "Categoría",
+    "Examples": "Ejemplos",
+    "Purpose": "Finalidad",
+    "Essential": "Esenciales",
+    "Session ID, authentication token, load-balancing cookie": "ID de sesión, token de autenticación, cookie de balanceo de carga",
+    "Required to sign in, submit a review, and keep the Service secure and functional. Cannot be disabled without losing core functionality.": "Necesarias para iniciar sesión, enviar una reseña y mantener el Servicio seguro y funcional. No se pueden desactivar sin perder funciones esenciales.",
+    "Functional": "Funcionales",
+    "Language preference (English/Spanish), zip code/location entered by you": "Preferencia de idioma (inglés/español), código postal/ubicación ingresados por usted",
+    "Remembers your preferences so you don't have to re-enter them on each visit.": "Recuerdan sus preferencias para que no tenga que volver a ingresarlas en cada visita.",
+    "Analytics": "Analíticas",
+    "First-party usage-analytics identifier": "Identificador analítico de uso de origen propio",
+    "Helps us understand aggregate usage patterns (e.g., which searches or listings are viewed) so we can improve the Service.": "Nos ayudan a comprender patrones de uso agregados (por ejemplo, qué búsquedas o listados se visualizan) para poder mejorar el Servicio.",
+    "We do not use advertising or cross-context behavioral-advertising cookies, and we do not permit third parties to place such cookies through the Service.": "No utilizamos cookies publicitarias ni de publicidad conductual entre contextos, y no permitimos que terceros coloquen dichas cookies a través del Servicio.",
+    "6.3 Third-Party Cookies": "6.3 Cookies de Terceros",
+    "Certain service providers who support hosting, analytics, and error monitoring may set their own cookies when you use the Service, subject to their own privacy practices and our contractual confidentiality and data-protection requirements. We do not authorize these providers to use Service data for their own advertising purposes.": "Ciertos proveedores de servicios que respaldan el alojamiento, el análisis y el monitoreo de errores pueden colocar sus propias cookies cuando usted utiliza el Servicio, sujeto a sus propias prácticas de privacidad y a nuestros requisitos contractuales de confidencialidad y protección de datos. No autorizamos a estos proveedores a usar los datos del Servicio para sus propios fines publicitarios.",
+    "6.4 Managing Your Cookie Preferences": "6.4 Cómo Administrar sus Preferencias de Cookies",
+    "Browser controls:": "Controles del navegador:",
+    "most browsers let you block or delete cookies through their settings menu; blocking essential cookies may prevent you from signing in or submitting a review.": "la mayoría de los navegadores le permiten bloquear o eliminar cookies a través de su menú de configuración; bloquear las cookies esenciales puede impedirle iniciar sesión o enviar una reseña.",
+    "Cookie banner:": "Banner de cookies:",
+    "on your first visit, you can accept or decline non-essential (functional and analytics) cookies through our cookie banner; you may change your choice at any time through the \"Cookie Preferences\" link in the Service footer.": "en su primera visita, puede aceptar o rechazar las cookies no esenciales (funcionales y analíticas) a través de nuestro banner de cookies; puede cambiar su elección en cualquier momento a través del enlace \"Preferencias de Cookies\" en el pie de página del Servicio.",
+    "Mobile device settings:": "Configuración del dispositivo móvil:",
+    "mobile operating systems provide controls to limit ad tracking and reset device identifiers, though these primarily affect third-party advertising, which we do not use.": "los sistemas operativos móviles ofrecen controles para limitar el seguimiento publicitario y restablecer los identificadores del dispositivo, aunque estos afectan principalmente a la publicidad de terceros, la cual no utilizamos.",
+    "We do not currently respond to browser \"Do Not Track\" signals because no common industry standard for such signals has been adopted.": "Actualmente no respondemos a las señales de \"No Rastrear\" del navegador porque no existe un estándar común de la industria adoptado para dichas señales.",
+
+    // Section 7
+    "7. Your Choices and Privacy Rights": "7. Sus Opciones y Derechos de Privacidad",
+    "7.1 Access, Correction, and Deletion": "7.1 Acceso, Corrección y Eliminación",
+    "You may access and update most account information directly in your account settings. You may request deletion of your account and associated personal information by contacting us as described in Section 12. Public reviews may be retained in de-identified or aggregated form after account deletion to preserve the integrity of pharmacy ratings, unless applicable law requires full deletion.": "Puede acceder y actualizar la mayor parte de la información de su cuenta directamente en la configuración de su cuenta. Puede solicitar la eliminación de su cuenta y la información personal asociada contactándonos según se describe en la Sección 12. Las reseñas públicas pueden conservarse en forma agregada o desidentificada después de la eliminación de la cuenta, para preservar la integridad de las calificaciones de farmacias, salvo que la ley aplicable exija la eliminación total.",
+    "7.2 California Residents": "7.2 Residentes de California",
+    "If you are a California resident, the California Consumer Privacy Act, as amended by the California Privacy Rights Act (\"CCPA\"), gives you the right to know what personal information we collect, to request deletion or correction, to opt out of the sale or sharing of personal information (we do not sell or share personal information as those terms are defined by the CCPA), and to non-discrimination for exercising these rights. The categories of third parties with whom we share personal information for business purposes are described in Section 5, including service providers, mapping and geolocation API providers, pharmacy directory data providers, and payment processors. You may submit a verifiable request using the contact information in Section 12 or by asking a representative you have authorized to submit it on your behalf.": "Si usted es residente de California, la Ley de Privacidad del Consumidor de California, modificada por la Ley de Derechos de Privacidad de California (\"CCPA\"), le otorga el derecho a saber qué información personal recopilamos, a solicitar su eliminación o corrección, a optar por no participar en la venta o el intercambio de información personal (no vendemos ni compartimos información personal según se definen esos términos en la CCPA), y a la no discriminación por ejercer estos derechos. Las categorías de terceros con quienes compartimos información personal para fines comerciales se describen en la Sección 5, incluidos los proveedores de servicios, los proveedores de API de mapas y geolocalización, los proveedores de datos de directorios de farmacias y el procesador de pagos. Puede enviar una solicitud verificable utilizando la información de contacto de la Sección 12, o mediante un representante autorizado por usted.",
+    "7.3 Other U.S. State Rights": "7.3 Derechos en Otros Estados de EE. UU.",
+    "Residents of other states with comprehensive privacy laws (including, as applicable, Colorado, Connecticut, Utah, Virginia, and others) may have similar rights to access, correct, delete, and obtain a portable copy of their personal information, and to opt out of targeted advertising, sale, or certain profiling. We honor applicable requests consistent with each state's law.": "Los residentes de otros estados con leyes integrales de privacidad (incluidos, según corresponda, Colorado, Connecticut, Utah, Virginia y otros) pueden tener derechos similares de acceso, corrección, eliminación y obtención de una copia portátil de su información personal, y a optar por no participar en publicidad dirigida, venta o ciertos tipos de elaboración de perfiles. Atendemos las solicitudes aplicables conforme a la ley de cada estado.",
+    "7.4 Marketing Communications": "7.4 Comunicaciones de Marketing",
+    "You may opt out of promotional emails using the unsubscribe link in each message. You cannot opt out of transactional or account-related messages necessary to operate the Service.": "Puede optar por no recibir correos promocionales utilizando el enlace de cancelación de suscripción en cada mensaje. No puede optar por no recibir mensajes transaccionales o relacionados con su cuenta que sean necesarios para operar el Servicio.",
+
+    // Section 8
+    "8. Data Retention": "8. Retención de Datos",
+    "We retain personal information for as long as your account is active and as needed to provide the Service, comply with legal obligations, resolve disputes, and enforce our agreements. Public review content may persist in aggregated or de-identified form to preserve historical pharmacy performance data even after an individual account is deleted.": "Conservamos la información personal mientras su cuenta esté activa y según sea necesario para proporcionar el Servicio, cumplir con obligaciones legales, resolver disputas y hacer cumplir nuestros acuerdos. El contenido público de las reseñas puede persistir en forma agregada o desidentificada para preservar los datos históricos de desempeño de las farmacias, incluso después de eliminar una cuenta individual.",
+
+    // Section 9
+    "9. Data Security": "9. Seguridad de los Datos",
+    "We use administrative, technical, and physical safeguards designed to protect information against unauthorized access, alteration, disclosure, or destruction, including encryption in transit, access controls, and vendor due diligence. No method of transmission or storage is completely secure, and we cannot guarantee absolute security.": "Utilizamos salvaguardas administrativas, técnicas y físicas diseñadas para proteger la información contra el acceso no autorizado, la alteración, la divulgación o la destrucción, incluido el cifrado en tránsito, los controles de acceso y la debida diligencia de proveedores. Ningún método de transmisión o almacenamiento es completamente seguro, y no podemos garantizar la seguridad absoluta.",
+
+    // Section 10
+    "10. Children's Privacy": "10. Privacidad de los Menores",
+    "The Service is not directed to individuals under 18, and we do not knowingly collect personal information from children. If we learn that we have collected personal information from a child under 18 without appropriate consent, we will delete it.": "El Servicio no está dirigido a personas menores de 18 años, y no recopilamos a sabiendas información personal de menores. Si nos enteramos de que hemos recopilado información personal de un menor de 18 años sin el consentimiento adecuado, la eliminaremos.",
+
+    // Section 11
+    "11. Language Availability": "11. Disponibilidad de Idiomas",
+    "This Policy and the Service are available in English and Spanish, consistent with our Spanish-language locator toggle and our commitment to California's Spanish-speaking community. If there is a conflict between the English and Spanish versions, the English version controls, except that, as required by California Civil Code Section 1632, the Spanish-language version controls for a California consumer with whom the transaction was negotiated primarily in Spanish. We maintain the Spanish translation in step with the English version and will update both when this Policy changes.": "Esta Política y el Servicio están disponibles en inglés y español, conforme a nuestra función de localización con selector de idioma español y a nuestro compromiso con la comunidad hispanohablante de California. Si existe un conflicto entre las versiones en inglés y en español, la versión en inglés prevalecerá, salvo que, conforme lo exige el Código Civil de California, Sección 1632, la versión en español prevalezca respecto de un consumidor de California con quien la transacción se haya negociado principalmente en español. Mantenemos la traducción al español al día con la versión en inglés y actualizaremos ambas cuando esta Política cambie.",
+
+    // Section 12
+    "12. Contact Us": "12. Contáctenos",
+    "If you have questions about this Policy or wish to exercise a privacy right, contact us at:": "Si tiene preguntas sobre esta Política o desea ejercer un derecho de privacidad, contáctenos en:",
+    "ByondRx, Inc. / PharmacyPulse — Attn: Privacy": "ByondRx, Inc. / PharmacyPulse — Atención: Privacidad",
+
+    // Section 13
+    "13. Changes to This Policy": "13. Cambios a esta Política",
+    "We may update this Policy from time to time. If we make material changes, we will provide notice through the Service or by other reasonable means before the change takes effect. The \"Effective Date\" above reflects the last update.": "Podemos actualizar esta Política de vez en cuando. Si realizamos cambios materiales, proporcionaremos aviso a través del Servicio o por otros medios razonables antes de que el cambio entre en vigor. La \"Fecha de Vigencia\" indicada arriba refleja la última actualización.",
+
+    // Back link
+    "Back to PharmacyPulse": "Volver a PharmacyPulse"
+  });
+
+  // Show the draft translation notice when in Spanish mode
+  function getCookieLang(){
+    var m = document.cookie.match(/(?:^|;\s*)lang=([^;]+)/);
+    return m ? m[1] : 'en';
+  }
+  if (getCookieLang() === 'es') {
+    var notice = document.getElementById('pp-privacy-draft-notice');
+    if (notice) notice.style.display = 'block';
+  }
+})();
+</script>
 {% endblock %}

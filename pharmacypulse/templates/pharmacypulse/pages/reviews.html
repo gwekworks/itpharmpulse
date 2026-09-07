@@ -20,10 +20,14 @@
       {% endif %}
     </div>
 
-    {% include "pharmacypulse/partials/disclaimer.html" with text="Reviews reflect the personal opinions of individual users, are not verified by PharmacyPulse, and do not constitute medical advice." only %}
-
+    <div role="note" class="pp-disclaimer">
+      <svg translate="no" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+      <span>Reviews reflect the personal opinions of individual users, are not verified by PharmacyPulse, and do not constitute medical advice.</span>
+    </div>
+    
+    
     <!-- ===== STATS BAR ===== -->
-    <div class="grid stat-row-3 gap-3" style="margin-bottom: 1.5rem">
+    <!-- <div class="grid stat-row-3 gap-3" style="margin-bottom: 1.5rem">
       
       <div style="padding: 1rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); text-align: center">
         <p style="font-size: 1.5rem; font-weight: 800; color: #0f172a">{{r_total.0.n}}</p>
@@ -42,7 +46,7 @@
         <p style="font-size: 0.6875rem; color: #64748b">Pharmacies Reviewed</p>
       </div>
       
-    </div>
+    </div> -->
 
     <!-- ===== MOST REVIEWED PHARMACIES ===== -->
     <div style="margin-bottom: 2rem">

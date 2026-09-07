@@ -18,7 +18,9 @@
 
   // State name → code map (server-rendered) for classifying typed text.
   var STATE_CODES = {
-    {% for s in hero_us_states %} "{{ s.name|lower }}": "{{ s.code }}"{% if not forloop.last %}, {% endif %} {% endfor %}
+    {% for s in hero_us_states %} 
+    "{{ s.name|lower }}": "{{ s.code }}"{% if not forloop.last %}, {% endif %} 
+    {% endfor %}
   };
   window.PP_STATE_CODES = STATE_CODES;
 
