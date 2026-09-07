@@ -1,0 +1,342 @@
+{% extends "pharmacypulse/layouts/app.html" %}
+{% load pharmacypulse %}
+{% block title %}Compare Pharmacies Side by Side{% endblock %}
+{% block meta_description %}Compare pharmacies side by side on stock confidence, wait times, service ratings, and review counts to choose the pharmacy that fits you best.{% endblock %}
+{% block content %}
+{% include "pharmacypulse/partials/topbar.html" %}
+
+<div class="cmp-page">
+  <div class="cmp-container">
+
+    <a href="/list" class="cmp-back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Back to Search
+    </a>
+
+    <div class="cmp-header">
+      <span class="cmp-eyebrow">SIDE-BY-SIDE COMPARISON</span>
+      <h1 class="cmp-title">Compare Local Pharmacies</h1>
+      <p class="cmp-subtitle">Select up to 3 pharmacies to evaluate stock, wait times, and staff care.</p>
+    </div>
+
+    {% if user.is_authenticated %}
+
+    {% if saved %}
+    <div class="cmp-selector">
+      <span class="cmp-selector-label">SELECT TO COMPARE:</span>
+      <div class="cmp-selector-pills" id="cmp-pills">
+        {% for item in saved %}
+        <button type="button" class="cmp-pill {% if forloop.counter0 < 3 %}cmp-pill-active{% endif %}"
+                data-cmp-id="{{ item.id }}"
+                onclick="toggleCmpPill(this)">
+          <svg class="cmp-pill-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          {{ item.name }}
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if saved %}
+    <div class="cmp-table-wrap">
+      <table class="cmp-table">
+        <thead>
+          <tr>
+            <th class="cmp-th-feature">FEATURE / SCORE</th>
+            {% for item in saved %}
+            <th class="cmp-th-pharmacy">
+              <div class="cmp-th-name">{{ item.name }}{% if item.listing_verified %} <span class="pp-listing-verified-badge" title="Verified — this pharmacy completed its listing setup">&#10003; Verified</span>{% endif %}</div>
+              <div class="cmp-th-meta">{% if item.is_chain %}Chain{% else %}Independent{% endif %}{% if item.city %} &middot; {{ item.city }}{% endif %}</div>
+            </th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cmp-td-feature">
+              <span class="cmp-feat-icon cmp-feat-icon-amber">&#128138;</span>
+              <span class="cmp-feat-name">Stock Confidence</span>
+            </td>
+            {% for item in saved %}
+            <td class="cmp-td-value">
+              {% if item.total_reviews %}
+                <span class="cmp-score {% if item.id == winners_saved.stock %}cmp-score-best{% endif %}">{{ item.stock_confidence }}</span>
+                <span class="cmp-score-max"> / 5.0</span>
+              {% else %}
+                <span class="cmp-score-muted">&mdash;</span>
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="cmp-td-feature">
+              <span class="cmp-feat-icon cmp-feat-icon-blue">&#9201;</span>
+              <span class="cmp-feat-name">Wait Time Rating</span>
+            </td>
+            {% for item in saved %}
+            <td class="cmp-td-value">
+              {% if item.total_reviews %}
+                <span class="cmp-score {% if item.id == winners_saved.wait %}cmp-score-best{% endif %}">{{ item.avg_wait_time }}</span>
+                <span class="cmp-score-max"> / 5.0</span>
+                <div class="cmp-score-sub">Avg wait ~{{ item.avg_wait_time }} mins</div>
+              {% else %}
+                <span class="cmp-score-muted">&mdash;</span>
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="cmp-td-feature">
+              <span class="cmp-feat-icon cmp-feat-icon-red">&#10084;</span>
+              <span class="cmp-feat-name">Empathetic Care</span>
+            </td>
+            {% for item in saved %}
+            <td class="cmp-td-value">
+              {% if item.total_reviews %}
+                <span class="cmp-score {% if item.id == winners_saved.rating %}cmp-score-best{% endif %}">{{ item.avg_service_rating }}</span>
+                <span class="cmp-score-max"> / 5.0</span>
+              {% else %}
+                <span class="cmp-score-muted">&mdash;</span>
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="cmp-td-feature">
+              <span class="cmp-feat-icon cmp-feat-icon-purple">&#128259;</span>
+              <span class="cmp-feat-name">Current Foot Traffic</span>
+            </td>
+            {% for item in saved %}
+            <td class="cmp-td-value">
+              {% if item.avg_wait_time <= 5 %}
+                <div class="cmp-traffic-level">Quiet</div>
+                <div class="cmp-traffic-desc">Recent neighbor check-ins suggest an easygoing pickup window right now.</div>
+              {% elif item.avg_wait_time <= 10 %}
+                <div class="cmp-traffic-level">Moderate</div>
+                <div class="cmp-traffic-desc">A steady after-lunch flow, with a few recent reports of short pickup lines.</div>
+              {% elif item.avg_wait_time <= 15 %}
+                <div class="cmp-traffic-level">Busy</div>
+                <div class="cmp-traffic-desc">Expect a brief wait during peak hours. Plan a few extra minutes.</div>
+              {% else %}
+                <div class="cmp-traffic-level">Very Busy</div>
+                <div class="cmp-traffic-desc">High traffic reported. Consider calling ahead or visiting off-peak.</div>
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="cmp-td-feature">
+              <span class="cmp-feat-icon cmp-feat-icon-teal">&#128205;</span>
+              <span class="cmp-feat-name">Address &amp; Contact</span>
+            </td>
+            {% for item in saved %}
+            <td class="cmp-td-value cmp-td-contact">
+              <div class="cmp-contact-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>{{ item.address }}{% if item.city %}, {{ item.city }}{% endif %}{% if item.state %}, {{ item.state }}{% endif %}</span>
+              </div>
+              {% if item.phone %}
+              <div class="cmp-contact-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <a href="tel:{{ item.phone }}">{{ item.phone }}</a>
+              </div>
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+      <div class="cmp-details-row">
+        <div class="cmp-details-spacer"></div>
+        {% for item in saved %}
+        <div class="cmp-details-cell">
+          <a href="{{ item.url }}" class="cmp-view-btn">View Full Details</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if saved|length == 1 %}
+    <div class="cmp-hint">
+      <p><strong>Add at least one more</strong> to see them side-by-side. The teal score marks the best in each row.</p>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="cmp-empty">
+      <div class="cmp-empty-icon">&#9878;</div>
+      <p class="cmp-empty-title">No pharmacies in your comparison yet</p>
+      <p class="cmp-empty-desc">Use the search bar above, or add from any pharmacy page.</p>
+      <a href="/list" class="cmp-empty-btn">Browse pharmacies</a>
+    </div>
+    {% endif %}
+
+    {% else %}
+    {% include "pharmacypulse/partials/signin-gate.html" %}
+    <div class="signin-gate" style="margin-bottom: 1.5rem">
+      <div class="signin-gate-icon" style="font-size: 1.75rem; line-height: 1">&#9878;</div>
+      <h3>Compare the pharmacies that matter to you</h3>
+      <p>Sign in to save your own comparison set and make informed choices for you and your family.</p>
+      <div class="signin-gate-actions">
+        <a href="/login?next=/compare" class="signin-gate-btn signin-gate-btn-primary">Sign in</a>
+        <a href="/signup" class="signin-gate-btn signin-gate-btn-outline">Create account</a>
+      </div>
+      <p class="signin-gate-footer">Takes under a minute.</p>
+    </div>
+
+    <div class="cmp-preview-card">
+      <p class="cmp-preview-title">Or preview by ZIP code</p>
+      <p class="cmp-preview-desc">A quick look at top-rated pharmacies near you.</p>
+      <form action="/compare" method="GET" class="cmp-preview-form">
+        <input type="text" name="zip" placeholder="Enter ZIP code" value="{{param_zip}}" class="cmp-preview-input">
+        <button type="submit" class="cmp-preview-btn">Preview</button>
+      </form>
+    </div>
+
+    {% if zip_results %}
+    <h2 class="cmp-section-title">Top-rated near {{ zip }}</h2>
+    <div class="cmp-table-wrap">
+      <table class="cmp-table">
+        <thead>
+          <tr>
+            <th class="cmp-th-feature">FEATURE / SCORE</th>
+            {% for item in zip_results %}
+            <th class="cmp-th-pharmacy">
+              <div class="cmp-th-name">{{ item.name }}{% if item.listing_verified %} <span class="pp-listing-verified-badge" title="Verified — this pharmacy completed its listing setup">&#10003; Verified</span>{% endif %}</div>
+              <div class="cmp-th-meta">{% if item.is_chain %}Chain{% else %}Independent{% endif %}{% if item.city %} &middot; {{ item.city }}{% endif %}</div>
+            </th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cmp-td-feature">
+              <span class="cmp-feat-icon cmp-feat-icon-amber">&#128138;</span>
+              <span class="cmp-feat-name">Stock Confidence</span>
+            </td>
+            {% for item in zip_results %}
+            <td class="cmp-td-value">
+              {% if item.total_reviews %}
+                <span class="cmp-score {% if item.id == winners_zip.stock %}cmp-score-best{% endif %}">{{ item.stock_confidence }}</span>
+                <span class="cmp-score-max"> / 5.0</span>
+              {% else %}
+                <span class="cmp-score-muted">&mdash;</span>
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="cmp-td-feature">
+              <span class="cmp-feat-icon cmp-feat-icon-blue">&#9201;</span>
+              <span class="cmp-feat-name">Wait Time Rating</span>
+            </td>
+            {% for item in zip_results %}
+            <td class="cmp-td-value">
+              {% if item.total_reviews %}
+                <span class="cmp-score {% if item.id == winners_zip.wait %}cmp-score-best{% endif %}">{{ item.avg_wait_time }}</span>
+                <span class="cmp-score-max"> / 5.0</span>
+                <div class="cmp-score-sub">Avg wait ~{{ item.avg_wait_time }} mins</div>
+              {% else %}
+                <span class="cmp-score-muted">&mdash;</span>
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="cmp-td-feature">
+              <span class="cmp-feat-icon cmp-feat-icon-red">&#10084;</span>
+              <span class="cmp-feat-name">Empathetic Care</span>
+            </td>
+            {% for item in zip_results %}
+            <td class="cmp-td-value">
+              {% if item.total_reviews %}
+                <span class="cmp-score {% if item.id == winners_zip.rating %}cmp-score-best{% endif %}">{{ item.avg_service_rating }}</span>
+                <span class="cmp-score-max"> / 5.0</span>
+              {% else %}
+                <span class="cmp-score-muted">&mdash;</span>
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="cmp-td-feature">
+              <span class="cmp-feat-icon cmp-feat-icon-purple">&#128259;</span>
+              <span class="cmp-feat-name">Current Foot Traffic</span>
+            </td>
+            {% for item in zip_results %}
+            <td class="cmp-td-value">
+              {% if item.avg_wait_time <= 5 %}
+                <div class="cmp-traffic-level">Quiet</div>
+                <div class="cmp-traffic-desc">Recent neighbor check-ins suggest an easygoing pickup window right now.</div>
+              {% elif item.avg_wait_time <= 10 %}
+                <div class="cmp-traffic-level">Moderate</div>
+                <div class="cmp-traffic-desc">A steady after-lunch flow, with a few recent reports of short pickup lines.</div>
+              {% elif item.avg_wait_time <= 15 %}
+                <div class="cmp-traffic-level">Busy</div>
+                <div class="cmp-traffic-desc">Expect a brief wait during peak hours. Plan a few extra minutes.</div>
+              {% else %}
+                <div class="cmp-traffic-level">Very Busy</div>
+                <div class="cmp-traffic-desc">High traffic reported. Consider calling ahead or visiting off-peak.</div>
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td class="cmp-td-feature">
+              <span class="cmp-feat-icon cmp-feat-icon-teal">&#128205;</span>
+              <span class="cmp-feat-name">Address &amp; Contact</span>
+            </td>
+            {% for item in zip_results %}
+            <td class="cmp-td-value cmp-td-contact">
+              <div class="cmp-contact-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>{{ item.address }}{% if item.city %}, {{ item.city }}{% endif %}{% if item.state %}, {{ item.state }}{% endif %}</span>
+              </div>
+              {% if item.phone %}
+              <div class="cmp-contact-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <a href="tel:{{ item.phone }}">{{ item.phone }}</a>
+              </div>
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+      <div class="cmp-details-row">
+        <div class="cmp-details-spacer"></div>
+        {% for item in zip_results %}
+        <div class="cmp-details-cell">
+          <a href="{{ item.url }}" class="cmp-view-btn">View Full Details</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+  </div>
+</div>
+
+{% include "pharmacypulse/partials/footer.html" %}
+{% include "pharmacypulse/partials/bottom-nav.html" %}
+
+{% if user.is_authenticated %}
+<script>
+function toggleCmpPill(btn) {
+  btn.classList.toggle('cmp-pill-active');
+}
+function removeFromCompare(id) {
+  document.querySelectorAll('[data-pharmacy-id="' + id + '"]').forEach(function(el){ el.remove(); });
+  fetch('/api/flow/compare/remove', {
+    method: 'POST',
+    headers: {'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':document.querySelector('meta[name=csrf-token]')?.content||''},
+    body: 'pharmacy_id=' + id
+  }).then(function(){
+    var tbody = document.getElementById('cmp-tbody');
+    if (tbody && !tbody.querySelector('tr')) window.location.reload();
+  });
+}
+</script>
+{% endif %}
+{% endblock %}

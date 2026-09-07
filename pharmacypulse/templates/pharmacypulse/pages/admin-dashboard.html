@@ -1,0 +1,364 @@
+{% extends "pharmacypulse/layouts/blank.html" %}
+{% load pharmacypulse %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="flex min-h-screen">
+{% include "pharmacypulse/partials/admin-sidebar.html" %}
+
+<div class="admin-content">
+  <div class="admin-pg-header">
+    <div class="admin-pg-header-left">
+      <h1>Dashboard</h1>
+      <p>PharmacyPulse platform overview</p>
+    </div>
+    <div class="flex gap-2">
+      <a href="/admin-moderation" class="btn-ghost text-xs py-2 px-3 no-underline" style="color: #64748b">Moderation</a>
+      <a href="/admin-claims" class="btn-ghost text-xs py-2 px-3 no-underline" style="color: #64748b">Claims</a>
+    </div>
+  </div>
+  <div class="admin-pg-body">
+    <div class="max-w-7xl mx-auto">
+
+    <!-- ── Attention banner ── -->
+    {% if stat_mod_pending.total or stat_flagged.total or stat_claims_pending.total %}
+    <div class="flex flex-wrap items-center gap-3 p-4 rounded-xl mb-5" style="background: #fffbeb; border: 1px solid #fde68a">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span class="text-sm font-semibold" style="color: #92400e">Needs your attention:</span>
+      {% if stat_mod_pending.total %}
+      <a href="/admin-moderation?status=pending" class="no-underline inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full" style="background: #fef3c7; color: #92400e">
+        {{ stat_mod_pending.total }} pending review{{ stat_mod_pending.total|pluralize }}
+      </a>
+      {% endif %}
+      {% if stat_flagged.total %}
+      <a href="/admin-moderation?status=flagged" class="no-underline inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full" style="background: #fee2e2; color: #991b1b">
+        {{ stat_flagged.total }} flagged review{{ stat_flagged.total|pluralize }}
+      </a>
+      {% endif %}
+      {% if stat_claims_pending.total %}
+      <a href="/admin-claims?status=pending" class="no-underline inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full" style="background: #ede9fe; color: #5b21b6">
+        {{ stat_claims_pending.total }} pending claim{{ stat_claims_pending.total|pluralize }}
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- ── Primary metrics ── -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+
+      <div class="stat-card p-5">
+        <div class="flex items-start justify-between mb-4">
+          <p class="stat-lbl">Total Users</p>
+          <div class="metric-icon metric-icon-teal">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+        </div>
+        <p class="stat-num" style="color: #008F82">{{user_cnt.0.n}}</p>
+      </div>
+
+      <div class="stat-card p-5">
+        <div class="flex items-start justify-between mb-4">
+          <p class="stat-lbl">Total Reviews</p>
+          <div class="metric-icon metric-icon-purple">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+        </div>
+        <p class="stat-num" style="color: #7c3aed">{{rev_cnt.0.n}}</p>
+      </div>
+
+      <div class="stat-card p-5">
+        <div class="flex items-start justify-between mb-4">
+          <p class="stat-lbl">Pharmacies</p>
+          <div class="metric-icon metric-icon-slate">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+        </div>
+        <p class="stat-num">{{pharm_cnt.0.n}}</p>
+      </div>
+
+      <div class="stat-card p-5">
+        <div class="flex items-start justify-between mb-4">
+          <p class="stat-lbl">Pending Claims</p>
+          <div class="metric-icon metric-icon-amber">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+        </div>
+        <p class="stat-num" style="color: #d97706">{{claim_cnt.0.n}}</p>
+      </div>
+
+    </div>
+
+    <!-- ── Secondary metrics ── -->
+    <div class="grid stat-row-3 gap-4 mb-6">
+      <div class="stat-card p-5 text-center">
+        <p class="stat-lbl mb-3">Avg Rating</p>
+        <p class="stat-num"><span class="star-filled" style="font-size: 1.5rem">★</span> {{avg_rating.0.avg}}</p>
+      </div>
+      <div class="stat-card p-5 text-center">
+        <p class="stat-lbl mb-3">Reviews This Month</p>
+        <p class="stat-num" style="color: #008F82">{{month_rev.0.n}}</p>
+      </div>
+      <div class="stat-card p-5 text-center">
+        <p class="stat-lbl mb-3">New Users This Month</p>
+        <p class="stat-num" style="color: #7c3aed">{{month_users.0.n}}</p>
+      </div>
+    </div>
+
+    <!-- ── Main 2-col layout ── -->
+    <div class="grid gap-5 admin-split-grid">
+
+      <!-- Left: Activity + Attention items -->
+      <div class="space-y-5">
+
+        <!-- 7-day sparkline + activity -->
+        <div class="glass-card p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="admin-card-heading" style="margin-bottom: 0; border: none; padding: 0">Recent Activity</h2>
+            <div class="flex gap-2 items-center">
+              <span class="text-xs" style="color: #94a3b8">Last 7 days</span>
+              <div class="flex items-end gap-0.5" style="height: 28px">
+                {% for day in sparkline %}
+                <div class="rounded-sm flex-shrink-0" style="width: 10px; background: {% if day.count > 0 %}#008F82{% else %}#dde3ec{% endif %}; height: {% if day.count > 0 %}{{ day.count|add:1 }}0px{% else %}4px{% endif %}; max-height: 28px; transition: height 0.3s" title="{{ day.label }}: {{ day.count }} reviews"></div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          <div style="border-top: 1px solid #f1f5f9; margin-bottom: 0.25rem"></div>
+          {% for item in activity %}
+          <div class="flex items-start gap-3 py-2.5" style="border-bottom: 1px solid #f8fafc">
+            <div class="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style="background: #008F82"></div>
+            <p class="text-sm flex-1" style="color: #475569">{{ item.message }}</p>
+            <span class="text-xs flex-shrink-0" style="color: #94a3b8">{{ item.created_at|timesince }} ago</span>
+          </div>
+          {% endfor %}
+          {% if not activity %}
+          <div class="text-center py-8">
+            <p class="text-sm" style="color: #94a3b8">No activity yet.</p>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Flagged reviews needing action -->
+        {% if attention_reviews %}
+        <div class="glass-card p-5" style="border-left: 3px solid #f59e0b">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="admin-card-heading" style="margin-bottom: 0; border: none; padding: 0; color: #92400e">Reviews Needing Action</h2>
+            <a href="/admin-moderation" class="text-xs no-underline" style="color: #008F82">View all →</a>
+          </div>
+          <div class="space-y-3">
+            {% for item in attention_reviews %}
+            <div class="p-3 rounded-lg" style="background: #f8fafc; border: 1px solid #e8edf4">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="badge-{{ item.moderation_status }}">{{ item.moderation_status }}</span>
+                  <p class="text-xs font-semibold" style="color: #0f172a">{{ item.user_name }}</p>
+                  <span class="text-xs" style="color: #94a3b8">→ {{ item.pharmacy_name }}</span>
+                </div>
+                <span class="text-xs" style="color: #94a3b8">{{ item.created_at|timesince }} ago</span>
+              </div>
+              {% if item.comment %}
+              <p class="text-xs mb-2 truncate" style="color: #64748b">{{ item.comment }}</p>
+              {% endif %}
+              <div class="flex gap-2">
+                <form method="POST" action="/api/flow/moderate-review/{{ item.id }}" style="display:inline">
+                  {% csrf_token %}<input type="hidden" name="action" value="approved">
+                  <button type="submit" class="text-xs py-1 px-2.5 rounded-lg font-semibold" style="background: #dcfce7; color: #15803d; border: none; cursor: pointer">Approve</button>
+                </form>
+                <form method="POST" action="/api/flow/moderate-review/{{ item.id }}" style="display:inline">
+                  {% csrf_token %}<input type="hidden" name="action" value="rejected">
+                  <button type="submit" class="text-xs py-1 px-2.5 rounded-lg font-semibold" style="background: #fee2e2; color: #b91c1c; border: none; cursor: pointer">Reject</button>
+                </form>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Pending claims needing action -->
+        {% if attention_claims %}
+        <div class="glass-card p-5" style="border-left: 3px solid #7c3aed">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="admin-card-heading" style="margin-bottom: 0; border: none; padding: 0; color: #5b21b6">Claims Needing Review</h2>
+            <a href="/admin-claims?status=pending" class="text-xs no-underline" style="color: #008F82">View all →</a>
+          </div>
+          <div class="space-y-3">
+            {% for item in attention_claims %}
+            <div class="flex items-center justify-between p-3 rounded-lg" style="background: #f8fafc; border: 1px solid #e8edf4">
+              <div>
+                <p class="text-sm font-semibold" style="color: #0f172a">{{ item.pharmacy_name }}</p>
+                <p class="text-xs" style="color: #64748b">by {{ item.user_name }} · NPI {{ item.npi_number }}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs" style="color: #94a3b8">{{ item.created_at|timesince }} ago</span>
+                <a href="/admin-claims?status=pending" class="text-xs py-1 px-2.5 rounded-lg font-semibold no-underline" style="background: #ede9fe; color: #5b21b6">Review</a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+
+      <!-- Right: Platform health + top pharmacies -->
+      <div class="space-y-5">
+
+        <!-- Platform health -->
+        <div class="glass-card p-5">
+          <h2 class="admin-card-heading">Platform Health</h2>
+          <div class="space-y-3">
+
+            <div class="flex items-center justify-between py-2" style="border-bottom: 1px solid #f1f5f9">
+              <div class="flex items-center gap-2.5">
+                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background: {% if stat_mod_pending.total or stat_flagged.total %}#f59e0b{% else %}#10b981{% endif %}"></div>
+                <span class="text-sm" style="color: #475569">Review Queue</span>
+              </div>
+              <a href="/admin-moderation" class="text-xs font-bold no-underline" style="color: {% if stat_mod_pending.total or stat_flagged.total %}#d97706{% else %}#15803d{% endif %}">
+                {% if stat_mod_pending.total or stat_flagged.total %}{{ stat_mod_pending.total|add:stat_flagged.total }} pending{% else %}All clear{% endif %}
+              </a>
+            </div>
+
+            <div class="flex items-center justify-between py-2" style="border-bottom: 1px solid #f1f5f9">
+              <div class="flex items-center gap-2.5">
+                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background: {% if stat_claims_pending.total %}#f59e0b{% else %}#10b981{% endif %}"></div>
+                <span class="text-sm" style="color: #475569">Claims</span>
+              </div>
+              <a href="/admin-claims" class="text-xs font-bold no-underline" style="color: {% if stat_claims_pending.total %}#d97706{% else %}#15803d{% endif %}">
+                {% if stat_claims_pending.total %}{{ stat_claims_pending.total }} pending{% else %}All clear{% endif %}
+              </a>
+            </div>
+            
+            <div class="flex items-center justify-between py-2" style="border-bottom: 1px solid #f1f5f9">
+              <div class="flex items-center gap-2.5">
+                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background: {% if stat_closed_flags.total %}#ef4444{% else %}#10b981{% endif %}"></div>
+                <span class="text-sm" style="color: #475569">Closed Pharmacy Reports</span>
+              </div>
+              <a href="/admin-pharmacies#flagged-closed" class="text-xs font-bold no-underline" style="color: {% if stat_closed_flags.total %}#dc2626{% else %}#15803d{% endif %}">
+                {% if stat_closed_flags.total %}{{ stat_closed_flags.total }} pending{% else %}All clear{% endif %}
+              </a>
+            </div>
+            
+            {% comment %}
+            <div class="flex items-center justify-between py-2" style="border-bottom: 1px solid #f1f5f9">
+              <div class="flex items-center gap-2.5">
+                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background: {% if stat_shortages.total %}#ef4444{% else %}#10b981{% endif %}"></div>
+                <span class="text-sm" style="color: #475569">Drug Shortages</span>
+              </div>
+              <a href="/admin-shortages" class="text-xs font-bold no-underline" style="color: {% if stat_shortages.total %}#dc2626{% else %}#15803d{% endif %}">
+                {% if stat_shortages.total %}{{ stat_shortages.total }} active{% else %}None active{% endif %}
+              </a>
+            </div>
+
+            <div class="flex items-center justify-between py-2" style="border-bottom: 1px solid #f1f5f9">
+              <div class="flex items-center gap-2.5">
+                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background: #10b981"></div>
+                <span class="text-sm" style="color: #475569">FDA Sync</span>
+              </div>
+              <span class="text-xs font-bold" style="color: #15803d">Daily · Auto</span>
+            </div>
+            {% endcomment %}
+            
+            <div class="flex items-center justify-between py-2" style="border-bottom: 1px solid #f1f5f9">
+              <div class="flex items-center gap-2.5">
+                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background: #10b981"></div>
+                <span class="text-sm" style="color: #475569">Pharmacy Sync</span>
+              </div>
+              <span class="text-xs font-bold" style="color: #15803d">Quarterly · Auto</span>
+            </div>
+
+            <div class="flex items-center justify-between py-2">
+              <span class="text-sm" style="color: #475569">Total Users</span>
+              <span class="text-sm font-bold" style="color: #0f172a">{{ stat_users.total }}</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Top pharmacies -->
+        <div class="glass-card p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="admin-card-heading" style="margin-bottom: 0; border: none; padding: 0">Top Pharmacies</h2>
+            <a href="/admin-pharmacies" class="text-xs no-underline" style="color: #008F82">View all →</a>
+          </div>
+          <div style="border-top: 1px solid #f1f5f9; margin-bottom: 0.5rem"></div>
+          {% for item in top_pharms %}
+          <div class="flex items-center justify-between py-2.5" style="border-bottom: 1px solid #f8fafc">
+            <div style="min-width: 0">
+              <p class="text-sm font-semibold truncate" style="color: #0f172a; max-width: 160px">{{ item.name }}</p>
+              <p class="text-xs" style="color: #94a3b8">{{ item.city }}, {{ item.state }}</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <p class="text-xs font-bold" style="color: #7c3aed">{{ item.total_reviews }} reviews</p>
+              <p class="text-xs" style="color: #f59e0b">★ {{ item.avg_service_rating }}</p>
+            </div>
+          </div>
+          {% endfor %}
+          {% if not top_pharms %}
+          <p class="text-sm text-center py-4" style="color: #94a3b8">No pharmacy data yet.</p>
+          {% endif %}
+        </div>
+
+        <!-- Platform settings -->
+        <div class="glass-card p-5">
+          <h2 class="admin-card-heading">Platform Settings</h2>
+          <form method="POST" action="/admin-dashboard" class="space-y-3">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="set_search_radius">
+            <div>
+              <label for="search-radius" class="text-xs font-semibold block mb-1" style="color: #475569">Pharmacy search radius (miles)</label>
+              <p class="text-xs mb-2" style="color: #94a3b8">Max distance a pharmacy can be from the visitor's location to appear in the "near me" pharmacy list.</p>
+              <div class="flex gap-2">
+                <input type="number" id="search-radius" name="radius" value="{{ search_radius_mi }}" step="0.01" min="0.1" max="500" required
+                       class="flex-1 w-full px-3 py-2 rounded-lg text-sm"
+                       style="background: #f8fafc; border: 1px solid #e8edf4; color: #0f172a">
+                <button type="submit" class="text-xs py-2 px-4 rounded-lg font-semibold whitespace-nowrap"
+                        style="background: #008F82; color: #fff; border: none; cursor: pointer">Save</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="glass-card p-5">
+          <h2 class="admin-card-heading">Quick Actions</h2>
+          <div class="space-y-2">
+            <a href="/admin-moderation" class="flex items-center justify-between p-3 rounded-lg no-underline transition-all" style="background: #f8fafc; border: 1px solid #e8edf4" onmouseover="this.style.borderColor='#008F82'" onmouseout="this.style.borderColor='#e8edf4'">
+              <div class="flex items-center gap-2.5">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#008F82" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span class="text-sm font-medium" style="color: #0f172a">Moderate Reviews</span>
+              </div>
+              {% if stat_mod_pending.total %}<span class="badge-pending">{{ stat_mod_pending.total }}</span>{% endif %}
+            </a>
+            <a href="/admin-claims" class="flex items-center justify-between p-3 rounded-lg no-underline transition-all" style="background: #f8fafc; border: 1px solid #e8edf4" onmouseover="this.style.borderColor='#7c3aed'" onmouseout="this.style.borderColor='#e8edf4'">
+              <div class="flex items-center gap-2.5">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span class="text-sm font-medium" style="color: #0f172a">Review Claims</span>
+              </div>
+              {% if stat_claims_pending.total %}<span class="badge-pending">{{ stat_claims_pending.total }}</span>{% endif %}
+            </a>
+            <a href="/admin-analytics" class="flex items-center justify-between p-3 rounded-lg no-underline transition-all" style="background: #f8fafc; border: 1px solid #e8edf4" onmouseover="this.style.borderColor='#3b82f6'" onmouseout="this.style.borderColor='#e8edf4'">
+              <div class="flex items-center gap-2.5">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                <span class="text-sm font-medium" style="color: #0f172a">View Analytics</span>
+              </div>
+            </a>
+            {% comment %}
+            <a href="/admin-shortages" class="flex items-center justify-between p-3 rounded-lg no-underline transition-all" style="background: #f8fafc; border: 1px solid #e8edf4" onmouseover="this.style.borderColor='#ef4444'" onmouseout="this.style.borderColor='#e8edf4'">
+              <div class="flex items-center gap-2.5">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span class="text-sm font-medium" style="color: #0f172a">Drug Shortages</span>
+              </div>
+              {% if stat_shortages.total %}<span class="badge-current">{{ stat_shortages.total }}</span>{% endif %}
+            </a>
+            {% endcomment %}
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /grid -->
+
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:"en" }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-BG8R10ZK81"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-BG8R10ZK81');
+  </script>
+  <title>{% block title %}{{ brand.site_name }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ brand.description }}{% endblock %}">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="{{ brand.url }}{% block canonical_path %}{{ request.path }}{% endblock %}">
+  <!-- Open Graph -->
+  <meta property="og:title" content="{% block og_title %}{{ brand.site_name }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ brand.description }}{% endblock %}">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:url" content="{{ brand.url }}{% block og_url_path %}{{ request.path }}{% endblock %}">
+  <meta property="og:image" content="{{ brand.url }}/static/pharmacypulse/icon-512.png">
+  <meta property="og:site_name" content="{{ brand.site_name }}">
+  <meta property="og:locale" content="en_US">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{% block tw_title %}{{ brand.site_name }}{% endblock %}">
+  <meta name="twitter:description" content="{% block tw_description %}{{ brand.description }}{% endblock %}">
+  <meta name="twitter:image" content="{{ brand.url }}/static/pharmacypulse/icon-512.png">
+  <link rel="icon" type="image/svg+xml" href="/static/pharmacypulse/favicon.svg">
+  <link rel="manifest" href="/static/pharmacypulse/manifest.webmanifest">
+  <link rel="stylesheet" href="/static/pharmacypulse/tailwind.css?v=20260810">
+  <link rel="stylesheet" href="/static/pharmacypulse/theme.css?v=20260810">
+  <link rel="stylesheet" href="/static/pharmacypulse/pharmacy-pulse-style.css?v=20260810">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+{% block content %}{% endblock %}
+{% if request.path != "/widget" %}{% include "pharmacypulse/partials/cookie-consent.html" %}{% endif %}
+{% if request.path != "/widget" and user.role != "admin" and user.role != "pharmacist" %}{% include "pharmacypulse/partials/ai-copilot.html" %}{% endif %}
+{% if request.path != "/widget" %}{% include "pharmacypulse/partials/text-size.html" %}{% endif %}
+{% if request.path != "/widget" %}{% include "pharmacypulse/partials/savings-popup.html" %}{% endif %}
+{% if request.path != "/widget" %}{% include "pharmacypulse/partials/review-modal.html" %}{% endif %}
+</body>
+</html>

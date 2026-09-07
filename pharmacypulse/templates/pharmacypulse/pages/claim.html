@@ -1,0 +1,149 @@
+{% extends "pharmacypulse/layouts/app.html" %}
+{% load pharmacypulse %}
+{% block title %}Claim Pharmacy{% endblock %}
+{% block content %}
+{% include "pharmacypulse/partials/topbar.html" %}
+<div style="background: #fafbfc; min-height: 100vh; padding-bottom: 0">
+  <div style="max-width: 40rem; margin: 0 auto; padding: 1.5rem">
+
+  <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem">
+    <div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #f3f0ff; border-radius: 0.75rem">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/></svg>
+    </div>
+    <div>
+      <h1 style="font-family: 'DM Serif Display', serif; font-size: 1.25rem; color: #0f172a">Claim Your Pharmacy</h1>
+      <p style="font-size: 0.75rem; color: #64748b">Verify ownership to manage your listing and respond to reviews.</p>
+    </div>
+  </div>
+
+  <!-- Existing claim status -->
+  
+  {% for item in existing_claim %}
+  <div style="padding: 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 1.5rem">
+    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem">
+      <span class="badge-{{ item.status }}">{{ item.status }}</span>
+      <span style="font-weight: 600; color: #0f172a; font-size: 0.875rem">{{ item.pharmacy_name }}</span>
+    </div>
+    {% if item.status == "pending" %}
+    <p style="font-size: 0.8125rem; color: #64748b">Your claim is being reviewed. Pharmacy claim reviews may take up to <strong>24 to 72 hours</strong>. We'll notify you when a decision is made.</p>
+    {% endif %}
+    {% if item.status == "approved" %}
+    <p style="font-size: 0.8125rem; color: #006B62">Your claim has been approved! <a href="/pharmacist-dashboard" style="font-weight: 600; color: #008F82; text-decoration: none">Go to your dashboard &rarr;</a></p>
+    {% endif %}
+    {% if item.status == "rejected" %}
+    <p style="font-size: 0.8125rem; color: #dc2626; margin-bottom: 0.25rem">Your claim was rejected.</p>
+    {% if item.rejection_reason %}<p style="font-size: 0.75rem; color: #64748b">Reason: {{ item.rejection_reason }}</p>{% endif %}
+    {% endif %}
+  </div>
+  {% endfor %}
+  
+
+  {% if param_error %}
+  <div style="padding: 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.75rem; margin-bottom: 1.5rem; font-size: 0.8125rem; color: #dc2626">
+    {{param_error}}
+  </div>
+  {% endif %}
+
+  <!-- Claim form -->
+  <div style="padding: 1.5rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+    <form method="POST" action="/api/flow/verify-claim/0" id="claim-form">
+      {% csrf_token %}
+      <input type="hidden" name="user_name" value="{{user.first_name}} {{user.last_name}}">
+      <input type="hidden" name="pharmacy_name" id="claim-pharmacy-name" value="{{param_pharmacy_name}}">
+
+      <!-- Pharmacy search (not dropdown) -->
+      <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Pharmacy</label>
+      <div style="position: relative; margin-bottom: 1rem">
+        <input type="hidden" name="pharmacy_id" id="claim-pharmacy-id" value="{{param_pharmacy_id}}" required>
+        <input type="text" id="claim-pharmacy-search" placeholder="Search for your pharmacy..." value="{{param_pharmacy_name}}" autocomplete="off" style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; outline: none; box-sizing: border-box; color: #0f172a" onfocus="this.style.borderColor='#7c3aed'" onblur="setTimeout(function(){document.getElementById('claim-pharmacy-dropdown').style.display='none'},200);this.style.borderColor='#e5e7eb'">
+        <div id="claim-pharmacy-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 100; background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; box-shadow: 0 8px 24px rgba(0,0,0,0.12); max-height: 250px; overflow-y: auto"></div>
+      </div>
+
+      <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">NPI Number</label>
+      <input type="text" name="npi_number" required placeholder="10-digit NPI number" maxlength="10" pattern="[0-9]{10}" style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; outline: none; margin-bottom: 1rem; box-sizing: border-box; color: #0f172a" onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e5e7eb'">
+
+      <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">License Number</label>
+      <input type="text" name="license_number" required placeholder="State pharmacy license" style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; outline: none; margin-bottom: 1rem; box-sizing: border-box; color: #0f172a" onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e5e7eb'">
+
+      <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Contact Email</label>
+      <p style="font-size: 0.6875rem; color: #64748b; margin-bottom: 0.375rem">We'll use this to confirm your professional identity.</p>
+      <input type="email" name="contact_email" required placeholder="pharmacy@example.com" style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; outline: none; margin-bottom: 1.5rem; box-sizing: border-box; color: #0f172a" onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e5e7eb'">
+
+      <button type="submit" style="width: 100%; padding: 0.75rem; background: #7c3aed; color: white; border: none; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; cursor: pointer">Submit Claim</button>
+    </form>
+  </div>
+
+  <div style="margin-top: 1rem; padding: 0.875rem 1rem; background: #fefce8; border: 1px solid #fef08a; border-radius: 1rem; font-size: 0.8125rem; color: #854d0e; display: flex; align-items: flex-start; gap: 0.625rem;">
+    <span style="font-size: 1rem; line-height: 1;">⏱️</span>
+    <div>
+      <strong style="color: #713f12; display: block; margin-bottom: 0.125rem;">Review Timeframe Notice:</strong>
+      <span>Pharmacy claim reviews are manually verified by our team and may take up to <strong>24 to 72 hours</strong>. You will receive an email and notification once your claim is processed.</span>
+    </div>
+  </div>
+
+  <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 1rem; font-size: 0.75rem; color: #64748b">
+    <strong style="color: #0f172a">How verification works:</strong> We verify your NPI against the federal NPPES registry in real time and confirm your professional identity by email. A valid NPI = instant approval and immediate dashboard access.
+  </div>
+
+  </div>
+</div>
+{% include "pharmacypulse/partials/footer.html" %}
+{% include "pharmacypulse/partials/bottom-nav.html" %}
+<script>
+(function(){
+  var input = document.getElementById('claim-pharmacy-search');
+  var dropdown = document.getElementById('claim-pharmacy-dropdown');
+  var hiddenId = document.getElementById('claim-pharmacy-id');
+  var hiddenName = document.getElementById('claim-pharmacy-name');
+  var timer;
+
+  if (!input) return;
+
+  input.addEventListener('input', function() {
+    clearTimeout(timer);
+    var q = input.value.trim();
+    if (q.length < 2) { dropdown.style.display = 'none'; return; }
+    timer = setTimeout(function() {
+      fetch('/api/flow/search?q=' + encodeURIComponent(q))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var results = data.results || [];
+          if (results && !Array.isArray(results)) results = [results];
+          if (!results.length) {
+            dropdown.innerHTML = '<div style="padding:0.75rem 1rem;font-size:0.8125rem;color:#94a3b8">No pharmacies found</div>';
+            dropdown.style.display = 'block';
+            return;
+          }
+          var html = '';
+          results.forEach(function(p) {
+            if (p.is_digital == 1) return;
+            var phone = (p.phone || '').replace(/'/g,"\\'");
+            html += '<div onclick="selectClaimPharmacy(' + p.id + ',\'' + p.name.replace(/'/g,"\\'") + '\',\'' + phone + '\')" style="padding:0.75rem 1rem;cursor:pointer;border-bottom:1px solid #f8fafc;font-size:0.8125rem" onmouseover="this.style.background=\'#E6F7F5\'" onmouseout="this.style.background=\'white\'">'
+              + '<div style="font-weight:600;color:#0f172a">' + p.name + '</div>'
+              + '<div style="font-size:0.6875rem;color:#94a3b8">' + p.city + ', ' + p.state + ' ' + p.zip + (p.phone ? ' · ' + p.phone : '') + '</div></div>';
+          });
+          if (!html) html = '<div style="padding:0.75rem 1rem;font-size:0.8125rem;color:#94a3b8">No physical pharmacies found</div>';
+          dropdown.innerHTML = html;
+          dropdown.style.display = 'block';
+        });
+    }, 250);
+  });
+})();
+
+function selectClaimPharmacy(id, name, phone) {
+  document.getElementById('claim-pharmacy-id').value = id;
+  document.getElementById('claim-pharmacy-name').value = name;
+  document.getElementById('claim-pharmacy-search').value = name;
+  document.getElementById('claim-pharmacy-dropdown').style.display = 'none';
+  document.getElementById('claim-form').action = '/api/flow/verify-claim/' + id;
+  // Auto-populate business phone from pharmacy listing
+  var phoneInput = document.querySelector('[name=business_phone]');
+  if (phoneInput && phone) { phoneInput.value = phone; }
+}
+// Auto-set form action if pharmacy_id is pre-filled
+(function(){
+  var pid = document.getElementById('claim-pharmacy-id').value;
+  if (pid && pid !== '') document.getElementById('claim-form').action = '/api/flow/verify-claim/' + pid;
+})();
+</script>
+{% endblock %}

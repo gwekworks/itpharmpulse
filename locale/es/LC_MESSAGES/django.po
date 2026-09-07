@@ -1,0 +1,40 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PharmacyPulse 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+msgid "Account"
+msgstr "Cuenta"
+
+msgid "Admin"
+msgstr "Admin"
+
+msgid "Compare"
+msgstr "Comparar"
+
+msgid "Dashboard"
+msgstr "Panel"
+
+msgid "For Pharmacies"
+msgstr "Para Farmacias"
+
+msgid "Home"
+msgstr "Inicio"
+
+msgid "Log in"
+msgstr "Iniciar sesion"
+
+msgid "Find Your Pharmacy"
+msgstr "Farmacias"
+
+msgid "Reviews"
+msgstr "Resenas"
+
+msgid "Shortages"
+msgstr "Escasez"
+
+msgid "Sign up"
+msgstr "Registrarse"
+

@@ -1,0 +1,124 @@
+{
+  "account.html": {
+    "title": "Account",
+    "auth": "required"
+  },
+  "admin-analytics.html": {
+    "title": "Analytics",
+    "auth": "required",
+    "role": "admin",
+    "layout": "none"
+  },
+  "admin-claims.html": {
+    "title": "Claims Management",
+    "auth": "required",
+    "role": "admin",
+    "layout": "none"
+  },
+  "admin-dashboard.html": {
+    "title": "Admin Dashboard",
+    "auth": "required",
+    "role": "admin",
+    "layout": "none"
+  },
+  "admin-moderation.html": {
+    "title": "Review Moderation",
+    "auth": "required",
+    "role": "admin",
+    "layout": "none"
+  },
+  "admin-pharmacies.html": {
+    "title": "Manage Pharmacies",
+    "auth": "required",
+    "role": "admin",
+    "layout": "none"
+  },
+  "admin-shortages.html": {
+    "title": "Manage Shortages",
+    "auth": "required",
+    "role": "admin",
+    "layout": "none"
+  },
+  "admin-users.html": {
+    "title": "User Management",
+    "auth": "required",
+    "role": "admin",
+    "layout": "none"
+  },
+  "claim.html": {
+    "title": "Claim Pharmacy",
+    "auth": "required"
+  },
+  "compare.html": {
+    "title": "Compare Pharmacies"
+  },
+  "for-pharmacies.html": {
+    "title": "For Pharmacies",
+    "layout": "none",
+    "description": "Claim your pharmacy listing, respond to reviews, and track patient satisfaction on PharmacyPulse."
+  },
+  "forgot-password.html": {
+    "title": "Forgot Password",
+    "type": "forgot-password",
+    "layout": "none"
+  },
+  "head.html": {},
+  "home.html": {
+    "title": "Home",
+    "auth": "required",
+    "redirect": "pharmacist:/pharmacist-dashboard"
+  },
+  "index.html": {
+    "title": "PharmacyPulse \u2014 Find a Pharmacy You Can Trust",
+    "layout": "none",
+    "description": "Discover, read, and write pharmacy reviews. Find pharmacies you can count on for stock, speed, and service."
+  },
+  "list.html": {
+    "title": "Pharmacies"
+  },
+  "login.html": {
+    "title": "Login",
+    "type": "login",
+    "layout": "none"
+  },
+  "map.html": {
+    "title": "Map"
+  },
+  "online.html": {
+    "title": "Online Pharmacies"
+  },
+  "pharmacist-dashboard.html": {
+    "title": "Pharmacy Owner Dashboard",
+    "auth": "required"
+  },
+  "pharmacy.html": {
+    "title": "Pharmacy Details"
+  },
+  "privacy.html": {
+    "title": "Privacy Policy",
+    "layout": "none"
+  },
+  "review.html": {
+    "title": "Write Review"
+  },
+  "reviews.html": {
+    "title": "Reviews",
+    "description": "Real pharmacy reviews from real patients"
+  },
+  "shortages.html": {
+    "title": "Drug Shortages"
+  },
+  "signup.html": {
+    "title": "Sign Up",
+    "type": "signup",
+    "layout": "none"
+  },
+  "terms.html": {
+    "title": "Terms of Service",
+    "layout": "none"
+  },
+  "widget.html": {
+    "title": "Widget",
+    "layout": "none"
+  }
+}

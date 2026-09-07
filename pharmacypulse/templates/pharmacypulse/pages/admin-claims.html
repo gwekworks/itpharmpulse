@@ -1,0 +1,111 @@
+{% extends "pharmacypulse/layouts/blank.html" %}
+{% load pharmacypulse %}
+{% block title %}Claims Management{% endblock %}
+{% block content %}
+<div class="flex min-h-screen">
+{% include "pharmacypulse/partials/admin-sidebar.html" %}
+
+<div class="admin-content">
+  <div class="admin-pg-header">
+    <div class="admin-pg-header-left">
+      <h1>Pharmacy Claims</h1>
+      <p>Review and process ownership claims</p>
+    </div>
+  </div>
+  <div class="admin-pg-body">
+    <div class="max-w-6xl mx-auto">
+
+    <!-- Filter tabs -->
+    <div class="tab-group mb-5">
+      <a href="/admin-claims" class="tab-btn {% if not param_status %}active{% endif %} no-underline">All</a>
+      <a href="/admin-claims?status=pending" class="tab-btn {% if param_status == "pending" %}active{% endif %} no-underline">
+        Pending
+        {% if pending_cnt.0.n != "0" %}
+        <span class="ml-1 px-1.5 py-0.5 text-xs rounded-full" style="background: #fffbeb; color: #d97706">{{pending_cnt.0.n}}</span>
+        {% endif %}
+      </a>
+      <a href="/admin-claims?status=approved" class="tab-btn {% if param_status == "approved" %}active{% endif %} no-underline">Approved</a>
+      <a href="/admin-claims?status=rejected" class="tab-btn {% if param_status == "rejected" %}active{% endif %} no-underline">Rejected</a>
+    </div>
+
+    <!-- Claims list -->
+    <div class="space-y-3">
+      {% for item in claims %}
+      <div class="glass-card p-5">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <p class="text-base font-semibold" style="color: #0f172a">{{ item.pharmacy_name }}</p>
+              <span class="badge-{{ item.status }}">{{ item.status }}</span>
+            </div>
+            <p class="text-sm" style="color: #64748b">Claimed by <strong style="color: #334155">{{ item.user_name }}</strong></p>
+          </div>
+          <span class="text-xs" style="color: #94a3b8">{{ item.created_at|date:"M d, Y" }}</span>
+        </div>
+
+        <!-- Claim details -->
+        <div class="grid grid-cols-2 gap-3 mb-3 p-3 rounded-lg" style="background: #f8fafc; border: 1px solid #e2e8f0">
+          <div>
+            <p class="text-xs font-medium mb-0.5" style="color: #64748b">NPI Number</p>
+            <p class="text-sm font-mono font-semibold" style="color: #0f172a">{{ item.npi_number }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-medium mb-0.5" style="color: #64748b">License Number</p>
+            <p class="text-sm font-mono font-semibold" style="color: #0f172a">{{ item.license_number }}</p>
+          </div>
+        </div>
+
+        {% if item.supporting_docs %}
+        <p class="text-xs mb-3 flex items-center gap-1.5" style="color: #64748b">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+          {{ item.supporting_docs }}
+        </p>
+        {% endif %}
+
+        {% if item.rejection_reason %}
+        <div class="flex items-start gap-2 p-2.5 rounded-lg mb-3" style="background: #fef2f2; border-left: 3px solid #ef4444">
+          <p class="text-xs" style="color: #dc2626"><strong>Rejection reason:</strong> {{ item.rejection_reason }}</p>
+        </div>
+        {% endif %}
+
+        {% if item.reviewed_at %}
+        <p class="text-xs mb-3" style="color: #94a3b8">Reviewed {{ item.reviewed_at }} by {{ item.reviewed_by }}</p>
+        {% endif %}
+
+        <!-- Actions (pending only) -->
+        {% if item.status == "pending" %}
+        <div class="flex flex-wrap gap-2 mt-3 pt-3" style="border-top: 1px solid #f1f5f9">
+          <form method="POST" action="/api/flow/approve-claim/{{ item.id }}" style="display:inline">
+            {% csrf_token %}
+            <button type="submit" class="btn-primary text-xs py-2 px-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Approve
+            </button>
+          </form>
+          <form method="POST" action="/api/flow/reject-claim/{{ item.id }}" class="flex flex-wrap gap-2 items-center">
+            {% csrf_token %}
+            <input type="text" name="reason" placeholder="Rejection reason..." class="input-field text-sm" style="width:200px; flex: 1; min-width: 10rem">
+            <button type="submit" class="btn-destructive text-xs py-2 px-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              Reject
+            </button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      {% if not claims %}
+      <div class="glass-card text-center py-16">
+        <div style="font-size: 2.5rem; margin-bottom: 0.75rem">📋</div>
+        <p class="font-semibold mb-1" style="color: #0f172a">No claims found</p>
+        <p class="text-sm" style="color: #94a3b8">No pharmacy claims match the current filter.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    </div><!-- /max-w-6xl -->
+  </div><!-- /admin-pg-body -->
+</div><!-- /admin-content -->
+</div><!-- /flex -->
+{% endblock %}

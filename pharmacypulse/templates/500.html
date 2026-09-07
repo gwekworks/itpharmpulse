@@ -1,0 +1,23 @@
+{% comment %}
+500 templates can't extend the layout because the context_processors that
+provide `brand` etc. may have themselves been the thing that errored.
+Inline-only is safer.
+{% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Something went wrong · PharmacyPulse</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/pharmacypulse/pharmacy-pulse-style.css">
+</head>
+<body class="ep-body">
+  <div class="ep">
+    <div class="ep-num">500</div>
+    <h1>Something went wrong on our end</h1>
+    <p>We've been notified of the issue and we're looking into it. Please try again in a moment.</p>
+    <a href="/" class="ep-btn">Go home</a>
+  </div>
+</body>
+</html>

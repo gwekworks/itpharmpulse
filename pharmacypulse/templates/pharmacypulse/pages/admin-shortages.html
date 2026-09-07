@@ -1,0 +1,126 @@
+{% extends "pharmacypulse/layouts/blank.html" %}
+{% load pharmacypulse %}
+{% block title %}Manage Shortages{% endblock %}
+{% block content %}
+<div class="flex min-h-screen">
+{% include "pharmacypulse/partials/admin-sidebar.html" %}
+
+<div class="admin-content">
+  <div class="admin-pg-header">
+    <div class="admin-pg-header-left">
+      <h1>Drug Shortages</h1>
+      <p>Track and sync FDA shortage data</p>
+    </div>
+    <form method="POST" action="/api/flow/sync-shortages" style="display:inline">
+      {% csrf_token %}
+      <button type="submit" class="btn-outline text-sm py-2 px-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Sync FDA Now
+      </button>
+    </form>
+  </div>
+  <div class="admin-pg-body">
+    <div class="max-w-6xl mx-auto">
+
+    {% if param_success %}
+    <div class="flex items-center gap-2 p-3 rounded-lg mb-5 text-sm" style="background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      Shortage added successfully.
+    </div>
+    {% endif %}
+
+    <!-- Auto-sync note -->
+    <div class="admin-info-banner mb-5">
+      <p class="text-sm font-semibold mb-1" style="color: #0f172a">Daily Auto-Sync Active</p>
+      <p class="text-xs" style="color: #64748b">Heroku Scheduler runs <code>python manage.py sync_shortages</code> every day at 06:00 UTC. Use the button above to trigger a manual sync anytime.</p>
+    </div>
+
+    <!-- Add shortage manually -->
+    <div class="glass-card p-5 mb-6">
+      <h2 class="admin-card-heading">Add Shortage Manually</h2>
+      <form method="POST" action="/api/flow/add-shortage">
+        {% csrf_token %}
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label class="block text-xs font-semibold mb-1.5" style="color: #374151">Drug Name</label>
+            <input type="text" name="drug_name" required placeholder="e.g. Amoxicillin" class="input-field text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1.5" style="color: #374151">Generic Name</label>
+            <input type="text" name="generic_name" placeholder="e.g. Amoxicillin Trihydrate" class="input-field text-sm">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label class="block text-xs font-semibold mb-1.5" style="color: #374151">Manufacturer</label>
+            <input type="text" name="manufacturer" placeholder="e.g. Teva" class="input-field text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1.5" style="color: #374151">Status</label>
+            <select name="shortage_status" class="input-field text-sm">
+              <option value="current">Current</option>
+              <option value="resolved">Resolved</option>
+              <option value="discontinued">Discontinued</option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="block text-xs font-semibold mb-1.5" style="color: #374151">Reason</label>
+          <textarea name="reason" rows="2" placeholder="Why is this drug in shortage?" class="input-field text-sm" style="resize: none"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div>
+            <label class="block text-xs font-semibold mb-1.5" style="color: #374151">Est. Resolution Date</label>
+            <input type="text" name="estimated_resolution" placeholder="e.g. 2026-06-30" class="input-field text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1.5" style="color: #374151">Alternatives</label>
+            <input type="text" name="alternatives" placeholder="Comma-separated alternatives" class="input-field text-sm">
+          </div>
+        </div>
+        <button type="submit" class="btn-primary text-sm py-2 px-4">Add Shortage</button>
+      </form>
+    </div>
+
+    <!-- Shortages table -->
+    <div class="glass-card admin-table-wrap">
+      <div class="p-5 pb-0">
+        <h2 class="admin-card-heading">Current Shortages</h2>
+      </div>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Drug</th>
+            <th>Manufacturer</th>
+            <th>Status</th>
+            <th>Est. Resolution</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in shortages %}
+          <tr>
+            <td>
+              <p class="font-semibold text-sm" style="color: #0f172a">{{ item.drug_name }}</p>
+              {% if item.generic_name %}<p class="text-xs" style="color: #64748b">{{ item.generic_name }}</p>{% endif %}
+            </td>
+            <td class="text-xs" style="color: #64748b">{{ item.manufacturer }}</td>
+            <td><span class="badge-{{ item.status }}">{{ item.status }}</span></td>
+            <td class="text-xs" style="color: #64748b">{{ item.estimated_resolution|default:"—" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if not shortages %}
+      <div class="text-center py-14">
+        <div style="font-size: 2.5rem; margin-bottom: 0.75rem">💊</div>
+        <p class="font-semibold mb-1" style="color: #0f172a">No shortages on record</p>
+        <p class="text-sm" style="color: #94a3b8">Sync from FDA or add one manually above.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    </div><!-- /max-w-6xl -->
+  </div><!-- /admin-pg-body -->
+</div><!-- /admin-content -->
+</div><!-- /flex -->
+{% endblock %}

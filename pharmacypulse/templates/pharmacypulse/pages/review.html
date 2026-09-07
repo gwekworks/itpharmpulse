@@ -1,0 +1,242 @@
+{% extends "pharmacypulse/layouts/app.html" %}
+{% load pharmacypulse %}
+{% block title %}Write Review{% endblock %}
+{% block content %}
+{% include "pharmacypulse/partials/topbar.html" %}
+<div style="background: #fafbfc; min-height: 100vh">
+<div class="page-container">
+
+  <!-- Back button -->
+  <a href="{{ pharmacy_url }}" class="inline-flex items-center gap-1 text-sm mb-4 no-underline" style="color: hsl(215 20% 42%)">
+    ← Back
+  </a>
+
+  <h1 class="font-serif text-xl mb-1" style="color: hsl(220 50% 10%)">Write a Review</h1>
+  <p class="text-sm mb-4" style="color: hsl(215 20% 42%)">Share your experience at {{param_pharmacy_name}}</p>
+
+  {% if param_success %}
+  <!-- ===== CONFETTI + CONFIRMATION ===== -->
+  <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999"></canvas>
+  <div class="text-center py-12 animate-fade-up">
+    <div style="width: 80px; height: 80px; margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; background: #E6F7F5; border-radius: 9999px">
+      <span style="font-size: 2.5rem; line-height: 1">✅</span>
+    </div>
+    <h2 style="font-family: 'DM Serif Display', serif; font-size: 1.75rem; color: #0f172a; margin-bottom: 0.5rem">Thank you — you're making a difference</h2>
+    <p style="font-size: 0.875rem; color: #64748b; max-width: 320px; margin: 0 auto 1.5rem; line-height: 1.6">Your review for <strong style="color: #0f172a">{{param_pharmacy_name}}</strong> has been submitted. Because of you, someone will find a pharmacy that cares when they need it most.</p>
+
+    <!-- Share section -->
+    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 1.25rem; max-width: 360px; margin: 0 auto 1.5rem">
+      <p style="font-weight: 700; color: #0f172a; font-size: 0.8125rem; margin-bottom: 0.75rem">Share this pharmacy</p>
+      <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap">
+        <a href="https://twitter.com/intent/tweet?text=I%20just%20reviewed%20{{param_pharmacy_name}}%20on%20PharmacyPulse!%20Check%20it%20out&url={{param_share_url}}" target="_blank" style="display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.5rem 1rem; border-radius: 9999px; background: #0f172a; color: white; font-size: 0.75rem; font-weight: 600; text-decoration: none">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Post
+        </a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u={{param_share_url}}" target="_blank" style="display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.5rem 1rem; border-radius: 9999px; background: #1877f2; color: white; font-size: 0.75rem; font-weight: 600; text-decoration: none">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Share
+        </a>
+        <button onclick="navigator.clipboard.writeText(window.location.origin+'{{ pharmacy_url }}');this.textContent='Copied!';setTimeout(function(){this.textContent='Copy link'}.bind(this),2000)" style="display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.5rem 1rem; border-radius: 9999px; background: white; color: #0f172a; font-size: 0.75rem; font-weight: 600; border: 1px solid #e5e7eb; cursor: pointer">
+          🔗 Copy link
+        </button>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 0.75rem; align-items: center">
+      <a href="{{ pharmacy_url }}" style="display: inline-block; padding: 0.625rem 1.5rem; border-radius: 9999px; background: #008F82; color: white; font-size: 0.875rem; font-weight: 600; text-decoration: none">Back to pharmacy</a>
+      <a href="/list" style="font-size: 0.8125rem; color: #64748b; text-decoration: none">Browse more pharmacies</a>
+    </div>
+  </div>
+  <script>
+  (function(){
+    var c=document.getElementById('confetti-canvas'),ctx=c.getContext('2d');
+    c.width=window.innerWidth;c.height=window.innerHeight;
+    var pieces=[],colors=['#008F82','#F5D060','#7c3aed','#3b82f6','#ef4444','#f97316'];
+    for(var i=0;i<160;i++){pieces.push({x:Math.random()*c.width,y:-Math.random()*c.height,vy:Math.random()*2+1,sway:Math.random()*0.02+0.006,ph:Math.random()*Math.PI*2,w:Math.random()*8+4,h:Math.random()*6+2,color:colors[Math.floor(Math.random()*colors.length)],rot:Math.random()*360,rv:(Math.random()-0.5)*12,alpha:1});}
+    function draw(){ctx.clearRect(0,0,c.width,c.height);var alive=false,bottom=c.height-60;pieces.forEach(function(p){if(p.alpha<=0)return;alive=true;p.ph+=p.sway;p.x+=Math.sin(p.ph)*1.2;p.y+=p.vy;p.vy+=0.015;p.rot+=p.rv;if(p.y>bottom)p.alpha=Math.max(0,1-(p.y-bottom)/60);if(p.alpha<=0||p.y>c.height+30){p.alpha=0;return;}ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=p.alpha;ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});if(alive)requestAnimationFrame(draw);else{c.remove();}}
+    draw();
+  })();
+  </script>
+  {% endif %}
+
+  {% if not param_success %}
+
+  {% if param_error %}
+  <div class="p-3 rounded-lg mb-4" style="background: #fef2f2; border-left: 3px solid #ef4444">
+    <p class="text-xs font-semibold mb-1" style="color: #991b1b">We couldn't submit your review</p>
+    <p class="text-xs" style="color: #991b1b">{{ param_error }}</p>
+  </div>
+  {% endif %}
+
+  {% if user.is_authenticated and already_reviewed %}
+  <!-- ===== ALREADY REVIEWED — block early ===== -->
+  <div class="glass-panel p-5" style="text-align: center">
+    <div style="width: 64px; height: 64px; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; background: #E6F7F5; border-radius: 9999px; font-size: 1.75rem">✅</div>
+    <h2 style="font-family: 'DM Serif Display', serif; font-size: 1.25rem; color: #0f172a; margin-bottom: 0.5rem">You already reviewed this pharmacy</h2>
+    <p style="font-size: 0.875rem; color: #64748b; max-width: 320px; margin: 0 auto 1.25rem; line-height: 1.5">Thanks for sharing your experience on {{ last_review_at|date:"M d, Y" }}. Each patient can submit one review per pharmacy to keep reviews trustworthy.</p>
+    <div style="display: flex; flex-direction: column; gap: 0.625rem; align-items: center">
+      <a href="{{ pharmacy_url }}" style="display: inline-block; padding: 0.625rem 1.5rem; border-radius: 9999px; background: #008F82; color: white; font-size: 0.875rem; font-weight: 600; text-decoration: none">Back to pharmacy</a>
+      <a href="/account" style="font-size: 0.8125rem; color: #64748b; text-decoration: none">View your reviews</a>
+    </div>
+  </div>
+  {% else %}
+
+  <!-- PHI Disclaimer -->
+  <div class="p-3 rounded-lg mb-4" style="background: hsl(38 80% 95%); border-left: 3px solid hsl(38 92% 50%)">
+    <p class="text-xs font-semibold mb-1" style="color: hsl(38 80% 30%)">Protect your privacy</p>
+    <p class="text-xs" style="color: hsl(38 80% 25%)">Do not include specific medication names, diagnoses, or personal health details. Reviews are public and do not constitute medical advice.</p>
+  </div>
+
+  <!-- ===== REVIEW FORM ===== -->
+  <div class="glass-panel p-5">
+    <form method="POST" action="/api/flow/submit-review">
+      {% csrf_token %}
+      <input type="hidden" name="pharmacy_id" value="{{param_pharmacy_id|default:pharmacy_id}}">
+      <input type="hidden" name="pharmacy_name" value="{{param_pharmacy_name|default:pharmacy_name}}">
+      <input type="hidden" name="is_caregiver" value="0">
+
+      {% if not user.is_authenticated %}
+      <div class="mb-5">
+        <label class="block text-sm font-semibold mb-2" style="color: hsl(220 50% 10%)">Your name</label>
+        <input type="text" name="user_name" required placeholder="First name or nickname" maxlength="100" style="width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #E5E7EB; border-radius: 0.75rem; font-size: 0.9375rem; outline: none; box-sizing: border-box; color: #1A1A2E" onfocus="this.style.borderColor='#008F82';this.style.boxShadow='0 0 0 3px rgba(0,143,130,0.1)'" onblur="this.style.borderColor='#E5E7EB';this.style.boxShadow='none'">
+      </div>
+      {% else %}
+      <input type="hidden" name="user_name" value="{{user.first_name}} {{user.last_name}}">
+      {% endif %}
+
+      <div class="mb-5">
+        <label class="block text-sm font-semibold mb-2" style="color: hsl(220 50% 10%)">Was your medication in stock?</label>
+        <div class="flex gap-3">
+          <label class="flex-1 cursor-pointer">
+            <input type="radio" name="stock_available" value="1" class="sr-only peer" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">
+            <div class="peer-checked:border-green-500 peer-checked:bg-green-50 border-2 border-gray-200 rounded-xl py-3 text-center text-sm font-semibold transition-all" style="color: hsl(215 20% 42%)">Yes, in stock</div>
+          </label>
+          <label class="flex-1 cursor-pointer">
+            <input type="radio" name="stock_available" value="2" class="sr-only peer" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">
+            <div class="peer-checked:border-yellow-500 peer-checked:bg-yellow-50 border-2 border-gray-200 rounded-xl py-3 text-center text-sm font-semibold transition-all" style="color: hsl(215 20% 42%)">Partially</div>
+          </label>
+          <label class="flex-1 cursor-pointer">
+            <input type="radio" name="stock_available" value="0" class="sr-only peer" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">
+            <div class="peer-checked:border-red-500 peer-checked:bg-red-50 border-2 border-gray-200 rounded-xl py-3 text-center text-sm font-semibold transition-all" style="color: hsl(215 20% 42%)">No, out of stock</div>
+          </label>
+        </div>
+      </div>
+
+      <div class="mb-5">
+        {% for item in rv_pharm %}
+        {% if item.is_digital %}
+        <label class="block text-sm font-semibold mb-1" style="color: hsl(220 50% 10%)">📞 Phone responsiveness</label>
+        <p class="text-xs mb-3" style="color: hsl(215 20% 42%)">How easy was it to reach someone?</p>
+        {% else %}
+        <label class="block text-sm font-semibold mb-1" style="color: hsl(220 50% 10%)">⏱️ Wait time</label>
+        <p class="text-xs mb-3" style="color: hsl(215 20% 42%)">How was the wait?</p>
+        {% endif %}
+        {% endfor %}
+        <div style="display: flex; gap: 0.5rem">
+          {% for val in "12345" %}
+          <label style="flex: 1; cursor: pointer; text-align: center">
+            <input type="radio" name="wait_time_rating" value="{{ val }}" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)" class="pp-wait-radio">
+            <div class="pp-icon-btn pp-wait-btn" data-val="{{ val }}" style="border: 2px solid #e5e7eb; border-radius: 12px; padding: 0.5rem 0; display: flex; flex-direction: column; align-items: center; gap: 0.125rem; transition: all 0.15s; cursor: pointer; background: white">
+              <span style="font-size: 1.25rem">{% if val == "1" %}🐢{% elif val == "2" %}🚶{% elif val == "3" %}🚲{% elif val == "4" %}🚗{% else %}🚀{% endif %}</span>
+              <span style="font-size: 0.625rem; font-weight: 600; color: #94a3b8">{{ val }}</span>
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.625rem; color: #94a3b8; margin-top: 0.375rem; padding: 0 0.25rem">
+          <span>Very slow</span><span>Very fast</span>
+        </div>
+      </div>
+
+      <div class="mb-5">
+        <label class="block text-sm font-semibold mb-1" style="color: hsl(220 50% 10%)">❤️ Staff Care</label>
+        <p class="text-xs mb-3" style="color: hsl(215 20% 42%)">How did the staff treat you?</p>
+        <div style="display: flex; gap: 0.5rem">
+          {% for val in "12345" %}
+          <label style="flex: 1; cursor: pointer; text-align: center">
+            <input type="radio" name="service_rating" value="{{ val }}" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)" class="pp-care-radio">
+            <div class="pp-icon-btn pp-care-btn" data-val="{{ val }}" style="border: 2px solid #e5e7eb; border-radius: 12px; padding: 0.5rem 0; display: flex; flex-direction: column; align-items: center; gap: 0.125rem; transition: all 0.15s; cursor: pointer; background: white">
+              <span style="font-size: 1.25rem">{% if val == "1" %}💔{% elif val == "2" %}🤍{% elif val == "3" %}💛{% elif val == "4" %}🧡{% else %}❤️{% endif %}</span>
+              <span style="font-size: 0.625rem; font-weight: 600; color: #94a3b8">{{ val }}</span>
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.625rem; color: #94a3b8; margin-top: 0.375rem; padding: 0 0.25rem">
+          <span>Poor</span><span>Excellent</span>
+        </div>
+      </div>
+
+      {% for item in rv_del %}{% if item.is_digital %}
+      <div class="mb-5">
+        <label class="block text-sm font-semibold mb-1" style="color: hsl(220 50% 10%)">📦 On-time delivery</label>
+        <p class="text-xs mb-3" style="color: hsl(215 20% 42%)">Did your order arrive as expected?</p>
+        <div style="display: flex; gap: 0.5rem">
+          {% for val in "12345" %}
+          <label style="flex: 1; cursor: pointer; text-align: center">
+            <input type="radio" name="delivery_timeliness" value="{{ val }}" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)" class="pp-delivery-radio">
+            <div class="pp-icon-btn pp-delivery-btn" data-val="{{ val }}" style="border: 2px solid #e5e7eb; border-radius: 12px; padding: 0.5rem 0; display: flex; flex-direction: column; align-items: center; gap: 0.125rem; transition: all 0.15s; cursor: pointer; background: white">
+              <span style="font-size: 1.25rem">{% if val == "1" %}😤{% elif val == "2" %}😕{% elif val == "3" %}😐{% elif val == "4" %}😊{% else %}🤩{% endif %}</span>
+              <span style="font-size: 0.625rem; font-weight: 600; color: #94a3b8">{{ val }}</span>
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.625rem; color: #94a3b8; margin-top: 0.375rem; padding: 0 0.25rem">
+          <span>Very late</span><span>On time / early</span>
+        </div>
+      </div>
+      {% endif %}{% endfor %}
+      
+
+      <div class="mb-5">
+        <label class="block text-sm font-semibold mb-2" style="color: hsl(220 50% 10%)">Comments (optional)</label>
+        <textarea name="comment" maxlength="500" rows="3" placeholder="Tell others about your experience..." class="input-field resize-none"></textarea>
+      </div>
+
+      <label class="flex items-center gap-2 mb-5 cursor-pointer">
+        <input type="checkbox" name="is_caregiver" value="1" class="rounded border-gray-300">
+        <span class="text-sm" style="color: hsl(215 20% 42%)">I'm reviewing as a caregiver</span>
+      </label>
+
+      <button type="submit" class="btn-primary w-full justify-center py-3">Submit Review</button>
+    </form>
+  </div>
+  {% endif %}{# closes already_reviewed/else branch #}
+  {% endif %}
+
+</div>
+</div>
+{% include "pharmacypulse/partials/footer.html" %}
+{% include "pharmacypulse/partials/bottom-nav.html" %}
+<script>
+(function(){
+  function wireIconGroup(radioClass, btnClass, activeStyle) {
+    var radios = document.querySelectorAll('.' + radioClass);
+    var btns = document.querySelectorAll('.' + btnClass);
+    radios.forEach(function(radio, i) {
+      radio.addEventListener('change', function() {
+        btns.forEach(function(b) {
+          b.style.borderColor = '#e5e7eb';
+          b.style.background = 'white';
+          b.querySelector('span:last-child').style.color = '#94a3b8';
+        });
+        if (btns[i]) {
+          btns[i].style.borderColor = activeStyle.border;
+          btns[i].style.background = activeStyle.bg;
+          btns[i].querySelector('span:last-child').style.color = activeStyle.text;
+        }
+      });
+    });
+    btns.forEach(function(btn, i) {
+      btn.addEventListener('click', function() {
+        if (radios[i]) { radios[i].checked = true; radios[i].dispatchEvent(new Event('change')); }
+      });
+    });
+  }
+  wireIconGroup('pp-wait-radio', 'pp-wait-btn', {border: '#008F82', bg: '#E6F7F5', text: '#006B62'});
+  wireIconGroup('pp-care-radio', 'pp-care-btn', {border: '#ef4444', bg: '#fff1f2', text: '#be123c'});
+  wireIconGroup('pp-delivery-radio', 'pp-delivery-btn', {border: '#f59e0b', bg: '#fffbeb', text: '#b45309'});
+})();
+</script>
+{% endblock %}

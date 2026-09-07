@@ -1,0 +1,407 @@
+{% extends "pharmacypulse/layouts/blank.html" %}
+{% load pharmacypulse %}
+{% block title %}Terms and Conditions — PharmacyPulse{% endblock %}
+{% block meta_description %}PharmacyPulse Terms and Conditions — the binding agreement governing your use of the community pharmacy transparency platform operated by ByondRx, Inc.{% endblock %}
+{% block content %}
+{% include "pharmacypulse/partials/topbar.html" %}
+<div class="min-h-screen" style="background: hsl(210 20% 98%)">
+  <div class="max-w-2xl mx-auto px-4 py-12">
+
+    <a href="/" class="inline-flex items-center gap-1 text-sm mb-6 no-underline" style="color: hsl(215 20% 42%)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+      <span id="t-back">Back to PharmacyPulse</span>
+    </a>
+
+    <!-- Header -->
+    <p class="text-xs font-semibold mb-1" style="color:#008F82; text-transform:uppercase; letter-spacing:0.08em;">PHARMACYPULSE — a service of ByondRx, Inc.</p>
+    <h1 class="font-serif text-3xl mb-1" style="color: hsl(220 50% 10%)" id="t-page-title">Terms and Conditions</h1>
+    <p class="text-sm mb-1" style="color: hsl(215 20% 42%)" id="t-subtitle">Community Pharmacy Transparency Platform</p>
+    <p class="text-sm mb-8" style="color: hsl(215 20% 42%)">Effective Date: September 3, 2026</p>
+
+    <!-- Spanish draft notice (shown only in ES mode) -->
+    <!-- <div id="pp-terms-draft-notice" style="display:none; background:#FFF9E6; border:1px solid #F5C842; border-radius:8px; padding:1rem 1.25rem; margin-bottom:1.5rem; font-size:0.8125rem; color:#5a4200;">
+      <strong>Aviso sobre esta Traducción / Notice Regarding This Translation</strong><br><br>
+      Esta es una traducción preliminar generada con asistencia de IA, proporcionada como punto de partida. Debe ser revisada y certificada por un traductor legal profesional y aprobada por un abogado con licencia antes de su publicación o uso como documento vinculante. En caso de discrepancia entre esta traducción y la versión oficial en inglés hasta que ese proceso de certificación se complete, la versión en inglés prevalecerá.<br><br>
+      <em>This is a preliminary, AI-assisted translation provided as a starting point. It must be reviewed and certified by a professional legal translator and approved by a licensed attorney before it is published or used as a binding document. Until that certification process is complete, the English-language version controls in the event of any discrepancy.</em>
+    </div> -->
+
+    <!-- Table of Contents -->
+    <nav id="t-toc-nav" style="background:#F0FDF9; border:1px solid #C6F1EA; border-radius:8px; padding:1rem 1.25rem; margin-bottom:2rem;">
+      <p class="text-xs font-semibold mb-2" id="t-toc-heading" style="color:#008F82; text-transform:uppercase; letter-spacing:0.08em;">Table of Contents</p>
+      <ol id="t-toc-list" style="margin:0; padding-left:1.25rem; font-size:0.8125rem; color:hsl(215 20% 42%); line-height:1.9;">
+        <li><a href="#ts1"  style="color:#008F82; text-decoration:none;" id="toc-1">Acceptance of Terms</a></li>
+        <li><a href="#ts2"  style="color:#008F82; text-decoration:none;" id="toc-2">Description of the Service</a></li>
+        <li><a href="#ts3"  style="color:#008F82; text-decoration:none;" id="toc-3">Eligibility and Accounts</a></li>
+        <li><a href="#ts4"  style="color:#008F82; text-decoration:none;" id="toc-4">User Content and License Grant</a></li>
+        <li><a href="#ts5"  style="color:#008F82; text-decoration:none;" id="toc-5">Reviewer Standards and Prohibited Conduct</a></li>
+        <li><a href="#ts6"  style="color:#008F82; text-decoration:none;" id="toc-6">Content Moderation; Section 230 Safe Harbor</a></li>
+        <li><a href="#ts7"  style="color:#008F82; text-decoration:none;" id="toc-7">Pharmacy Listings and Business Accounts</a></li>
+        <li><a href="#ts8"  style="color:#008F82; text-decoration:none;" id="toc-8">Pharmacy Partner Program</a></li>
+        <li><a href="#ts9"  style="color:#008F82; text-decoration:none;" id="toc-9">No Medical Advice; Assumption of Risk</a></li>
+        <li><a href="#ts10" style="color:#008F82; text-decoration:none;" id="toc-10">Intellectual Property</a></li>
+        <li><a href="#ts11" style="color:#008F82; text-decoration:none;" id="toc-11">Suspension and Termination</a></li>
+        <li><a href="#ts12" style="color:#008F82; text-decoration:none;" id="toc-12">Disclaimers</a></li>
+        <li><a href="#ts13" style="color:#008F82; text-decoration:none;" id="toc-13">Limitation of Liability</a></li>
+        <li><a href="#ts14" style="color:#008F82; text-decoration:none;" id="toc-14">Indemnification</a></li>
+        <li><a href="#ts15" style="color:#008F82; text-decoration:none;" id="toc-15">Dispute Resolution</a></li>
+        <li><a href="#ts16" style="color:#008F82; text-decoration:none;" id="toc-16">Governing Law and Venue</a></li>
+        <li><a href="#ts17" style="color:#008F82; text-decoration:none;" id="toc-17">Modifications</a></li>
+        <li><a href="#ts18" style="color:#008F82; text-decoration:none;" id="toc-18">General Provisions</a></li>
+        <li><a href="#ts19" style="color:#008F82; text-decoration:none;" id="toc-19">Contact Information</a></li>
+      </ol>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ENGLISH CONTENT                                                 -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="terms-en" class="prose prose-sm" style="color: hsl(215 20% 30%)">
+
+      <h2 id="ts1" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">1. Acceptance of Terms</h2>
+      <p class="text-sm mb-3">These Terms and Conditions ("Terms") form a binding agreement between you and ByondRx, Inc. ("ByondRx," "PharmacyPulse," "we," "us," or "our") governing your access to and use of the PharmacyPulse website, mobile experiences, and related services (the "Service"). By creating an account, submitting a review, claiming a pharmacy listing, or otherwise using the Service, you agree to these Terms and to our Privacy Policy, which is incorporated by reference. If you do not agree, do not use the Service.</p>
+
+      <h2 id="ts2" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">2. Description of the Service</h2>
+      <p class="text-sm mb-3">PharmacyPulse is a community-driven transparency platform that collects structured, patient-reported information about pharmacy visits — specifically prescription fulfillment outcome, wait time, and empathetic care — and publishes aggregated ratings and individual reviews to help people choose where to fill a prescription. PharmacyPulse includes both independent and chain pharmacies.</p>
+      <p class="text-sm mb-3">PharmacyPulse is not a pharmacy, prescriber, or healthcare provider. We do not dispense medication, provide medical advice, verify real-time inventory, or guarantee that any pharmacy will have a specific medication in stock. Ratings reflect self-reported, post-visit outcomes and are not a substitute for calling the pharmacy directly.</p>
+
+      <h2 id="ts3" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">3. Eligibility and Accounts</h2>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li>You must be at least 18 years old to create an account or submit a review.</li>
+        <li>You must provide accurate registration information and keep your credentials confidential; you are responsible for activity under your account.</li>
+        <li>Pharmacy business accounts must be claimed by an authorized representative of the pharmacy, and we may request verification before activating certain business features.</li>
+        <li>We may suspend or terminate accounts that violate these Terms, consistent with Section 11.</li>
+      </ul>
+
+      <h2 id="ts4" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">4. User Content and License Grant</h2>
+      <p class="text-sm mb-3">"User Content" means reviews, ratings, structured post-visit reports, photos, written responses, and any other material you submit to the Service. You retain ownership of your User Content. By submitting User Content, you grant ByondRx a worldwide, royalty-free, non-exclusive, sublicensable, and transferable license to host, store, reproduce, publish, display, adapt, and distribute it in connection with operating, promoting, and improving the Service, including in aggregated or de-identified data products described in our Privacy Policy.</p>
+      <p class="text-sm mb-3">You represent that you have the rights necessary to submit your User Content and that it does not infringe or violate the rights of any third party.</p>
+
+      <h2 id="ts5" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">5. Reviewer Standards and Prohibited Conduct</h2>
+      <p class="text-sm mb-3">PharmacyPulse's value depends on reviews that are honest, first-hand, and free of sensitive personal-health detail. When using the Service, you agree not to:</p>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li>Post a review about a pharmacy visit you did not personally experience, or accept compensation, discounts, or incentives from a pharmacy in exchange for a review.</li>
+        <li>Include another person's protected health information, another patient's identity, or any medication, diagnosis, or dosage detail that could identify a specific individual other than yourself.</li>
+        <li>Post content that is defamatory, harassing, discriminatory, obscene, or that threatens harm to any person or pharmacy staff member.</li>
+        <li>Impersonate any person or entity, or misrepresent your affiliation with a pharmacy.</li>
+        <li>Submit false, fraudulent, or duplicate reviews, or otherwise attempt to manipulate a pharmacy's fulfillment, wait-time, or empathetic-care score.</li>
+        <li>Scrape, harvest, or use automated means to extract data from the Service without our prior written consent.</li>
+        <li>Upload malicious code or attempt to interfere with the security or operation of the Service.</li>
+      </ul>
+      <p class="text-sm mb-3">Reports of pharmacy visits should describe what happened operationally (whether the prescription was ready, how long the wait was, how staff treated you) rather than clinical details about your condition or treatment.</p>
+
+      <h2 id="ts6" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">6. Content Moderation; Section 230 Safe Harbor</h2>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.1 User-Generated Content Only</h3>
+      <p class="text-sm mb-3">All reviews, ratings, structured post-visit reports, and written responses are created and submitted solely by the users and Pharmacy Partners who post them. PharmacyPulse is a provider of an "interactive computer service" within the meaning of Section 230 of the Communications Decency Act, 47 U.S.C. § 230. The structured rating fields (prescription fulfillment, wait time, and empathetic care) are neutral tools that let a user self-report an experience in the user's own words; PharmacyPulse does not author, ghost-write, materially edit for substance, or specifically solicit the unlawful or defamatory content of any User Content, and does not thereby become an "information content provider" with respect to content authored by a user or Pharmacy Partner.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.2 No Liability for User Content</h3>
+      <p class="text-sm mb-3">To the fullest extent permitted by 47 U.S.C. § 230(c)(1) and applicable state law, PharmacyPulse will not be treated as the publisher or speaker of any User Content provided by another information content provider, and will have no liability for the accuracy, completeness, legality, or content of User Content — including allegedly false or defamatory statements a reviewer makes about a pharmacy, or a pharmacy makes in a written response about a reviewer. Any dispute concerning the truth or falsity of a specific review or response is between the parties who posted it; PharmacyPulse is not a party to, and takes no position on, the merits of that dispute merely by hosting the content.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.3 Good-Faith Right to Moderate, Flag, and Remove</h3>
+      <p class="text-sm mb-3">Consistent with Section 230(c)(2), PharmacyPulse may, in its sole discretion and without incurring liability or waiving any safe-harbor protection, voluntarily restrict, filter, edit for redaction, flag, decline to publish, or remove any User Content that PharmacyPulse considers, in good faith, to be defamatory, obscene, harassing, unlawful, false, or otherwise objectionable, or that otherwise violates Section 5 of these Terms — whether or not a court has determined the content to be unlawful. This discretion is voluntary and permissive, not mandatory: PharmacyPulse assumes no duty to monitor, pre-screen, or continuously review User Content, and no obligation to remove content arises solely from a complaint, demand letter, or unverified allegation of falsity.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.4 Moderation Does Not Waive Immunity or Create Liability</h3>
+      <p class="text-sm mb-3">PharmacyPulse's decision to remove, retain, edit for redaction, or decline to remove particular User Content (a) is not an admission regarding the truth, falsity, or legality of that content; (b) does not constitute PharmacyPulse's adoption, ratification, or endorsement of the content; and (c) does not waive, narrow, or forfeit any immunity, safe harbor, or defense otherwise available to PharmacyPulse, including under Section 230 or analogous state law. The three-tier moderation process described in this Section — automated screening, human review, and an appeals path for both reviewers and Pharmacy Partners — is a voluntary, good-faith content-management practice and does not transform PharmacyPulse into the developer or co-creator of any User Content it reviews.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.5 Reporting Content</h3>
+      <p class="text-sm mb-3">If you believe a review or written response about you or your pharmacy is false, defamatory, or otherwise violates Section 5 of these Terms, you may report it to <a href="mailto:moderation@pharmacypulse.co" style="color:#008F82;">moderation@pharmacypulse.co</a> for review under the process described above. Submitting a report does not guarantee removal, and PharmacyPulse retains sole discretion over the outcome.</p>
+
+      <h2 id="ts7" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">7. Pharmacy Listings and Business Accounts</h2>
+      <p class="text-sm mb-3">Pharmacy listings may be created from publicly available information even before a pharmacy claims its listing. A pharmacy's authorized representative may claim a listing, respond in writing to reviews, and access aggregate, de-identified performance data for that location. Written responses to reviews must comply with the standards in Section 5 and may not disclose another patient's health information. We reserve the right to verify claims, request supporting documentation, and remove a listing or claim obtained through misrepresentation.</p>
+
+      <h2 id="ts8" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">8. Pharmacy Partner Program: Subscriptions, Fees, and the Written-Response Feature</h2>
+      <p class="text-sm mb-3">This Section 8 applies to pharmacies and their authorized representatives who claim a listing or enroll in a paid subscription plan ("Pharmacy Partners"). It supplements, and does not replace, the rest of these Terms.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">8.1 Free and Paid Tiers</h3>
+      <p class="text-sm mb-3">Claiming a listing and posting one written response per review is available at no cost, consistent with our transparency mission. Additional features — including response templates, the real-time performance dashboard, aggregate trend analytics, and (as released) scheduling tools — are available only through a paid subscription plan.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">8.2 Subscription Plans and Fees</h3>
+      <p class="text-sm mb-3">We currently offer introductory pricing of approximately $49 per month, with standard plans ranging from approximately $99 to $299 per month depending on features and listing volume, as described on our pricing page at the time of purchase. Fees are billed monthly in advance and are quoted exclusive of applicable taxes unless stated otherwise.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">8.3 Billing, Renewal, and Cancellation</h3>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li>Subscriptions automatically renew each billing period unless cancelled before the renewal date.</li>
+        <li>You may cancel at any time through your account settings or by contacting <a href="mailto:partners@pharmacypulse.co" style="color:#008F82;">partners@pharmacypulse.co</a>; cancellation takes effect at the end of the then-current billing period.</li>
+        <li>Fees already paid are non-refundable except where required by law; if a payment fails, we may downgrade the account to the free tier until payment is resolved.</li>
+        <li>We will provide at least 30 days' notice before any fee increase takes effect for an existing subscriber.</li>
+      </ul>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">8.4 The Written-Response Feature</h3>
+      <p class="text-sm mb-3">Pharmacy Partners may post a written response to a review of their claimed listing. Responses must comply with the reviewer standards in Section 5 and, in addition, must not: (a) offer a discount, refund, or other incentive conditioned on the reviewer editing, removing, or changing a review; (b) disclose another patient's health information; or (c) threaten or harass the reviewer. We may decline to publish, or may remove, a response that violates these Terms.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">8.5 Partner Data Access</h3>
+      <p class="text-sm mb-3">Pharmacy Partners may access aggregate, de-identified performance data for their own claimed listing(s), such as fulfillment-rate and wait-time trends. Partners may not use the Service to attempt to identify, contact, or take adverse action against an individual reviewer.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">8.6 No Guaranteed Placement or Score</h3>
+      <p class="text-sm mb-3">Subscribing to a paid plan does not affect a pharmacy's fulfillment, wait-time, or empathetic-care scores, and does not entitle a Pharmacy Partner to preferential search placement, review removal, or suppression of unfavorable but policy-compliant reviews. Paid plans provide tools and data access only.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">8.7 Suspension of Partner Accounts</h3>
+      <p class="text-sm mb-3">We may suspend or terminate a Pharmacy Partner account, and may forfeit prepaid fees to the extent permitted by law, for fraudulent listing claims, misuse of the written-response feature, solicitation of fake reviews, or other violations of these Terms.</p>
+
+      <h2 id="ts9" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">9. No Medical Advice; Assumption of Risk</h2>
+      <p class="text-sm mb-3">Nothing on the Service constitutes medical, pharmaceutical, or legal advice. Ratings and reviews reflect subjective, self-reported experiences and may not predict your individual experience at a given pharmacy. Always confirm medication availability, insurance coverage, and clinical questions directly with a licensed pharmacist or your healthcare provider. In a medical emergency, call 911 or your local emergency number.</p>
+
+      <h2 id="ts10" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">10. Intellectual Property</h2>
+      <p class="text-sm mb-3">The Service, including its design, text, graphics, the PharmacyPulse and ByondRx names and logos, the confidence-scoring methodology, and underlying software, is owned by ByondRx or its licensors and protected by intellectual property laws. Except for your own User Content and the limited rights expressly granted in these Terms, no rights are transferred to you. You may not copy, modify, reverse-engineer, or create derivative works from the Service without our prior written consent.</p>
+
+      <h2 id="ts11" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">11. Suspension and Termination</h2>
+      <p class="text-sm mb-3">You may stop using the Service and delete your account at any time. We may suspend or terminate your access, remove content, or restrict features if we reasonably believe you have violated these Terms, created risk or legal exposure for us or other users, or if required by law. Provisions that by their nature should survive termination (including Sections 4, 8, 10, 12–16) will survive.</p>
+
+      <h2 id="ts12" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">12. Disclaimers</h2>
+      <p class="text-sm mb-3" style="text-transform:uppercase; font-size:0.75rem; line-height:1.6;">THE SERVICE AND ALL CONTENT ARE PROVIDED "AS IS" AND "AS AVAILABLE," WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS, IMPLIED, OR STATUTORY, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND ACCURACY. WE DO NOT WARRANT THAT REVIEWS, RATINGS, OR LISTED INFORMATION (INCLUDING MEDICATION AVAILABILITY OR PHARMACY HOURS) ARE ACCURATE, COMPLETE, OR CURRENT, OR THAT THE SERVICE WILL BE UNINTERRUPTED OR ERROR-FREE.</p>
+
+      <h2 id="ts13" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">13. Limitation of Liability</h2>
+      <p class="text-sm mb-3" style="text-transform:uppercase; font-size:0.75rem; line-height:1.6;">TO THE FULLEST EXTENT PERMITTED BY LAW, BYONDRX AND ITS OFFICERS, DIRECTORS, EMPLOYEES, AND AGENTS WILL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS, DATA, OR GOODWILL, ARISING FROM OR RELATED TO YOUR USE OF THE SERVICE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. OUR TOTAL AGGREGATE LIABILITY FOR ANY CLAIM ARISING FROM THESE TERMS OR THE SERVICE WILL NOT EXCEED THE GREATER OF (A) ONE HUNDRED U.S. DOLLARS ($100), OR (B) THE AMOUNT YOU PAID US, IF ANY, IN THE TWELVE MONTHS BEFORE THE CLAIM AROSE. SOME JURISDICTIONS DO NOT ALLOW CERTAIN LIMITATIONS, SO SOME OF THE ABOVE MAY NOT APPLY TO YOU.</p>
+
+      <h2 id="ts14" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">14. Indemnification</h2>
+      <p class="text-sm mb-3">You agree to indemnify and hold harmless ByondRx and its officers, directors, employees, and agents from any claims, damages, losses, and expenses (including reasonable attorneys' fees) arising from your User Content, your violation of these Terms, or your violation of any law or third-party right.</p>
+
+      <h2 id="ts15" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">15. Dispute Resolution: Binding Arbitration and Class Action Waiver</h2>
+      <p class="text-sm mb-3">Please read this section carefully — it affects your legal rights. Except for disputes that qualify for small-claims court or claims for injunctive relief to protect intellectual property, you and ByondRx agree that any dispute arising from these Terms or the Service will be resolved by binding, individual arbitration administered by a recognized arbitration provider (such as the American Arbitration Association) under its consumer arbitration rules, rather than in court.</p>
+      <p class="text-sm mb-3"><strong>Class Action Waiver:</strong> You and ByondRx each agree to bring claims only in an individual capacity and not as a plaintiff or class member in any purported class, collective, or representative proceeding.</p>
+      <p class="text-sm mb-3">You may opt out of this arbitration agreement by sending written notice to <a href="mailto:legal@pharmacypulse.co" style="color:#008F82;">legal@pharmacypulse.co</a> within 30 days of first accepting these Terms. This arbitration provision is governed by the Federal Arbitration Act.</p>
+
+      <h2 id="ts16" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">16. Governing Law and Venue</h2>
+      <p class="text-sm mb-3">These Terms are governed by the laws of the State of California, without regard to conflict-of-laws principles, except as preempted by the Federal Arbitration Act. For any matter not subject to arbitration, the state and federal courts located in Los Angeles County, California will have exclusive jurisdiction and venue.</p>
+
+      <h2 id="ts17" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">17. Modifications to the Service and These Terms</h2>
+      <p class="text-sm mb-3">We may modify or discontinue features of the Service at any time. We may update these Terms from time to time; material changes will be communicated through the Service or by other reasonable means. Continued use of the Service after changes take effect constitutes acceptance of the revised Terms.</p>
+
+      <h2 id="ts18" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">18. General Provisions</h2>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li><strong>Entire Agreement:</strong> These Terms, together with the Privacy Policy, constitute the entire agreement between you and ByondRx regarding the Service.</li>
+        <li><strong>Severability:</strong> If any provision is found unenforceable, the remaining provisions remain in full effect.</li>
+        <li><strong>No Waiver:</strong> Our failure to enforce a provision is not a waiver of our right to do so later.</li>
+        <li><strong>Assignment:</strong> You may not assign these Terms without our consent; we may assign these Terms in connection with a merger, acquisition, or sale of assets.</li>
+        <li><strong>Language:</strong> These Terms are available in English and Spanish. The English version controls in the event of a conflict, except that, as required by California Civil Code Section 1632, the Spanish-language version controls for a California consumer with whom the transaction was negotiated primarily in Spanish.</li>
+      </ul>
+
+      <h2 id="ts19" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">19. Contact Information</h2>
+      <p class="text-sm mb-3">ByondRx, Inc. / PharmacyPulse — Attn: Legal<br>
+        Email: <a href="mailto:legal@pharmacypulse.co" style="color:#008F82;">legal@pharmacypulse.co</a><br>
+        Website: <a href="https://pharmacypulse.co" style="color:#008F82;">pharmacypulse.co</a>
+      </p>
+
+    </div><!-- /terms-en -->
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- SPANISH CONTENT (hidden by default, shown by JS in ES mode)    -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="terms-es" class="prose prose-sm" style="display:none; color: hsl(215 20% 30%)">
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">1. Aceptación de los Términos</h2>
+      <p class="text-sm mb-3">Estos Términos y Condiciones ("Términos") constituyen un acuerdo vinculante entre usted y ByondRx, Inc. ("ByondRx", "PharmacyPulse", "nosotros") que rige su acceso y uso del sitio web, las experiencias móviles y los servicios relacionados de PharmacyPulse (el "Servicio"). Al crear una cuenta, enviar una reseña, reclamar un listado de farmacia o utilizar el Servicio de cualquier otra forma, usted acepta estos Términos y nuestra Política de Privacidad, la cual se incorpora por referencia. Si no está de acuerdo, no utilice el Servicio.</p>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">2. Descripción del Servicio</h2>
+      <p class="text-sm mb-3">PharmacyPulse es una plataforma comunitaria de transparencia que recopila información estructurada, reportada por pacientes, sobre visitas a farmacias — específicamente el resultado del cumplimiento de recetas, el tiempo de espera y la atención empática — y publica calificaciones agregadas y reseñas individuales para ayudar a las personas a elegir dónde surtir una receta. PharmacyPulse incluye tanto farmacias independientes como cadenas.</p>
+      <p class="text-sm mb-3">PharmacyPulse no es una farmacia, un prescriptor ni un proveedor de atención médica. No dispensamos medicamentos, no brindamos asesoramiento médico, no verificamos el inventario en tiempo real ni garantizamos que alguna farmacia tenga en existencia un medicamento específico. Las calificaciones reflejan resultados reportados por los propios usuarios después de la visita y no sustituyen una llamada directa a la farmacia.</p>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">3. Elegibilidad y Cuentas</h2>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li>Debe tener al menos 18 años para crear una cuenta o enviar una reseña.</li>
+        <li>Debe proporcionar información de registro precisa y mantener sus credenciales confidenciales; usted es responsable de la actividad realizada bajo su cuenta.</li>
+        <li>Las cuentas comerciales de farmacias deben ser reclamadas por un representante autorizado de la farmacia, y podemos solicitar verificación antes de activar ciertas funciones comerciales.</li>
+        <li>Podemos suspender o cancelar cuentas que infrinjan estos Términos, conforme a la Sección 11.</li>
+      </ul>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">4. Contenido del Usuario y Licencia Otorgada</h2>
+      <p class="text-sm mb-3">"Contenido del Usuario" significa reseñas, calificaciones, reportes estructurados posteriores a la visita, fotografías, respuestas escritas y cualquier otro material que usted envíe al Servicio. Usted conserva la propiedad de su Contenido del Usuario. Al enviar Contenido del Usuario, usted otorga a ByondRx una licencia mundial, libre de regalías, no exclusiva, sublicenciable y transferible para alojar, almacenar, reproducir, publicar, mostrar, adaptar y distribuir dicho contenido en relación con la operación, promoción y mejora del Servicio, incluso en productos de datos agregados o desidentificados descritos en nuestra Política de Privacidad.</p>
+      <p class="text-sm mb-3">Usted declara que posee los derechos necesarios para enviar su Contenido del Usuario y que dicho contenido no infringe ni viola los derechos de terceros.</p>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">5. Normas para Reseñadores y Conducta Prohibida</h2>
+      <p class="text-sm mb-3">El valor de PharmacyPulse depende de reseñas honestas, de primera mano y libres de detalles sensibles de salud personal. Al utilizar el Servicio, usted se compromete a no:</p>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li>Publicar una reseña sobre una visita a una farmacia que no experimentó personalmente, ni aceptar compensación, descuentos o incentivos de una farmacia a cambio de una reseña.</li>
+        <li>Incluir información de salud protegida de otra persona, la identidad de otro paciente, o cualquier detalle de medicamento, diagnóstico o dosis que pueda identificar a una persona específica distinta de usted.</li>
+        <li>Publicar contenido difamatorio, de acoso, discriminatorio, obsceno, o que amenace con daño a cualquier persona o miembro del personal de la farmacia.</li>
+        <li>Suplantar a cualquier persona o entidad, o tergiversar su afiliación con una farmacia.</li>
+        <li>Enviar reseñas falsas, fraudulentas o duplicadas, o intentar de cualquier otra forma manipular la puntuación de cumplimiento, tiempo de espera o atención empática de una farmacia.</li>
+        <li>Extraer datos ("scraping") o utilizar medios automatizados para extraer datos del Servicio sin nuestro consentimiento previo por escrito.</li>
+        <li>Cargar código malicioso o intentar interferir con la seguridad o el funcionamiento del Servicio.</li>
+      </ul>
+      <p class="text-sm mb-3">Los reportes de visitas a farmacias deben describir lo que ocurrió operativamente (si la receta estaba lista, cuánto tiempo duró la espera, cómo lo trató el personal) en lugar de detalles clínicos sobre su afección o tratamiento.</p>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">6. Moderación de Contenido; Protección de Puerto Seguro de la Sección 230</h2>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.1 Únicamente Contenido Generado por el Usuario</h3>
+      <p class="text-sm mb-3">Todas las reseñas, calificaciones, reportes estructurados posteriores a la visita y respuestas escritas son creadas y enviadas únicamente por los usuarios y las Farmacias Asociadas que las publican. PharmacyPulse es un proveedor de un "servicio informático interactivo" en el sentido de la Sección 230 de la Ley de Decencia en las Comunicaciones, 47 U.S.C. § 230. Los campos de calificación estructurados (cumplimiento de la receta, tiempo de espera y atención empática) son herramientas neutrales que permiten a un usuario reportar por sí mismo una experiencia con sus propias palabras; PharmacyPulse no redacta, escribe, edita sustancialmente ni solicita específicamente el contenido ilícito o difamatorio de ningún Contenido del Usuario, y no se convierte por ello en un "proveedor de contenido de información" respecto del contenido creado por un usuario o una Farmacia Asociada.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.2 Sin Responsabilidad por el Contenido del Usuario</h3>
+      <p class="text-sm mb-3">En la máxima medida permitida por 47 U.S.C. § 230(c)(1) y la ley estatal aplicable, PharmacyPulse no será tratado como el editor o el emisor de ningún Contenido del Usuario proporcionado por otro proveedor de contenido de información, y no tendrá responsabilidad alguna por la exactitud, integridad, legalidad o contenido del Contenido del Usuario — incluidas las declaraciones presuntamente falsas o difamatorias que un usuario haga sobre una farmacia, o que una farmacia haga en una respuesta escrita sobre un usuario. Cualquier disputa sobre la veracidad o falsedad de una reseña o respuesta específica es entre las partes que la publicaron; PharmacyPulse no es parte de dicha disputa ni toma posición sobre su fondo por el mero hecho de alojar el contenido.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.3 Derecho de Buena Fe a Moderar, Marcar y Eliminar</h3>
+      <p class="text-sm mb-3">De conformidad con la Sección 230(c)(2), PharmacyPulse puede, a su entera discreción y sin incurrir en responsabilidad ni renunciar a ninguna protección de puerto seguro, restringir, filtrar, editar para redacción, marcar, negarse a publicar o eliminar voluntariamente cualquier Contenido del Usuario que PharmacyPulse considere, de buena fe, difamatorio, obsceno, de acoso, ilícito, falso u objetable de otra manera, o que de otro modo infrinja la Sección 5 de estos Términos — haya o no un tribunal determinado que el contenido es ilícito. Esta discreción es voluntaria y permisiva, no obligatoria: PharmacyPulse no asume el deber de monitorear, examinar previamente ni revisar continuamente el Contenido del Usuario, y ninguna obligación de eliminar contenido surge únicamente de una queja, carta de requerimiento o alegación no verificada de falsedad.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.4 La Moderación No Renuncia a la Inmunidad ni Crea Responsabilidad</h3>
+      <p class="text-sm mb-3">La decisión de PharmacyPulse de eliminar, conservar, editar para redacción o negarse a eliminar un Contenido del Usuario en particular (a) no constituye una admisión respecto de la veracidad, falsedad o legalidad de dicho contenido; (b) no constituye la adopción, ratificación o aprobación de dicho contenido por parte de PharmacyPulse; y (c) no renuncia, limita ni pierde ninguna inmunidad, puerto seguro o defensa que de otro modo esté disponible para PharmacyPulse, incluida la de la Sección 230 o la ley estatal análoga. El proceso de moderación de tres niveles descrito en esta Sección — filtrado automatizado, revisión humana y un proceso de apelación tanto para los usuarios como para las Farmacias Asociadas — es una práctica voluntaria y de buena fe de gestión de contenido, y no convierte a PharmacyPulse en el desarrollador o co-creador de ningún Contenido del Usuario que revise.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.5 Reportar Contenido</h3>
+      <p class="text-sm mb-3">Si usted considera que una reseña o respuesta escrita sobre usted o su farmacia es falsa, difamatoria o infringe de otro modo la Sección 5 de estos Términos, puede reportarla a <a href="mailto:moderation@pharmacypulse.co" style="color:#008F82;">moderation@pharmacypulse.co</a> para su revisión conforme al proceso descrito anteriormente. Enviar un reporte no garantiza su eliminación, y PharmacyPulse conserva la discreción exclusiva sobre el resultado.</p>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">7. Listados de Farmacias y Cuentas Comerciales</h2>
+      <p class="text-sm mb-3">Los listados de farmacias pueden crearse a partir de información disponible públicamente incluso antes de que una farmacia reclame su listado. Un representante autorizado de la farmacia puede reclamar un listado, responder por escrito a las reseñas y acceder a datos de desempeño agregados y desidentificados de esa ubicación. Las respuestas escritas a las reseñas deben cumplir con las normas de la Sección 5 y no pueden divulgar información de salud de otro paciente. Nos reservamos el derecho de verificar las reclamaciones, solicitar documentación de respaldo y eliminar un listado o reclamación obtenidos mediante declaraciones falsas.</p>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">8. Programa de Farmacias Asociadas: Suscripciones, Tarifas y la Función de Respuesta Escrita</h2>
+      <p class="text-sm mb-3">Esta Sección 8 se aplica a las farmacias y sus representantes autorizados que reclamen un listado o se inscriban en un plan de suscripción pago ("Farmacias Asociadas"). Esta sección complementa, y no reemplaza, el resto de estos Términos.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">8.1 Niveles Gratuitos y Pagos</h3>
+      <p class="text-sm mb-3">Reclamar un listado y publicar una respuesta escrita por reseña está disponible sin costo, conforme a nuestra misión de transparencia. Las funciones adicionales — incluidas las plantillas de respuesta, el panel de desempeño en tiempo real, el análisis de tendencias agregadas y (según se publiquen) las herramientas de programación de citas — están disponibles únicamente mediante un plan de suscripción pago.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">8.2 Planes de Suscripción y Tarifas</h3>
+      <p class="text-sm mb-3">Actualmente ofrecemos precios introductorios de aproximadamente $49 dólares al mes, con planes estándar que van de aproximadamente $99 a $299 dólares al mes según las funciones y el volumen de listados, tal como se describe en nuestra página de precios al momento de la compra. Las tarifas se facturan mensualmente por adelantado y se cotizan sin incluir los impuestos aplicables, salvo que se indique lo contrario.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">8.3 Facturación, Renovación y Cancelación</h3>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li>Las suscripciones se renuevan automáticamente cada período de facturación, salvo que se cancelen antes de la fecha de renovación.</li>
+        <li>Puede cancelar en cualquier momento a través de la configuración de su cuenta o comunicándose con <a href="mailto:partners@pharmacypulse.co" style="color:#008F82;">partners@pharmacypulse.co</a>; la cancelación entra en vigor al final del período de facturación vigente.</li>
+        <li>Las tarifas ya pagadas no son reembolsables, salvo que la ley lo exija; si un pago falla, podemos degradar la cuenta al nivel gratuito hasta que se resuelva el pago.</li>
+        <li>Proporcionaremos al menos 30 días de aviso antes de que entre en vigor cualquier aumento de tarifa para un suscriptor existente.</li>
+      </ul>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">8.4 La Función de Respuesta Escrita</h3>
+      <p class="text-sm mb-3">Las Farmacias Asociadas pueden publicar una respuesta escrita a una reseña de su listado reclamado. Las respuestas deben cumplir con las normas para reseñadores de la Sección 5 y, además, no deben: (a) ofrecer un descuento, reembolso u otro incentivo condicionado a que el usuario edite, elimine o modifique una reseña; (b) divulgar información de salud de otro paciente; o (c) amenazar o acosar al usuario. Podemos negarnos a publicar, o podemos eliminar, una respuesta que infrinja estos Términos.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">8.5 Acceso a Datos para Farmacias Asociadas</h3>
+      <p class="text-sm mb-3">Las Farmacias Asociadas pueden acceder a datos de desempeño agregados y desidentificados de su(s) propio(s) listado(s) reclamado(s), tales como tendencias de tasa de cumplimiento y tiempo de espera. Las Farmacias Asociadas no pueden usar el Servicio para intentar identificar, contactar o tomar medidas adversas contra un usuario individual.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">8.6 Sin Garantía de Posicionamiento o Puntuación</h3>
+      <p class="text-sm mb-3">Suscribirse a un plan pago no afecta las puntuaciones de cumplimiento, tiempo de espera o atención empática de una farmacia, y no otorga a una Farmacia Asociada el derecho a un posicionamiento preferencial en las búsquedas, a la eliminación de reseñas ni a la supresión de reseñas desfavorables pero conformes con las políticas. Los planes pagos proporcionan únicamente herramientas y acceso a datos.</p>
+
+      <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">8.7 Suspensión de Cuentas de Farmacias Asociadas</h3>
+      <p class="text-sm mb-3">Podemos suspender o cancelar una cuenta de Farmacia Asociada, y podemos retener las tarifas prepagadas en la medida permitida por la ley, por reclamaciones fraudulentas de listados, uso indebido de la función de respuesta escrita, solicitud de reseñas falsas u otras infracciones de estos Términos.</p>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">9. Sin Asesoramiento Médico; Asunción de Riesgo</h2>
+      <p class="text-sm mb-3">Nada en el Servicio constituye asesoramiento médico, farmacéutico o legal. Las calificaciones y reseñas reflejan experiencias subjetivas reportadas por los propios usuarios y pueden no predecir su experiencia individual en una farmacia determinada. Confirme siempre la disponibilidad de medicamentos, la cobertura del seguro y las preguntas clínicas directamente con un farmacéutico con licencia o su proveedor de atención médica. En caso de emergencia médica, llame al 911 o al número de emergencia local.</p>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">10. Propiedad Intelectual</h2>
+      <p class="text-sm mb-3">El Servicio, incluidos su diseño, texto, gráficos, los nombres y logotipos de PharmacyPulse y ByondRx, la metodología de puntuación de confianza y el software subyacente, son propiedad de ByondRx o sus licenciantes y están protegidos por las leyes de propiedad intelectual. Salvo por su propio Contenido del Usuario y los derechos limitados expresamente otorgados en estos Términos, no se le transfiere ningún derecho. Usted no puede copiar, modificar, aplicar ingeniería inversa ni crear obras derivadas del Servicio sin nuestro consentimiento previo por escrito.</p>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">11. Suspensión y Cancelación</h2>
+      <p class="text-sm mb-3">Usted puede dejar de usar el Servicio y eliminar su cuenta en cualquier momento. Podemos suspender o cancelar su acceso, eliminar contenido o restringir funciones si razonablemente creemos que usted ha infringido estos Términos, ha creado un riesgo o exposición legal para nosotros u otros usuarios, o si así lo exige la ley. Las disposiciones que por su naturaleza deban sobrevivir a la cancelación (incluidas las Secciones 4, 8, 10, 12–16) permanecerán vigentes.</p>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">12. Exenciones de Garantía</h2>
+      <p class="text-sm mb-3" style="text-transform:uppercase; font-size:0.75rem; line-height:1.6;">EL SERVICIO Y TODO SU CONTENIDO SE PROPORCIONAN "TAL CUAL" Y "SEGÚN DISPONIBILIDAD", SIN GARANTÍAS DE NINGÚN TIPO, YA SEAN EXPRESAS, IMPLÍCITAS O LEGALES, INCLUIDAS LAS GARANTÍAS DE COMERCIABILIDAD, IDONEIDAD PARA UN FIN DETERMINADO, NO INFRACCIÓN Y EXACTITUD. NO GARANTIZAMOS QUE LAS RESEÑAS, CALIFICACIONES O INFORMACIÓN LISTADA (INCLUIDA LA DISPONIBILIDAD DE MEDICAMENTOS U HORARIOS DE FARMACIAS) SEAN EXACTAS, COMPLETAS O ACTUALES, NI QUE EL SERVICIO SERÁ ININTERRUMPIDO O LIBRE DE ERRORES.</p>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">13. Limitación de Responsabilidad</h2>
+      <p class="text-sm mb-3" style="text-transform:uppercase; font-size:0.75rem; line-height:1.6;">EN LA MÁXIMA MEDIDA PERMITIDA POR LA LEY, BYONDRX Y SUS FUNCIONARIOS, DIRECTORES, EMPLEADOS Y AGENTES NO SERÁN RESPONSABLES POR NINGÚN DAÑO INDIRECTO, INCIDENTAL, ESPECIAL, CONSECUENTE O PUNITIVO, NI POR NINGUNA PÉRDIDA DE GANANCIAS, DATOS O REPUTACIÓN, QUE SURJA DE O ESTÉ RELACIONADO CON SU USO DEL SERVICIO, INCLUSO SI SE LE ADVIRTIÓ SOBRE LA POSIBILIDAD DE DICHOS DAÑOS. NUESTRA RESPONSABILIDAD TOTAL AGREGADA POR CUALQUIER RECLAMO QUE SURJA DE ESTOS TÉRMINOS O DEL SERVICIO NO EXCEDERÁ EL MAYOR ENTRE (A) CIEN DÓLARES ESTADOUNIDENSES ($100), O (B) EL MONTO QUE USTED NOS HAYA PAGADO, SI CORRESPONDE, EN LOS DOCE MESES ANTERIORES AL RECLAMO. ALGUNAS JURISDICCIONES NO PERMITEN CIERTAS LIMITACIONES, POR LO QUE ES POSIBLE QUE ALGO DE LO ANTERIOR NO SE APLIQUE A USTED.</p>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">14. Indemnización</h2>
+      <p class="text-sm mb-3">Usted se compromete a indemnizar y eximir de responsabilidad a ByondRx y a sus funcionarios, directores, empleados y agentes de cualquier reclamo, daño, pérdida y gasto (incluidos los honorarios razonables de abogados) que surja de su Contenido del Usuario, su infracción de estos Términos, o su violación de cualquier ley o derecho de terceros.</p>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">15. Resolución de Disputas: Arbitraje Vinculante y Renuncia a Acciones Colectivas</h2>
+      <p class="text-sm mb-3">Lea esta sección detenidamente — afecta sus derechos legales. Salvo por disputas que califiquen para un tribunal de reclamos menores o reclamos de medidas cautelares para proteger la propiedad intelectual, usted y ByondRx acuerdan que cualquier disputa que surja de estos Términos o del Servicio se resolverá mediante arbitraje vinculante e individual, administrado por un proveedor de arbitraje reconocido (como la American Arbitration Association) bajo sus reglas de arbitraje de consumo, en lugar de en un tribunal.</p>
+      <p class="text-sm mb-3"><strong>Renuncia a Acciones Colectivas:</strong> Usted y ByondRx acuerdan presentar reclamos únicamente a título individual y no como demandante o miembro de una clase en ningún procedimiento colectivo, conjunto o representativo.</p>
+      <p class="text-sm mb-3">Puede optar por no participar en este acuerdo de arbitraje enviando un aviso por escrito a <a href="mailto:legal@pharmacypulse.co" style="color:#008F82;">legal@pharmacypulse.co</a> dentro de los 30 días posteriores a la primera aceptación de estos Términos. Esta disposición de arbitraje se rige por la Ley Federal de Arbitraje (Federal Arbitration Act).</p>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">16. Ley Aplicable y Jurisdicción</h2>
+      <p class="text-sm mb-3">Estos Términos se rigen por las leyes del Estado de California, sin dar efecto a los principios de conflicto de leyes, salvo en la medida en que la Ley Federal de Arbitraje los sustituya. Para cualquier asunto no sujeto a arbitraje, los tribunales estatales y federales ubicados en el Condado de Los Ángeles, California, tendrán jurisdicción y competencia exclusivas.</p>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">17. Modificaciones al Servicio y a estos Términos</h2>
+      <p class="text-sm mb-3">Podemos modificar o descontinuar funciones del Servicio en cualquier momento. Podemos actualizar estos Términos de vez en cuando; los cambios materiales se comunicarán a través del Servicio o por otros medios razonables. El uso continuado del Servicio después de que los cambios entren en vigor constituye la aceptación de los Términos revisados.</p>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">18. Disposiciones Generales</h2>
+      <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
+        <li><strong>Acuerdo Íntegro:</strong> Estos Términos, junto con la Política de Privacidad, constituyen el acuerdo íntegro entre usted y ByondRx respecto del Servicio.</li>
+        <li><strong>Divisibilidad:</strong> Si alguna disposición se considera inaplicable, las disposiciones restantes permanecerán en pleno vigor.</li>
+        <li><strong>Sin Renuncia:</strong> Nuestra falta de exigir el cumplimiento de una disposición no constituye una renuncia a nuestro derecho de hacerlo posteriormente.</li>
+        <li><strong>Cesión:</strong> Usted no puede ceder estos Términos sin nuestro consentimiento; nosotros podemos ceder estos Términos en relación con una fusión, adquisición o venta de activos.</li>
+        <li><strong>Idioma:</strong> Estos Términos están disponibles en inglés y español. La versión en inglés prevalecerá en caso de conflicto, salvo que, conforme lo exige el Código Civil de California, Sección 1632, la versión en español prevalezca respecto de un consumidor de California con quien la transacción se haya negociado principalmente en español.</li>
+      </ul>
+
+      <h2 class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">19. Información de Contacto</h2>
+      <p class="text-sm mb-3">ByondRx, Inc. / PharmacyPulse — Atención: Legal<br>
+        Correo electrónico: <a href="mailto:legal@pharmacypulse.co" style="color:#008F82;">legal@pharmacypulse.co</a><br>
+        Sitio web: <a href="https://pharmacypulse.co" style="color:#008F82;">pharmacypulse.co</a>
+      </p>
+
+    </div><!-- /terms-es -->
+
+  </div>
+</div>
+
+<!-- Language swap for terms page -->
+<script>
+(function () {
+  function getCookieLang() {
+    var m = document.cookie.match(/(?:^|;\s*)lang=([^;]+)/);
+    return m ? m[1] : 'en';
+  }
+
+  var TOC_EN = [
+    'Acceptance of Terms',
+    'Description of the Service',
+    'Eligibility and Accounts',
+    'User Content and License Grant',
+    'Reviewer Standards and Prohibited Conduct',
+    'Content Moderation; Section 230 Safe Harbor',
+    'Pharmacy Listings and Business Accounts',
+    'Pharmacy Partner Program',
+    'No Medical Advice; Assumption of Risk',
+    'Intellectual Property',
+    'Suspension and Termination',
+    'Disclaimers',
+    'Limitation of Liability',
+    'Indemnification',
+    'Dispute Resolution',
+    'Governing Law and Venue',
+    'Modifications',
+    'General Provisions',
+    'Contact Information'
+  ];
+  var TOC_ES = [
+    'Aceptación de los Términos',
+    'Descripción del Servicio',
+    'Elegibilidad y Cuentas',
+    'Contenido del Usuario y Licencia Otorgada',
+    'Normas para Reseñadores y Conducta Prohibida',
+    'Moderación de Contenido; Protección de Puerto Seguro',
+    'Listados de Farmacias y Cuentas Comerciales',
+    'Programa de Farmacias Asociadas',
+    'Sin Asesoramiento Médico; Asunción de Riesgo',
+    'Propiedad Intelectual',
+    'Suspensión y Cancelación',
+    'Exenciones de Garantía',
+    'Limitación de Responsabilidad',
+    'Indemnización',
+    'Resolución de Disputas',
+    'Ley Aplicable y Jurisdicción',
+    'Modificaciones',
+    'Disposiciones Generales',
+    'Información de Contacto'
+  ];
+
+  function applyLang(lang) {
+    var isEs = lang === 'es';
+    // Show/hide full content blocks
+    document.getElementById('terms-en').style.display = isEs ? 'none' : '';
+    document.getElementById('terms-es').style.display = isEs ? '' : 'none';
+    // Show/hide draft notice
+    document.getElementById('pp-terms-draft-notice').style.display = isEs ? '' : 'none';
+    // Page header strings
+    document.getElementById('t-page-title').textContent = isEs ? 'Términos y Condiciones' : 'Terms and Conditions';
+    document.getElementById('t-subtitle').textContent   = isEs ? 'Plataforma Comunitaria de Transparencia Farmacéutica — BORRADOR DE TRADUCCIÓN' : 'Community Pharmacy Transparency Platform';
+    document.getElementById('t-back').textContent       = isEs ? 'Volver a PharmacyPulse' : 'Back to PharmacyPulse';
+    // ToC heading
+    document.getElementById('t-toc-heading').textContent = isEs ? 'Tabla de Contenidos' : 'Table of Contents';
+    // ToC items
+    var toc = isEs ? TOC_ES : TOC_EN;
+    for (var i = 0; i < toc.length; i++) {
+      var el = document.getElementById('toc-' + (i + 1));
+      if (el) el.textContent = (i + 1) + '. ' + toc[i];
+    }
+  }
+
+  // Run on page load
+  applyLang(getCookieLang());
+
+  // Re-run if ppSetLang fires before a page reload (belt-and-suspenders)
+  var _orig = window.ppSetLang;
+  window.ppSetLang = function(lang) {
+    applyLang(lang);
+    if (_orig) _orig(lang);
+  };
+})();
+</script>
+
+{% include "pharmacypulse/partials/footer.html" %}
+{% include "pharmacypulse/partials/bottom-nav.html" %}
+{% endblock %}
