@@ -57,6 +57,11 @@
         >
         {% endif %}
         {% if user.is_authenticated %}
+        <!-- <span
+          class="pp-topbar-desktop-only notranslate"
+          translate="no"
+          style="font-size: 0.8125rem; font-weight: 600; color: #64748b; padding-right: 0.75rem; border-right: 1px solid #e5e7eb; white-space: nowrap;"
+        >Hello{% if user.first_name %}, {{ user.first_name }}{% endif %}</span> -->
         <a
           href="/saved"
           class="inline-flex items-center gap-1.5 pp-topbar-saved-btn"

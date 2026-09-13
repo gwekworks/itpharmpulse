@@ -35,7 +35,13 @@
           <li><a href="/for-pharmacies">Why PharmacyPulse</a></li>
           <li><a href="/claim">Claim Your Listing</a></li>
           <li><a href="/pharmacist-dashboard">Owner Dashboard</a></li>
-          <li><a href="#" onclick="openReviewModalSelect();return false">Review Widget</a></li>
+          <li>
+            {% if user.role == "pharmacist" %}
+            <a href="/pharmacist-dashboard?tab=widget">Review Widget</a>
+            {% else %}
+            <a href="/for-pharmacies">Review Widget</a>
+            {% endif %}
+          </li>
           {% comment %}<li><a href="/for-pharmacies#pricing">Pricing</a></li>{% endcomment %}
           {% comment %}<li><a href="/for-pharmacies#pricing">Pricing</a></li>{% endcomment %}
           <li><a href="/for-pharmacies#how-it-works">How It Works</a></li>
