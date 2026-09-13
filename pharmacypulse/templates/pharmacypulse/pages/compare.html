@@ -165,8 +165,8 @@
     {% else %}
     <div class="cmp-empty">
       <div class="cmp-empty-icon">&#9878;</div>
-      <p class="cmp-empty-title">No pharmacies in your comparison yet</p>
-      <p class="cmp-empty-desc">Use the search bar above, or add from any pharmacy page.</p>
+      <p class="cmp-empty-title">No pharmacies in your saved list yet</p>
+      <p class="cmp-empty-desc">Add from any pharmacy page.</p>
       <a href="/list" class="cmp-empty-btn">Browse pharmacies</a>
     </div>
     {% endif %}
@@ -184,6 +184,7 @@
       <p class="signin-gate-footer">Takes under a minute.</p>
     </div>
 
+    {% comment %}
     <div class="cmp-preview-card">
       <p class="cmp-preview-title">Or preview by ZIP code</p>
       <p class="cmp-preview-desc">A quick look at top-rated pharmacies near you.</p>
@@ -192,6 +193,7 @@
         <button type="submit" class="cmp-preview-btn">Preview</button>
       </form>
     </div>
+    {% endcomment %}
 
     {% if zip_results %}
     <h2 class="cmp-section-title">Top-rated near {{ zip }}</h2>
@@ -325,7 +327,29 @@
 <script>
 function toggleCmpPill(btn) {
   btn.classList.toggle('cmp-pill-active');
+  var active = btn.classList.contains('cmp-pill-active');
+
+  // Find this pill's index among all pills
+  var pills = Array.from(document.querySelectorAll('#cmp-pills .cmp-pill'));
+  var colIdx = pills.indexOf(btn); // 0-based pill index = table col offset by 1
+
+  // Toggle every cell in that column (thead th + tbody td + details cell)
+  // Table col 0 = feature label, so pharmacy col = colIdx + 1
+  var tableColIdx = colIdx + 1;
+
+  document.querySelectorAll('.cmp-table thead tr th:nth-child(' + (tableColIdx + 1) + ')').forEach(function(el) {
+    el.style.display = active ? '' : 'none';
+  });
+  document.querySelectorAll('.cmp-table tbody tr').forEach(function(row) {
+    var cell = row.querySelector('td:nth-child(' + (tableColIdx + 1) + ')');
+    if (cell) cell.style.display = active ? '' : 'none';
+  });
+
+  // Also hide the corresponding details cell (skip the spacer at index 0)
+  var detailsCells = document.querySelectorAll('.cmp-details-row .cmp-details-cell');
+  if (detailsCells[colIdx]) detailsCells[colIdx].style.display = active ? '' : 'none';
 }
+
 function removeFromCompare(id) {
   document.querySelectorAll('[data-pharmacy-id="' + id + '"]').forEach(function(el){ el.remove(); });
   fetch('/api/flow/compare/remove', {

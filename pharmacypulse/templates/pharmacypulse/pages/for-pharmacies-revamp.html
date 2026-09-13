@@ -1,0 +1,134 @@
+{% extends "pharmacypulse/layouts/blank.html" %}
+{% load pharmacypulse %}
+{% block title %}For Pharmacies · PharmacyPulse{% endblock %}
+{% block meta_description %}Claim your pharmacy on PharmacyPulse, respond to patient reviews, and showcase your services. Community-powered pharmacy transparency, built for pharmacists.{% endblock %}
+{% block extra_head %}{% endblock %}
+{% block content %}
+
+<div class="fp-layout">
+  <!-- Sidebar -->
+  <aside class="fp-sidebar">
+    <p class="fp-sidebar-brand">PHARMACY PULSE<br>FOR BUSINESS</p>
+    <div class="fp-sidebar-pharmacy">
+      <p class="fp-sidebar-name">Northridge Family<br>Pharmacy</p>
+      <p class="fp-sidebar-verified">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Verified owner
+      </p>
+    </div>
+    <nav class="fp-sidebar-nav">
+      <a class="fp-sidebar-link fp-sidebar-link-active">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Overview
+      </a>
+      <a class="fp-sidebar-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Patient signals
+      </a>
+      <a class="fp-sidebar-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Wait time
+      </a>
+      <a class="fp-sidebar-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+    </nav>
+    <a class="fp-sidebar-public" href="/list">View public profile</a>
+  </aside>
+
+  <!-- Main content -->
+  <main class="fp-main">
+    <div class="fp-main-inner">
+
+      <div class="fp-top-row">
+        <div>
+          <span class="fp-eyebrow">OPERATIONS SCORECARD</span>
+          <h1 class="fp-greeting">Good morning, Ana.</h1>
+          <p class="fp-subtitle">Here is how your patients experienced Northridge this week.</p>
+        </div>
+        <div class="fp-signal-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          2 new signals
+        </div>
+      </div>
+
+      <!-- Three metric cards -->
+      <div class="fp-metric-row">
+        <div class="fp-metric-card">
+          <div class="fp-metric-head">
+            <span class="fp-metric-label">STOCK CONFIDENCE</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          </div>
+          <p class="fp-metric-big">92%</p>
+          <div class="fp-trend-up">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            +3% this week
+          </div>
+          <p class="fp-metric-note">2 reports mention a refill transfer.</p>
+        </div>
+
+        <div class="fp-metric-card">
+          <div class="fp-metric-head">
+            <span class="fp-metric-label">WAIT TIME</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <p class="fp-metric-big">Avg Wait: 14m</p>
+          <div class="fp-sparkline">
+            <span>9a</span><span>11a</span><span>1p</span><span>3p</span><span>5p</span><span>7p</span>
+          </div>
+        </div>
+
+        <div class="fp-metric-card">
+          <div class="fp-metric-head">
+            <span class="fp-metric-label">EMPATHETIC CARE</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <p class="fp-metric-big">4.7 <span class="fp-metric-unit">/ 5</span></p>
+          <p class="fp-metric-note">93% mention clear, respectful support.</p>
+          <a class="fp-link-teal" href="/reviews">Read feedback</a>
+        </div>
+      </div>
+
+      <!-- Two columns -->
+      <div class="fp-two-col">
+        <div class="fp-card">
+          <div class="fp-card-head">
+            <div>
+              <h3 class="fp-card-title">Bottlenecks to act on</h3>
+              <p class="fp-card-sub">Signals need an operational response.</p>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="fp-bottleneck">
+            <div class="fp-bottleneck-row">
+              <span class="fp-bottleneck-title">Afternoon queue rising after 4 PM</span>
+              <span class="fp-badge-red">High</span>
+            </div>
+            <p class="fp-bottleneck-desc">Wait reports are 22% above your weekly baseline.</p>
+            <a class="fp-link-teal">View staffing prompt</a>
+          </div>
+          <div class="fp-bottleneck fp-bottleneck-last">
+            <span class="fp-bottleneck-title">Three insulin refill questions this week</span>
+            <p class="fp-bottleneck-desc">Review substitutions and patient call-back protocol.</p>
+          </div>
+        </div>
+
+        <div class="fp-card">
+          <span class="fp-eyebrow-sm">COMMUNITY REVIEW MANAGEMENT</span>
+          <h3 class="fp-card-quote">&ldquo;Staff remembered my name...&rdquo;</h3>
+          <p class="fp-card-desc">Praise is showing up consistently in care feedback. Share this with the team at huddle.</p>
+          <div class="fp-btn-row">
+            <span class="fp-btn-primary-sm">Mark reviewed</span>
+            <span class="fp-btn-outline-sm">Share with team</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+{% include "pharmacypulse/partials/footer.html" %}
+{% include "pharmacypulse/partials/bottom-nav.html" %}
+{% endblock %}

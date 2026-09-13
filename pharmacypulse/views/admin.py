@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.cache import never_cache
 
 from .. import page_data
-from ..domains.common import set_search_radius_mi
+from ..domains.common import set_search_radius_mi, set_review_moderation
 from ..models import PharmacyFact
 from .common import admin_required, render_page
 
@@ -32,6 +32,13 @@ def admin_claims(request):
 
 @admin_required
 def admin_moderation(request):
+    if request.method == "POST":
+        action = request.POST.get("action", "")
+        if action == "set_moderation_settings":
+            enabled = request.POST.get("mod_enabled") == "1"
+            who = request.POST.get("mod_who", "admin")
+            set_review_moderation(enabled, who)
+            return redirect("/admin-moderation")
     return render_page(request, "admin-moderation.html", page_data.page_admin_moderation)
 
 

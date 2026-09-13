@@ -520,7 +520,7 @@
         <span class="pd-section-label">COMMUNITY FEEDBACK</span>
         <h2 class="pd-section-title">Recent patient experiences</h2>
 
-        <a href="#" onclick="openReviewModal('{{ item.id }}', '{{ item.name|escapejs }}', '{{ item.city|default:'Local'|escapejs }} · {{ item.address|escapejs }}');return false" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem; background: #008F82; color: white; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; text-decoration: none; margin-bottom: 1rem; transition: background 0.15s" onmouseover="this.style.background='#006B62'" onmouseout="this.style.background='#008F82'">
+        <a href="#" onclick="openReviewModal('{{ item.id }}', '{{ item.name|escapejs }}', '{{ item.city|default:'Local'|escapejs }} · {{ item.address|escapejs }}');return false" class="pd-write-review-btn" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem; background: #008F82; color: white; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; text-decoration: none; margin-bottom: 1rem; transition: background 0.15s" onmouseover="this.style.background='#006B62'" onmouseout="this.style.background='#008F82'">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Write a Review
         </a>

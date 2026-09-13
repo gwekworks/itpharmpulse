@@ -13,6 +13,11 @@ def home(request):
 
 
 @login_required
+def saved(request):
+    return render_page(request, "saved.html", page_data.page_saved)
+
+
+@login_required
 def account(request):
     return render_page(request, "account.html", page_data.page_account)
 

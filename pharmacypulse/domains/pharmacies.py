@@ -569,3 +569,13 @@ def page_widget(request):
         "pharmacy": Row(_pharmacy_dict(p)) if p else None,
         "p": p_rows,  # template iterates `{% for item in p %}`
     }
+
+
+def page_saved(request):
+    saved = []
+    if request.user.is_authenticated:
+        saved = [_pharmacy_dict(sc.pharmacy) for sc in
+                 SavedComparison.objects.filter(user=request.user)
+                 .select_related("pharmacy").order_by("-created_at")
+                 if sc.pharmacy]
+    return {"saved": saved}

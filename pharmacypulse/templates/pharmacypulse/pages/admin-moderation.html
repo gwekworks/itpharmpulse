@@ -15,6 +15,71 @@
   <div class="admin-pg-body">
     <div class="max-w-6xl mx-auto">
 
+    <!-- ── Moderation Settings Card ── -->
+    <div class="glass-card p-5 mb-6">
+      <h2 class="font-semibold mb-1" style="color:#0f172a;font-size:0.9375rem">Review Moderation Settings</h2>
+      <p class="text-sm mb-4" style="color:#64748b">When enabled, new reviews are held as <strong>pending</strong> instead of going live immediately. Choose who can approve or reject them.</p>
+      <form method="POST" action="/admin-moderation">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="set_moderation_settings">
+        <div class="flex items-center gap-3 mb-4">
+          <!-- Toggle switch -->
+          <label class="relative inline-flex items-center cursor-pointer" style="gap:0.625rem">
+            <div style="position:relative;display:inline-block;width:44px;height:24px">
+              <input type="checkbox" name="mod_enabled" value="1"
+                {% if mod_enabled %}checked{% endif %}
+                id="mod-toggle"
+                onchange="document.getElementById('mod-who-group').style.opacity=this.checked?'1':'0.4';document.getElementById('mod-who-group').querySelectorAll('input').forEach(i=>i.disabled=!this.checked)"
+                style="opacity:0;width:0;height:0;position:absolute">
+              <span id="mod-toggle-track" style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;border-radius:9999px;transition:.2s;background:{% if mod_enabled %}#008F82{% else %}#cbd5e1{% endif %}"></span>
+              <span style="position:absolute;content:'';height:18px;width:18px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.2s;transform:{% if mod_enabled %}translateX(20px){% else %}translateX(0){% endif %}"></span>
+            </div>
+            <span class="text-sm font-semibold" style="color:#0f172a">Hold new reviews for moderation</span>
+          </label>
+        </div>
+
+        <div id="mod-who-group" style="opacity:{% if mod_enabled %}1{% else %}0.4{% endif %};transition:opacity .2s">
+          <p class="text-xs font-semibold mb-2" style="color:#475569;text-transform:uppercase;letter-spacing:.06em">Who can moderate</p>
+          <div class="flex gap-4 flex-wrap">
+            <label class="flex items-center gap-1.5 cursor-pointer text-sm" style="color:#0f172a">
+              <input type="radio" name="mod_who" value="admin"
+                {% if mod_who == "admin" or not mod_who %}checked{% endif %}
+                {% if not mod_enabled %}disabled{% endif %}>
+              Admin only
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-sm" style="color:#0f172a">
+              <input type="radio" name="mod_who" value="pharmacist"
+                {% if mod_who == "pharmacist" %}checked{% endif %}
+                {% if not mod_enabled %}disabled{% endif %}>
+              Pharmacist only
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-sm" style="color:#0f172a">
+              <input type="radio" name="mod_who" value="both"
+                {% if mod_who == "both" %}checked{% endif %}
+                {% if not mod_enabled %}disabled{% endif %}>
+              Admin and Pharmacist
+            </label>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <button type="submit" class="btn-primary text-sm py-1.5 px-4">Save settings</button>
+        </div>
+      </form>
+    </div>
+    <script>
+      (function(){
+        var tog = document.getElementById('mod-toggle');
+        var track = document.getElementById('mod-toggle-track');
+        var thumb = track && track.nextElementSibling;
+        if (!tog) return;
+        tog.addEventListener('change', function(){
+          track.style.background = this.checked ? '#008F82' : '#cbd5e1';
+          if (thumb) thumb.style.transform = this.checked ? 'translateX(20px)' : 'translateX(0)';
+        });
+      })();
+    </script>
+
     <!-- Filter tabs -->
     <div class="tab-group mb-5">
       <a href="/admin-moderation" class="tab-btn {% if not param_status %}active{% endif %} no-underline">All</a>

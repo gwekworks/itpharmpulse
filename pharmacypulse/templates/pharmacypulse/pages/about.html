@@ -1,0 +1,232 @@
+{% extends "pharmacypulse/layouts/blank.html" %}
+{% load pharmacypulse %}
+{% block title %}About PharmacyPulse · Community-Powered Pharmacy Reviews{% endblock %}
+{% block meta_description %}Learn about PharmacyPulse — who we are, why we built it, and our mission to bring transparency and trust to every pharmacy experience in America.{% endblock %}
+{% block content %}
+<div style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif">
+
+  {% include "pharmacypulse/partials/topbar.html" %}
+
+  <!-- ============================================================== -->
+  <!-- HERO                                                             -->
+  <!-- ============================================================== -->
+  <section style="position: relative; overflow: hidden; background: #ffffff; padding: 0">
+    <!-- Grid overlay -->
+    <div aria-hidden="true" style="position: absolute; inset: 0; background-image: linear-gradient(#e5e7eb33 1px, transparent 1px), linear-gradient(90deg, #e5e7eb33 1px, transparent 1px); background-size: 48px 48px; pointer-events: none; z-index: 0"></div>
+    <!-- Glow orbs -->
+    <div aria-hidden="true" style="position: absolute; top: -140px; right: -80px; width: 480px; height: 480px; border-radius: 50%; background: radial-gradient(circle, rgba(0,143,130,0.11), transparent 70%); pointer-events: none; z-index: 0"></div>
+    <div aria-hidden="true" style="position: absolute; bottom: -100px; left: -80px; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(circle, rgba(124,58,237,0.08), transparent 70%); pointer-events: none; z-index: 0"></div>
+
+    <div style="position: relative; z-index: 1; max-width: 52rem; margin: 0 auto; padding: 4.5rem 1.5rem 4rem; text-align: center">
+      <span style="display: inline-block; padding: 0.375rem 1rem; border-radius: 9999px; font-size: 0.6875rem; font-weight: 700; margin-bottom: 1.25rem; background: #E6F7F5; color: #008F82; letter-spacing: 0.12em; text-transform: uppercase">✦ Our Story</span>
+      <h1 style="font-family: 'DM Serif Display', serif; font-size: clamp(2.25rem, 6vw, 3.5rem); color: #1A1A2E; line-height: 1.1; margin-bottom: 1.125rem; letter-spacing: -0.01em">
+        Built for patients.<br>Trusted by pharmacies.
+      </h1>
+      <p style="font-size: 1.0625rem; color: #4B5563; line-height: 1.7; max-width: 38rem; margin: 0 auto 2rem">
+        PharmacyPulse is a community-powered platform that helps patients find the right pharmacy and helps pharmacies understand what their patients really experience.
+      </p>
+      <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap">
+        <a href="/list" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1.875rem; background: #008F82; color: white; font-size: 0.9375rem; font-weight: 700; text-decoration: none; border-radius: 9999px; box-shadow: 0 4px 16px rgba(0,143,130,0.25)">Find a pharmacy →</a>
+        <a href="/for-pharmacies" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.8125rem 1.875rem; background: white; color: #1A1A2E; font-size: 0.9375rem; font-weight: 600; text-decoration: none; border-radius: 9999px; border: 1.5px solid #E5E7EB">For pharmacy owners</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- MISSION                                                          -->
+  <!-- ============================================================== -->
+  <section style="padding: 5rem 1.5rem; background: #FAFBFC; border-top: 1px solid #E5E7EB">
+    <div style="max-width: 56rem; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 3rem; align-items: center">
+
+      <div style="text-align: center; max-width: 44rem; margin: 0 auto">
+        <div style="font-size: 0.6875rem; font-weight: 700; color: #008F82; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.5rem">Our Mission</div>
+        <h2 style="font-family: 'DM Serif Display', serif; font-size: clamp(1.75rem, 4vw, 2.5rem); color: #1A1A2E; line-height: 1.15; margin-bottom: 1.125rem">
+          Pharmacy transparency shouldn't be a luxury
+        </h2>
+        <p style="font-size: 1rem; color: #4B5563; line-height: 1.75; margin-bottom: 1rem">
+          Millions of Americans rely on their local pharmacy every week — yet choosing one has always been a shot in the dark. Will they have your medication? How long is the wait? Do they actually treat patients with respect?
+        </p>
+        <p style="font-size: 1rem; color: #4B5563; line-height: 1.75">
+          We built PharmacyPulse to change that. By collecting honest, community-sourced reviews on stock confidence, wait times, and care quality, we give every patient the information they deserve — and give every pharmacy owner the feedback they need to improve.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- SECTION DIVIDER                                                  -->
+  <!-- ============================================================== -->
+  <div style="display: flex; align-items: center; justify-content: center; gap: 0.875rem; padding: 1.75rem 1.5rem; background: white; border-top: 1px solid #E5E7EB; border-bottom: 1px solid #E5E7EB">
+    <div style="flex: 1; max-width: 260px; height: 1px; background: linear-gradient(to right, transparent, #B7E8E3)"></div>
+    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: white; border: 1.5px solid #B7E8E3; border-radius: 9999px; padding: 0.375rem 1.125rem">
+      <span style="font-size: 0.9375rem">💡</span>
+      <span style="font-size: 0.6875rem; font-weight: 700; color: #008F82; letter-spacing: 0.12em; text-transform: uppercase">What We Do</span>
+    </div>
+    <div style="flex: 1; max-width: 260px; height: 1px; background: linear-gradient(to left, transparent, #B7E8E3)"></div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- WHAT WE DO — 3 CARDS                                             -->
+  <!-- ============================================================== -->
+  <section style="padding: 4.5rem 1.5rem; background: white">
+    <div style="max-width: 64rem; margin: 0 auto">
+      <div style="text-align: center; margin-bottom: 2.75rem">
+        <h2 style="font-family: 'DM Serif Display', serif; font-size: clamp(1.75rem, 4vw, 2.25rem); color: #1A1A2E; line-height: 1.15; margin-bottom: 0.5rem">Three things we get right</h2>
+        <p style="font-size: 0.9375rem; color: #6B7280; max-width: 30rem; margin: 0 auto; line-height: 1.6">Real data, honest reviews, and tools that serve both sides of the pharmacy counter.</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem">
+
+        <div style="background: white; border: 1px solid #E5E7EB; border-top: 4px solid #008F82; border-radius: 16px; padding: 1.875rem">
+          <div style="font-size: 2rem; margin-bottom: 0.875rem">🔍</div>
+          <h3 style="font-weight: 700; font-size: 1.0625rem; color: #1A1A2E; margin-bottom: 0.5rem">Find the right pharmacy</h3>
+          <p style="font-size: 0.875rem; color: #4B5563; line-height: 1.7">Search by ZIP, filter by rating, stock confidence, and wait time. Compare pharmacies side by side before you leave home.</p>
+        </div>
+
+        <div style="background: white; border: 1px solid #E5E7EB; border-top: 4px solid #7c3aed; border-radius: 16px; padding: 1.875rem">
+          <div style="font-size: 2rem; margin-bottom: 0.875rem">💬</div>
+          <h3 style="font-weight: 700; font-size: 1.0625rem; color: #1A1A2E; margin-bottom: 0.5rem">Share your experience</h3>
+          <p style="font-size: 0.875rem; color: #4B5563; line-height: 1.7">Leave reviews that go beyond stars — rate stock availability, wait time, and how cared-for you actually felt. Your voice helps your neighbors.</p>
+        </div>
+
+        <div style="background: white; border: 1px solid #E5E7EB; border-top: 4px solid #F59E0B; border-radius: 16px; padding: 1.875rem">
+          <div style="font-size: 2rem; margin-bottom: 0.875rem">📊</div>
+          <h3 style="font-weight: 700; font-size: 1.0625rem; color: #1A1A2E; margin-bottom: 0.5rem">Empower pharmacy owners</h3>
+          <p style="font-size: 0.875rem; color: #4B5563; line-height: 1.7">Pharmacy owners can claim their listing, respond to reviews, and use patient feedback analytics to improve the care they deliver.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- OUR VALUES                                                       -->
+  <!-- ============================================================== -->
+  <section style="padding: 4.5rem 1.5rem; background: #FAFBFC; border-top: 1px solid #E5E7EB">
+    <div style="max-width: 56rem; margin: 0 auto">
+      <div style="text-align: center; margin-bottom: 2.75rem">
+        <div style="font-size: 0.6875rem; font-weight: 700; color: #008F82; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.5rem">Our Values</div>
+        <h2 style="font-family: 'DM Serif Display', serif; font-size: clamp(1.75rem, 4vw, 2.25rem); color: #1A1A2E; line-height: 1.15">The principles behind everything we build</h2>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem">
+
+        <div style="background: white; border: 1px solid #E5E7EB; border-radius: 14px; padding: 1.625rem">
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: #E6F7F5; display: flex; align-items: center; justify-content: center; font-size: 1.125rem; margin-bottom: 0.875rem">🏥</div>
+          <h3 style="font-weight: 700; font-size: 0.9375rem; color: #1A1A2E; margin-bottom: 0.375rem">Patients first</h3>
+          <p style="font-size: 0.8125rem; color: #4B5563; line-height: 1.65">Every feature we build starts with a question: does this help a patient make a better decision or feel better cared for?</p>
+        </div>
+
+        <div style="background: white; border: 1px solid #E5E7EB; border-radius: 14px; padding: 1.625rem">
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: #EDE9FE; display: flex; align-items: center; justify-content: center; font-size: 1.125rem; margin-bottom: 0.875rem">⚖️</div>
+          <h3 style="font-weight: 700; font-size: 0.9375rem; color: #1A1A2E; margin-bottom: 0.375rem">Radical transparency</h3>
+          <p style="font-size: 0.8125rem; color: #4B5563; line-height: 1.65">We publish every authentic review — positive or negative. No suppression, no pay-to-hide. We follow FTC guidelines without compromise.</p>
+        </div>
+
+        <div style="background: white; border: 1px solid #E5E7EB; border-radius: 14px; padding: 1.625rem">
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: #FEF3C7; display: flex; align-items: center; justify-content: center; font-size: 1.125rem; margin-bottom: 0.875rem">🤝</div>
+          <h3 style="font-weight: 700; font-size: 0.9375rem; color: #1A1A2E; margin-bottom: 0.375rem">Community-powered</h3>
+          <p style="font-size: 0.8125rem; color: #4B5563; line-height: 1.65">Our data comes from real patients sharing real experiences. The platform gets better the more people contribute to it.</p>
+        </div>
+
+        <div style="background: white; border: 1px solid #E5E7EB; border-radius: 14px; padding: 1.625rem">
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: #E6F7F5; display: flex; align-items: center; justify-content: center; font-size: 1.125rem; margin-bottom: 0.875rem">🔒</div>
+          <h3 style="font-weight: 700; font-size: 0.9375rem; color: #1A1A2E; margin-bottom: 0.375rem">Privacy by default</h3>
+          <p style="font-size: 0.8125rem; color: #4B5563; line-height: 1.65">Reviews are screened for PHI. Patient data is never sold. Full CCPA data export and deletion rights are built in from day one.</p>
+        </div>
+
+        <div style="background: white; border: 1px solid #E5E7EB; border-radius: 14px; padding: 1.625rem">
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: #EDE9FE; display: flex; align-items: center; justify-content: center; font-size: 1.125rem; margin-bottom: 0.875rem">🌎</div>
+          <h3 style="font-weight: 700; font-size: 0.9375rem; color: #1A1A2E; margin-bottom: 0.375rem">Health equity</h3>
+          <p style="font-size: 0.8125rem; color: #4B5563; line-height: 1.65">We build in Spanish and English from day one because pharmacy access is a health equity issue — information should reach everyone.</p>
+        </div>
+
+        <div style="background: white; border: 1px solid #E5E7EB; border-radius: 14px; padding: 1.625rem">
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: #FEF3C7; display: flex; align-items: center; justify-content: center; font-size: 1.125rem; margin-bottom: 0.875rem">🛠️</div>
+          <h3 style="font-weight: 700; font-size: 0.9375rem; color: #1A1A2E; margin-bottom: 0.375rem">Built to last</h3>
+          <p style="font-size: 0.8125rem; color: #4B5563; line-height: 1.65">We use verified NPI data, regular data refreshes, and community flags to keep listings accurate — not just at launch but over time.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- DATA SOURCES                                                     -->
+  <!-- ============================================================== -->
+  <section style="padding: 4.5rem 1.5rem; background: white; border-top: 1px solid #E5E7EB">
+    <div style="max-width: 52rem; margin: 0 auto">
+      <div style="text-align: center; margin-bottom: 2.5rem">
+        <div style="font-size: 0.6875rem; font-weight: 700; color: #008F82; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.5rem">How We Work</div>
+        <h2 style="font-family: 'DM Serif Display', serif; font-size: clamp(1.75rem, 4vw, 2.25rem); color: #1A1A2E; line-height: 1.15; margin-bottom: 0.75rem">Where our data comes from</h2>
+        <p style="font-size: 0.9375rem; color: #6B7280; line-height: 1.6; max-width: 36rem; margin: 0 auto">We combine authoritative federal sources with real patient contributions to build the most complete picture of pharmacy care available.</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem">
+
+        <div style="padding: 1.625rem; background: #FAFBFC; border: 1px solid #E5E7EB; border-radius: 14px">
+          <div style="font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #008F82; margin-bottom: 0.5rem">NPPES / NPI Registry</div>
+          <p style="font-size: 0.8125rem; color: #4B5563; line-height: 1.65">Pharmacy listings are sourced and verified against the federal NPI registry, giving us accurate names, addresses, and license data for every listed pharmacy.</p>
+        </div>
+
+        <div style="padding: 1.625rem; background: #FAFBFC; border: 1px solid #E5E7EB; border-radius: 14px">
+          <div style="font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #7c3aed; margin-bottom: 0.5rem">Community Reviews</div>
+          <p style="font-size: 0.8125rem; color: #4B5563; line-height: 1.65">Patients submit verified reviews covering stock confidence, wait time, and empathetic care. Reviews are screened for PHI before publication.</p>
+        </div>
+
+        <div style="padding: 1.625rem; background: #FAFBFC; border: 1px solid #E5E7EB; border-radius: 14px">
+          <div style="font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #F59E0B; margin-bottom: 0.5rem">Pharmacy Owners</div>
+          <p style="font-size: 0.8125rem; color: #4B5563; line-height: 1.65">Verified owners can enrich their listing with hours, services, and photos — all verified against the NPI before any claim is approved.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- DISCLAIMER                                                       -->
+  <!-- ============================================================== -->
+  <section style="padding: 3.5rem 1.5rem; background: #FAFBFC; border-top: 1px solid #E5E7EB">
+    <div style="max-width: 48rem; margin: 0 auto">
+      <div style="background: white; border: 1px solid #E5E7EB; border-left: 4px solid #008F82; border-radius: 12px; padding: 1.75rem">
+        <div style="display: flex; align-items: center; gap: 0.625rem; margin-bottom: 0.75rem">
+          <span style="font-size: 1.125rem">ℹ️</span>
+          <span style="font-weight: 700; font-size: 0.9375rem; color: #1A1A2E">Important disclaimer</span>
+        </div>
+        <p style="font-size: 0.8125rem; color: #4B5563; line-height: 1.75; margin: 0">
+          PharmacyPulse provides pharmacy listings, community reviews, and availability information for general informational purposes only. It is <strong>not medical advice</strong> and is not a substitute for guidance from a licensed pharmacist or healthcare provider. Pharmacy and availability data may be incomplete, outdated, or inaccurate. Always confirm hours, services, and medication availability directly with the pharmacy before relying on this information.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- CONTACT / CTA                                                    -->
+  <!-- ============================================================== -->
+  <section style="padding: 4.5rem 1.5rem; background: #3D1952">
+    <div style="max-width: 44rem; margin: 0 auto; text-align: center">
+      <p style="font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(255,255,255,0.65); margin-bottom: 0.75rem">Get in touch</p>
+      <h2 style="font-family: 'DM Serif Display', serif; font-size: clamp(1.75rem, 4vw, 2.5rem); color: white; line-height: 1.2; margin-bottom: 0.875rem">
+        Questions or feedback?<br>We'd love to hear from you.
+      </h2>
+      <p style="font-size: 0.9375rem; color: rgba(255,255,255,0.65); margin-bottom: 2.25rem; line-height: 1.65">
+        Whether you're a patient, a pharmacy owner, or just curious about what we're building — reach out any time.
+      </p>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 0.75rem; flex-wrap: wrap">
+        <a href="mailto:hello@pharmacypulse.co" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1.875rem; background: #008F82; color: white; font-size: 0.9375rem; font-weight: 700; text-decoration: none; border-radius: 9999px; box-shadow: 0 4px 16px rgba(0,143,130,0.35)">
+          ✉ hello@pharmacypulse.co
+        </a>
+        <a href="/for-pharmacies" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.8125rem 1.875rem; background: transparent; color: white; font-size: 0.9375rem; font-weight: 600; text-decoration: none; border-radius: 9999px; border: 1.5px solid rgba(255,255,255,0.35)">For pharmacy owners</a>
+      </div>
+      <p style="font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 1.5rem">
+        Security issues? Contact <a href="mailto:security@pharmacypulse.co" style="color: rgba(255,255,255,0.6); text-decoration: underline">security@pharmacypulse.co</a>
+      </p>
+    </div>
+  </section>
+
+  {% include "pharmacypulse/partials/footer.html" %}
+  {% include "pharmacypulse/partials/bottom-nav.html" %}
+
+</div>
+{% endblock %}

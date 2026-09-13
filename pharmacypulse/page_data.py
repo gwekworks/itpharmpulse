@@ -28,7 +28,7 @@ from .domains.home import (
 )
 from .domains.pharmacies import (
     page_list, page_map, page_online, page_pharmacy_detail,
-    page_compare, page_claim, page_widget,
+    page_compare, page_claim, page_widget, page_saved,
 )
 from .domains.reviews import (
     page_reviews, page_write_review, page_for_pharmacies,
@@ -36,7 +36,7 @@ from .domains.reviews import (
 from .domains.shortages import page_shortages
 from .domains.insights import page_insights
 from .domains.account import (
-    page_account, page_privacy, page_terms, page_forgot_password,
+    page_account, page_privacy, page_terms, page_forgot_password, page_about,
 )
 from .domains.dashboard import (
     page_pharmacist_dashboard, page_admin_dashboard, page_admin_analytics,

@@ -6,6 +6,7 @@ module's `views.index`) keep working unchanged.
 """
 from .seo import robots_txt, sitemap_xml
 from .public import (
+    about,
     compare,
     for_pharmacies,
     index,
@@ -21,7 +22,7 @@ from .public import (
     widget,
     write_review,
 )
-from .member import account, claim, home, pharmacist_dashboard
+from .member import account, claim, home, pharmacist_dashboard, saved
 from .admin import (
     admin_analytics,
     admin_claims,
@@ -36,6 +37,7 @@ from .admin import (
 __all__ = [
     "robots_txt",
     "sitemap_xml",
+    "about",
     "index",
     "pharmacy_list",
     "pharmacy_map",
@@ -52,6 +54,7 @@ __all__ = [
     "terms",
     "home",
     "account",
+    "saved",
     "claim",
     "pharmacist_dashboard",
     "admin_dashboard",

@@ -20,11 +20,11 @@
         <div class="pp-footer-heading">For Patients</div>
         <ul class="pp-footer-list">
           <li><a href="/list">Find a Pharmacy</a></li>
-          <li><a href="/map">Map View</a></li>
+          {% comment %}<li><a href="/map">Map View</a></li>{% endcomment %}
           <li><a href="/compare">Compare Pharmacies</a></li>
           <li><a href="/online">Online Pharmacies</a></li>
           <li><a href="/reviews">Read Reviews</a></li>
-          <li><a href="/review">Write a Review</a></li>
+          <li><a href="#" onclick="openReviewModalSelect();return false">Write a Review</a></li>
           {% comment %}<li><a href="/shortages">Drug Shortages</a></li>{% endcomment %}
         </ul>
       </div>
@@ -35,8 +35,9 @@
           <li><a href="/for-pharmacies">Why PharmacyPulse</a></li>
           <li><a href="/claim">Claim Your Listing</a></li>
           <li><a href="/pharmacist-dashboard">Owner Dashboard</a></li>
-          <li><a href="/widget">Review Widget</a></li>
-          <li><a href="/for-pharmacies#pricing">Pricing</a></li>
+          <li><a href="#" onclick="openReviewModalSelect();return false">Review Widget</a></li>
+          {% comment %}<li><a href="/for-pharmacies#pricing">Pricing</a></li>{% endcomment %}
+          {% comment %}<li><a href="/for-pharmacies#pricing">Pricing</a></li>{% endcomment %}
           <li><a href="/for-pharmacies#how-it-works">How It Works</a></li>
         </ul>
       </div>
@@ -44,18 +45,27 @@
       <div>
         <div class="pp-footer-heading">Account</div>
         <ul class="pp-footer-list">
+          {% if user.is_authenticated %}
+          <li><a href="/account">My Account</a></li>
+          <li><a href="/saved">My Saved Pharmacies</a></li>
+          <li>
+            <form method="POST" action="/logout" style="margin:0;padding:0">
+              {% csrf_token %}
+              <button type="submit" style="font-weight: 400;font-size: 0.8125rem;">Log Out</button>
+            </form>
+          </li>
+          {% else %}
           <li><a href="/signup">Sign Up</a></li>
           <li><a href="/login">Log In</a></li>
-          <li><a href="/account">My Account</a></li>
-          <li><a href="/home">My Home Feed</a></li>
           <li><a href="/forgot-password">Forgot Password</a></li>
+          {% endif %}
         </ul>
       </div>
 
       <div>
         <div class="pp-footer-heading">Company</div>
         <ul class="pp-footer-list">
-          <li><a href="/for-pharmacies#about">About PharmacyPulse</a></li>
+          <li><a href="/about">About PharmacyPulse</a></li>
           <li><a href="/privacy">Privacy Policy</a></li>
           <li><a href="/terms">Terms of Service</a></li>
           <li><a href="mailto:security@pharmacypulse.co">Security Contact</a></li>
