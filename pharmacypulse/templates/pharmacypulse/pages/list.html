@@ -71,7 +71,7 @@
       <a href="{{ item.url }}" class="lp-row">
         <input type="radio" name="selected_pharmacy" class="lp-radio" onclick="event.stopPropagation()">
         <div class="lp-row-info">
-          <span class="lp-row-name">{{ item.name }}{% if item.listing_verified %} <span class="pp-listing-verified-badge" title="Verified — this pharmacy completed its listing setup">&#10003; Verified</span>{% endif %}</span>
+          <span class="lp-row-name notranslate" translate="no">{{ item.name }}{% if item.listing_verified %} <span class="pp-listing-verified-badge" title="Verified — this pharmacy completed its listing setup">&#10003; Verified</span>{% endif %}</span>
           <span class="lp-row-meta">{% if item.is_chain %}Chain{% else %}Independent{% endif %} &middot; {% if item.city %}{{ item.city }}{% endif %} &middot; {% if item.distance_mi is not None %}~{{ item.distance_mi|floatformat:1 }} mi{% else %}Distance unavailable{% endif %}</span>
           <div class="lp-row-details">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#008F82" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>

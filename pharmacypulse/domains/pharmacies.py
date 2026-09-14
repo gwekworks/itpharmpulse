@@ -543,7 +543,7 @@ def page_claim(request):
     existing = []
     if request.user.is_authenticated:
         existing = list(PharmacyClaim.objects.filter(user=request.user)
-                        .order_by("-created_at")[:1].values(
+                        .order_by("-created_at").values(
             "id", "status", "rejection_reason", "pharmacy_name", "created_at",
         ))
     return {

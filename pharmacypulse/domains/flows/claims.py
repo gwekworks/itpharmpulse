@@ -42,17 +42,6 @@ def verify_and_submit_claim(request, pharmacy_id: int):
         back = f"/claim?pharmacy_id={pharmacy_id}&error=Too+many+claim+attempts.+Try+again+in+an+hour."
         return redirect(back)
 
-    # Block duplicate pending claims — a user may only have one active pending
-    # claim at a time. Approved/rejected claims do not block a new submission.
-    if PharmacyClaim.objects.filter(user=user, status="pending").exists():
-        back = (
-            f"/claim?pharmacy_id={pharmacy_id}"
-            f"&pharmacy_name={urllib.parse.quote(pharmacy_name)}"
-            f"&error=You+already+have+a+pending+claim+under+review."
-            f"+Please+wait+for+our+team+to+process+it+before+submitting+another."
-        )
-        return redirect(back)
-
     if not (npi_number and license_number and pharmacy_name):
         back = f"/claim?pharmacy_id={pharmacy_id}&pharmacy_name={urllib.parse.quote(pharmacy_name)}&error=Missing+required+fields"
         return redirect(back)

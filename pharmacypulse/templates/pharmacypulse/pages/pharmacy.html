@@ -82,7 +82,7 @@
       <div class="pd-header">
         <div class="pd-header-left">
           <span class="pd-type-label">{% if item.is_chain %}Chain{% else %}Independent{% endif %}</span>
-          <h1 class="pd-name" style="display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap">{{ item.name }}{% if item.listing_verified %}<span class="pp-listing-verified-badge" title="Verified — this pharmacy completed its listing setup">&#10003; Verified</span>{% endif %}</h1>
+          <h1 class="pd-name" style="display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap"><span class="notranslate" translate="no">{{ item.name }}</span>{% if item.listing_verified %}<span class="pp-listing-verified-badge" title="Verified — this pharmacy completed its listing setup">&#10003; Verified</span>{% endif %}</h1>
           <div class="pd-addr">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             <span>{{ item.address }}{% if item.city %}, {{ item.city }}{% endif %}{% if item.state %} {{ item.state }}{% endif %}</span>
@@ -531,7 +531,7 @@
             <div class="pd-review-user">
               <div class="pd-avatar" style="background:{% cycle '#008F82' '#6366F1' '#F59E0B' %}">{{ item2.user_name|first }}</div>
               <div>
-                <span class="pd-review-name">{{ item2.user_name }}</span>
+                <span class="pd-review-name notranslate" translate="no">{{ item2.user_name }}</span>
                 <div class="pd-review-meta">
                   <span class="pd-review-type">{% if item2.stock_available %}Refill pickup{% else %}New prescription{% endif %}</span>
                   <span class="pd-review-time">{{ item2.created_at|timesince }} ago</span>

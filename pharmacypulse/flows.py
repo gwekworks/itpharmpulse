@@ -46,3 +46,4 @@ from .domains.flows.newsletter import (
     make_unsubscribe_url,
 )
 from .domains.flows.search import search_pharmacies, suggest_locations, place_details
+from .domains.flows.translate import translate_texts
