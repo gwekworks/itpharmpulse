@@ -160,13 +160,15 @@ class Command(BaseCommand):
                 "A bit of a wait but worth it.",
                 "Convenient location, never any issues.",
             ]
-            for p, c in zip(top, comments):
+            purposes = ["refill", "new_rx,consultation", "vaccine", "transfer", "refill"]
+            timeframes = ["today", "yesterday", "2-3_days", "this_week", "today"]
+            for p, c, purp, tf in zip(top, comments, purposes, timeframes):
                 if not Review.objects.filter(pharmacy=p, user=patient).exists():
                     Review.objects.create(
                         pharmacy=p, pharmacy_name=p.name,
                         user=patient, user_name=f"{patient.first_name} {patient.last_name}",
                         stock_available=1, wait_time_rating=5, service_rating=5,
-                        comment=c,
+                        comment=c, visit_purpose=purp, visit_timeframe=tf,
                     )
 
         # Reviews for online pharmacies (so their detail pages aren't empty)
@@ -176,16 +178,16 @@ class Command(BaseCommand):
         pre_save.disconnect(review_pre_save, sender=Review)
         if patient:
             online_reviews = [
-                ("Mail Meds Online",    5, 5, 1, "Incredibly fast shipping. Medications arrived in two days and were perfectly packaged."),
-                ("Mail Meds Online",    4, 5, 1, "Super easy to transfer my prescription. Customer service was great when I had questions."),
-                ("Mail Meds Online",    5, 5, 1, "Best prices I have found anywhere. Auto-refill saves me so much time every month."),
-                ("Capsule Digital Rx",  5, 5, 1, "The app is so simple to use. Delivery is always on time and the pharmacist texts are genuinely helpful."),
-                ("Capsule Digital Rx",  4, 5, 1, "Really impressed with how they handle insurance. Saved me a bunch compared to the local chain."),
-                ("Capsule Digital Rx",  5, 4, 1, "Free same-day delivery in my area. Hard to beat that."),
-                ("PillPack by Amazon",  5, 5, 1, "The pre-sorted daily packs are a game changer for managing multiple medications."),
-                ("PillPack by Amazon",  4, 5, 1, "Seamless integration with Prime. Setup took five minutes and they handled the transfer."),
+                ("Mail Meds Online",    5, 5, 1, "Incredibly fast shipping. Medications arrived in two days and were perfectly packaged.", "refill", "today"),
+                ("Mail Meds Online",    4, 5, 1, "Super easy to transfer my prescription. Customer service was great when I had questions.", "transfer", "yesterday"),
+                ("Mail Meds Online",    5, 5, 1, "Best prices I have found anywhere. Auto-refill saves me so much time every month.", "refill", "2-3_days"),
+                ("Capsule Digital Rx",  5, 5, 1, "The app is so simple to use. Delivery is always on time and the pharmacist texts are genuinely helpful.", "new_rx,consultation", "today"),
+                ("Capsule Digital Rx",  4, 5, 1, "Really impressed with how they handle insurance. Saved me a bunch compared to the local chain.", "new_rx", "yesterday"),
+                ("Capsule Digital Rx",  5, 4, 1, "Free same-day delivery in my area. Hard to beat that.", "refill", "today"),
+                ("PillPack by Amazon",  5, 5, 1, "The pre-sorted daily packs are a game changer for managing multiple medications.", "refill", "this_week"),
+                ("PillPack by Amazon",  4, 5, 1, "Seamless integration with Prime. Setup took five minutes and they handled the transfer.", "transfer", "yesterday"),
             ]
-            for pharm_name, wait, service, stock, comment in online_reviews:
+            for pharm_name, wait, service, stock, comment, purp, tf in online_reviews:
                 p = Pharmacy.objects.filter(name=pharm_name).first()
                 if p and not Review.objects.filter(pharmacy=p, comment=comment).exists():
                     Review.objects.create(
@@ -193,6 +195,7 @@ class Command(BaseCommand):
                         user=patient, user_name=f"{patient.first_name} {patient.last_name}",
                         stock_available=stock, wait_time_rating=wait, service_rating=service,
                         comment=comment, delivery_timeliness=wait,
+                        visit_purpose=purp, visit_timeframe=tf,
                     )
         pre_save.connect(review_pre_save, sender=Review)
 

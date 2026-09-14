@@ -17,6 +17,8 @@ class Review(models.Model):
     wait_time_rating = models.IntegerField(default=3)
     service_rating = models.IntegerField(default=3)
     comment = models.TextField(blank=True, null=True)
+    visit_purpose = models.TextField(blank=True, null=True)    # e.g. "refill,new_rx"
+    visit_timeframe = models.TextField(blank=True, null=True)  # e.g. "yesterday"
     delivery_timeliness = models.IntegerField(blank=True, null=True)
     is_caregiver = models.IntegerField(default=0)
     response_text = models.TextField(blank=True, null=True)
@@ -37,6 +39,52 @@ class Review(models.Model):
                 condition=models.Q(deleted_at__isnull=True),
             ),
         ]
+
+    _PURPOSE_MAP = {
+        "refill": {"label": "Refill pickup", "icon": "🔄"},
+        "new_rx": {"label": "New prescription", "icon": "📋"},
+        "transfer": {"label": "Transfer", "icon": "🔁"},
+        "vaccine": {"label": "Vaccine", "icon": "💉"},
+        "consultation": {"label": "Consultation", "icon": "💬"},
+        "other": {"label": "Other / OTC", "icon": "•••"},
+    }
+
+    _TIMEFRAME_MAP = {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "2-3_days": "2–3 days ago",
+        "this_week": "Earlier this week",
+        "last_week": "Last week",
+        "this_month": "This month",
+    }
+
+    @property
+    def visit_purpose_badges(self) -> list[dict[str, str]]:
+        """Return list of formatted visit purpose badges (label + icon)."""
+        if self.visit_purpose:
+            items = []
+            for code in self.visit_purpose.split(","):
+                key = code.strip()
+                if not key:
+                    continue
+                if key in self._PURPOSE_MAP:
+                    items.append(self._PURPOSE_MAP[key])
+                else:
+                    items.append({"label": key.replace("_", " ").title(), "icon": "•"})
+            if items:
+                return items
+        # Fallback for legacy reviews where visit_purpose is unset
+        if self.stock_available:
+            return [{"label": "Refill pickup", "icon": "🔄"}]
+        return [{"label": "New prescription", "icon": "📋"}]
+
+    @property
+    def visit_timeframe_label(self) -> str | None:
+        """Return human-readable visit timeframe label or None."""
+        if not self.visit_timeframe:
+            return None
+        return self._TIMEFRAME_MAP.get(self.visit_timeframe, self.visit_timeframe)
+
 
 
 class ReviewResponse(models.Model):

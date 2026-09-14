@@ -845,7 +845,9 @@
     body.append('stock_available', stockMap[stock] || 1);
     body.append('wait_time_rating', waitTime);
     body.append('service_rating', care);
-    body.append('comment', ['[' + purpose + ']', '[' + timeframe + ']', comment].filter(Boolean).join(' '));
+    body.append('comment', comment);
+    body.append('visit_purpose', purpose);
+    body.append('visit_timeframe', timeframe);
     body.append('user_name', displayName);
     body.append('is_caregiver', '0');
     body.append('csrfmiddlewaretoken', csrfToken());

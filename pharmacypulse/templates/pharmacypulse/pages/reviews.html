@@ -109,10 +109,16 @@
             </div>
             <span style="font-size: 0.6875rem; color: #94a3b8; flex-shrink: 0">{{ item.created_at|timesince }}</span>
           </div>
-          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; font-size: 0.75rem">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 0.75rem; flex-wrap: wrap">
             <span style="display: flex; align-items: center; gap: 0.25rem"><span style="color: #f59e0b">&#9733;</span> <strong>{{ item.service_rating }}</strong>/5</span>
             {% if item.stock_available %}<span style="color: #008F82; font-weight: 600">In stock</span>{% else %}<span style="color: #ef4444; font-weight: 600">Out of stock</span>{% endif %}
             <span style="color: #64748b">Wait: {{ item.wait_time_rating }}/5</span>
+            {% for badge in item.visit_purpose_badges %}
+            <span style="font-size: 0.6875rem; font-weight: 600; padding: 0.125rem 0.5rem; background: #E6F7F5; color: #006B62; border-radius: 9999px;">{{ badge.icon }} {{ badge.label }}</span>
+            {% endfor %}
+            {% if item.visit_timeframe_label %}
+            <span style="font-size: 0.6875rem; font-weight: 500; padding: 0.125rem 0.5rem; background: #f1f5f9; color: #475569; border-radius: 9999px; border: 1px solid #e2e8f0;">{{ item.visit_timeframe_label }}</span>
+            {% endif %}
           </div>
           {% if item.comment %}<p style="font-size: 0.8125rem; color: #475569; line-height: 1.6">{{ item.comment }}</p>{% endif %}
           <p style="font-size: 0.6875rem; color: #94a3b8; margin-top: 0.5rem">&mdash; {{ item.user_name }}</p>

@@ -68,10 +68,10 @@ def page_reviews(request):
         # Sidebar lists — local-first, fall back to global if too thin.
         "top_reviewed":  [_pharmacy_dict(p) for p in top_reviewed_qs],
         "highest_rated": [_pharmacy_dict(p) for p in highest_rated_qs],
-        # Main list — local-first.
+        # Main list — global latest approved reviews ordered by created_at.
         "all_reviews": [{**_review_dict(r),
-                         "pharm_name": (r.pharmacy.name if r.pharmacy_id else "")}
-                        for r in nearby_approved.select_related("pharmacy")
+                         "pharm_name": (r.pharmacy.name if (r.pharmacy_id and r.pharmacy) else (r.pharmacy_name or ""))}
+                        for r in approved.select_related("pharmacy")
                         .order_by("-created_at")[:20]],
         "auto_loc_zip":    auto_loc.zip,
         "auto_loc_city":   auto_loc.city,

@@ -101,6 +101,8 @@ def submit_review(request):
             wait_time_rating=int(request.POST.get("wait_time_rating") or 3),
             service_rating=int(request.POST.get("service_rating") or 3),
             comment=request.POST.get("comment") or "",
+            visit_purpose=(request.POST.get("visit_purpose") or "").strip()[:100] or None,
+            visit_timeframe=(request.POST.get("visit_timeframe") or "").strip()[:50] or None,
             is_caregiver=int(request.POST.get("is_caregiver") or 0),
             moderation_status=initial_status,
         )

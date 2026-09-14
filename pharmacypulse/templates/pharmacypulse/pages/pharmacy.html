@@ -532,8 +532,13 @@
               <div class="pd-avatar" style="background:{% cycle '#008F82' '#6366F1' '#F59E0B' %}">{{ item2.user_name|first }}</div>
               <div>
                 <span class="pd-review-name notranslate" translate="no">{{ item2.user_name }}</span>
-                <div class="pd-review-meta">
-                  <span class="pd-review-type">{% if item2.stock_available %}Refill pickup{% else %}New prescription{% endif %}</span>
+                <div class="pd-review-meta" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.375rem;">
+                  {% for badge in item2.visit_purpose_badges %}
+                  <span class="pd-review-type">{{ badge.icon }} {{ badge.label }}</span>
+                  {% endfor %}
+                  {% if item2.visit_timeframe_label %}
+                  <span class="pd-review-type" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;">{{ item2.visit_timeframe_label }}</span>
+                  {% endif %}
                   <span class="pd-review-time">{{ item2.created_at|timesince }} ago</span>
                 </div>
               </div>
