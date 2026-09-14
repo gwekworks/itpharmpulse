@@ -500,24 +500,51 @@ def page_pharmacy_detail(request, pharmacy_id=None):
 
 def page_compare(request):
     from ..geo import resolve as resolve_loc
-    saved = []
+
+    # --- Authenticated: load starred pharmacies for the quick-pick panel ONLY.
+    #     These are NOT auto-added to the comparison — the user must explicitly
+    #     pick them via the quick-pick panel or search. ---
+    saved_pharmacies = []
     if request.user.is_authenticated:
-        saved = [_pharmacy_dict(sc.pharmacy) for sc in
-                 SavedComparison.objects.filter(user=request.user)
-                 .select_related("pharmacy") if sc.pharmacy]
+        saved_pharmacies = [_pharmacy_dict(sc.pharmacy) for sc in
+                            SavedComparison.objects.filter(user=request.user)
+                            .select_related("pharmacy") if sc.pharmacy]
+
+    # --- ?ids=1,2,3 — the actual comparison set, driven entirely by the UI.
+    #     Both authed and anonymous users use this. Never auto-populated. ---
+    ids_param = (request.GET.get("ids") or "").strip()
+    compare_ids = []
+    if ids_param:
+        for raw in ids_param.split(","):
+            try:
+                pid = int(raw.strip())
+                if pid > 0:
+                    compare_ids.append(pid)
+            except ValueError:
+                pass
+        compare_ids = list(dict.fromkeys(compare_ids))[:6]  # dedup + cap at 6
+
+    compare_items = []
+    if compare_ids:
+        extra_qs = published_pharmacies().filter(pharmacy_id__in=compare_ids, is_digital=0)
+        extra_map = {p.pharmacy_id: _pharmacy_dict(p) for p in extra_qs}
+        # Preserve the order the user picked them in
+        for cid in compare_ids:
+            if cid in extra_map:
+                compare_items.append(extra_map[cid])
+
     zip_filter = (request.GET.get("zip") or "").strip()
 
-    # Auto-populate zip preview when no explicit zip given. Same precedence
-    # chain as /list: explicit ?zip= wins, then authed user zip, then IP.
+    # Auto-populate zip when no explicit zip given.
     auto_loc = None
     if not zip_filter:
         auto_loc = resolve_loc(request)
         if auto_loc.zip:
             zip_filter = auto_loc.zip
 
-    # Top-5 nearby for non-authed preview; authed users use their saved set.
+    # Top-5 nearby for non-authed preview (only when no ?ids= were provided).
     zip_results = []
-    if zip_filter and not request.user.is_authenticated:
+    if zip_filter and not request.user.is_authenticated and not compare_ids:
         zip_results = [_pharmacy_dict(p) for p in
                        published_pharmacies().filter(
                            is_digital=0,
@@ -525,11 +552,13 @@ def page_compare(request):
                        .order_by("-avg_service_rating")[:5]]
 
     return {
-        "saved": saved,
+        "saved": compare_items,           # what's actively being compared
+        "saved_pharmacies": saved_pharmacies,  # quick-pick panel only
         "zip_results": zip_results,
-        "winners_saved": _compare_winners(saved),
+        "winners_saved": _compare_winners(compare_items),
         "winners_zip":   _compare_winners(zip_results),
         "zip": zip_filter,
+        "ids_param": ids_param,
         "auto_loc_zip":    auto_loc.zip    if auto_loc else "",
         "auto_loc_city":   auto_loc.city   if auto_loc else "",
         "auto_loc_state":  auto_loc.state  if auto_loc else "",
