@@ -29,9 +29,8 @@ a { color: #008F82; }
   top: 5rem;
   width: 100%;
   min-width: 12rem;
-  color: #fff;
-  height: 100vh;
-  overflow-y: auto; 
+  height: auto;
+  overflow-y: visible; 
 }
 .pd-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
 .pd-header-left { flex: 1; min-width: 0; }
