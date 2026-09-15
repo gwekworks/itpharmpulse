@@ -65,3 +65,6 @@ def page_terms(request):
 
 def page_forgot_password(request):
     return {}
+
+def page_about(request):
+    return {}

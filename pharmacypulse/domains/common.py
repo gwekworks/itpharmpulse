@@ -65,6 +65,41 @@ def set_search_radius_mi(value):
     return val
 
 
+# ---------------------------------------------------------------------------
+# Review moderation settings
+# ---------------------------------------------------------------------------
+_MOD_ENABLED_KEY = "review_moderation_enabled"
+_MOD_WHO_KEY = "review_moderation_who"
+
+
+def get_review_moderation():
+    """Return (enabled: bool, who: str) from SiteSetting.
+    Defaults: disabled, admin only."""
+    from ..models import SiteSetting
+    rows = {
+        r["key"]: r["value"]
+        for r in SiteSetting.objects.filter(
+            key__in=(_MOD_ENABLED_KEY, _MOD_WHO_KEY)
+        ).values("key", "value")
+    }
+    enabled = rows.get(_MOD_ENABLED_KEY, "0") == "1"
+    who = rows.get(_MOD_WHO_KEY, "admin")
+    if who not in ("admin", "pharmacist", "both"):
+        who = "admin"
+    return enabled, who
+
+
+def set_review_moderation(enabled: bool, who: str):
+    """Persist review moderation settings."""
+    if who not in ("admin", "pharmacist", "both"):
+        who = "admin"
+    from ..models import SiteSetting
+    SiteSetting.objects.update_or_create(
+        key=_MOD_ENABLED_KEY, defaults={"value": "1" if enabled else "0"})
+    SiteSetting.objects.update_or_create(
+        key=_MOD_WHO_KEY, defaults={"value": who})
+
+
 
 def published_pharmacies():
     """Public search queryset — rows from pharmacies_publishable that are
@@ -207,6 +242,10 @@ def _review_dict(r: Review) -> dict:
         "wait_time_rating": r.wait_time_rating,
         "service_rating": r.service_rating,
         "comment": r.comment or "",
+        "visit_purpose": r.visit_purpose or "",
+        "visit_timeframe": r.visit_timeframe or "",
+        "visit_purpose_badges": r.visit_purpose_badges,
+        "visit_timeframe_label": r.visit_timeframe_label,
         "is_caregiver": r.is_caregiver,
         "response_text": r.response_text or "",
         "response_date": r.response_date or "",

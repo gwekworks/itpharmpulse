@@ -300,14 +300,14 @@
 
       <div class="rv-section-label"><span class="rv-num">1.</span> VISIT TIMEFRAME</div>
       <div class="rv-chips" id="rv-timeframe">
-        <label class="rv-chip selected" data-val="today"><input type="radio" name="visit_timeframe" value="today" checked><div><strong>Today</strong><br><span style="font-size:0.6875rem;color:#94a3b8">Within last few hours</span></div></label>
-        <label class="rv-chip" data-val="yesterday"><input type="radio" name="visit_timeframe" value="yesterday"><div><strong>Yesterday</strong><br><span style="font-size:0.6875rem;color:#94a3b8">Visited 1 day ago</span></div></label>
-        <label class="rv-chip" data-val="2-3_days"><input type="radio" name="visit_timeframe" value="2-3_days"><div><strong>2–3 days ago</strong><br><span style="font-size:0.6875rem;color:#94a3b8">Earlier this week</span></div></label>
-        <label class="rv-chip" data-val="this_week"><input type="radio" name="visit_timeframe" value="this_week"><div><strong>Earlier this week</strong><br><span style="font-size:0.6875rem;color:#94a3b8">4–7 days ago</span></div></label>
+        <label class="rv-chip selected" data-val="today"><input type="radio" name="visit_timeframe" value="today" checked><div><strong>Today</strong><span style="display:block;font-size:0.6875rem;color:#94a3b8">Within last few hours</span></div></label>
+        <label class="rv-chip" data-val="yesterday"><input type="radio" name="visit_timeframe" value="yesterday"><div><strong>Yesterday</strong><span style="display:block;font-size:0.6875rem;color:#94a3b8">Visited 1 day ago</span></div></label>
+        <label class="rv-chip" data-val="2-3_days"><input type="radio" name="visit_timeframe" value="2-3_days"><div><strong>2–3 days ago</strong><span style="display:block;font-size:0.6875rem;color:#94a3b8">Earlier this week</span></div></label>
+        <label class="rv-chip" data-val="this_week"><input type="radio" name="visit_timeframe" value="this_week"><div><strong>Earlier this week</strong><span style="display:block;font-size:0.6875rem;color:#94a3b8">4–7 days ago</span></div></label>
       </div>
 
       <div class="rv-section-label"><span class="rv-num">2.</span> YOUR DISPLAY NAME / INITIAL</div>
-      <input class="rv-input" type="text" name="display_name" id="rv-display-name" placeholder="e.g. Alex M. or Anonymous" maxlength="100">
+      <input class="rv-input" type="text" name="display_name" id="rv-display-name" placeholder="e.g. Alex M. or Anonymous" maxlength="100" value="{% if user.is_authenticated %}{{ user.first_name }}{% if user.last_name %} {{ user.last_name|slice:':1' }}.{% endif %}{% endif %}">
 
       <div class="rv-section-label" style="margin-top:1rem">OPTIONAL COMMUNITY NOTES</div>
       <textarea class="rv-textarea" name="comment" id="rv-comment" placeholder="Share details regarding stock availability or counter speed…" maxlength="500"></textarea>
@@ -342,21 +342,7 @@
       {% if user.is_authenticated %}
       <button class="rv-btn-primary" onclick="rvSubmit()" style="margin-bottom:0.75rem">Submit Review ✓</button>
       {% else %}
-      <a href="/auth/google/start" class="rv-social-btn" onclick="rvSaveDraft()" style="margin-bottom:0">
-        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A11.96 11.96 0 0 0 0 12c0 1.94.46 3.77 1.28 5.39l3.56-2.84.01-.46z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-        Sign in with Google to Submit
-      </a>
-      <div class="rv-social-row" style="justify-content:center">
-        <span style="font-size:0.75rem;color:#94a3b8;align-self:center;margin-right:0.25rem">OR:</span>
-        <a href="/auth/facebook/start" class="rv-social-icon-btn" onclick="rvSaveDraft()" title="Continue with Facebook"><svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
-        <button class="rv-social-icon-btn" type="button" title="Continue with Twitter / X" onclick="rvShowEmail()"><svg width="18" height="18" viewBox="0 0 24 24" fill="#0f1419"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg></button>
-        <button class="rv-social-icon-btn" type="button" title="Continue with Email" onclick="rvShowEmail()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></button>
-      </div>
-      <button class="rv-back-link" type="button" onclick="rvShowEmail()" style="border:none;background:none;width:100%;margin-top:0.5rem;font-size:0.8125rem;font-weight:600;color:#008F82;text-align:center;cursor:pointer">Sign up with Email</button>
-      <div id="rv-email-section" style="display:none;margin-top:0.75rem">
-        <input class="rv-input" type="email" placeholder="you@example.com" id="rv-email-input" aria-label="Email address" style="margin-bottom:0.5rem">
-        <button class="rv-btn-primary" type="button" onclick="rvGoSignup()" style="font-size:0.8125rem;padding:0.625rem">Create account &amp; Submit</button>
-      </div>
+      <button class="rv-btn-primary" onclick="rvSubmit()" style="margin-bottom:0.75rem">Submit Review ✓</button>
       {% endif %}
 
       <a class="rv-back-link" onclick="rvGoStep(2);return false">Back to Edit Details</a>
@@ -369,6 +355,22 @@
       <h2 class="rv-title" style="text-align:center">Thank you — you're making a difference</h2>
       <p style="font-size:0.875rem;color:#64748b;max-width:300px;margin:0 auto 1.5rem;line-height:1.6">Your review for <strong id="rv-success-pharm" style="color:#0f172a"></strong> has been submitted. Because of you, someone will find a pharmacy that cares.</p>
       <a class="rv-btn-primary" id="rv-success-link" href="/list" style="text-decoration:none">Back to Pharmacy</a>
+      {% if not user.is_authenticated %}
+      <div style="margin-top:1.25rem;padding:1rem;background:#F8F7FF;border:1.5px solid #EDE9FE;border-radius:0.875rem">
+        <p style="font-size:0.75rem;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.375rem">🏅 Claim Your Contributor Badge</p>
+        <p style="font-size:0.8125rem;color:#4B5563;line-height:1.55;margin-bottom:0.875rem">Create a free account to track your reviews, earn your badge, and get notified when pharmacies respond.</p>
+        <div style="display:flex;flex-direction:column;gap:0.625rem">
+          <a id="rv-google-link" href="/auth/google/start" onclick="rvSaveDraft()" style="display:flex;align-items:center;justify-content:center;gap:0.625rem;width:100%;padding:0.75rem 1rem;background:white;border:1.5px solid #E5E7EB;border-radius:9999px;font-size:0.875rem;font-weight:600;color:#1A1A2E;text-decoration:none;box-sizing:border-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" style="flex-shrink:0"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A11.96 11.96 0 0 0 0 12c0 1.94.46 3.77 1.28 5.39l3.56-2.84.01-.46z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Continue with Google
+          </a>
+          <a id="rv-email-signup-link" href="/signup" onclick="rvSaveDraft()" style="display:flex;align-items:center;justify-content:center;gap:0.625rem;width:100%;padding:0.75rem 1rem;background:#7c3aed;border-radius:9999px;font-size:0.875rem;font-weight:700;color:white;text-decoration:none;box-sizing:border-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Continue with email
+          </a>
+        </div>
+      </div>
+      {% endif %}
       <a class="rv-back-link" href="/list">Browse more pharmacies</a>
       <div class="rv-footer">PharmacyPulse Community Network · Free &amp; Privacy Protected</div>
     </div>
@@ -606,13 +608,31 @@
   }
 
   /* --- Open / close with focus management --- */
+  /* Mirror the server-side pharmacy_slug()/strip_chain_suffix() logic so the
+     success-link URL matches the canonical /pharmacy/<id>/<slug>/ form. */
+  function pharmacySlugJS(name) {
+    if (!name) return 'pharmacy';
+    // Strip trailing store-number suffixes: ' #08910', ' #3224', ' 10-0049'
+    var s = name.trim();
+    var trailingNum = /(?:\s*[#\-]\s*\d{1,6}|\s+\d{1,6})\s*$/;
+    for (var i = 0; i < 5; i++) {
+      var m = s.match(trailingNum);
+      if (!m || m.index <= 2) break;
+      s = s.slice(0, m.index).trimEnd();
+    }
+    // Django slugify equivalent: lowercase, replace non-alphanumeric with hyphen
+    s = s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    s = s.slice(0, 80).replace(/-+$/, '');
+    return s || 'pharmacy';
+  }
+
   function setPharmacy(id, name, addr) {
     var modal = document.getElementById('rv-modal');
     document.getElementById('rv-pharm-name').textContent = name || '';
     document.getElementById('rv-pharm-addr-text').textContent = addr || '';
     document.getElementById('rv-badge-pharm-name').textContent = name || '';
     document.getElementById('rv-success-pharm').textContent = name || '';
-    document.getElementById('rv-success-link').href = '/pharmacy/' + id + '/';
+    document.getElementById('rv-success-link').href = '/pharmacy/' + id + '/' + pharmacySlugJS(name) + '/';
     modal.setAttribute('data-pharm-id', id || '');
     modal.setAttribute('data-pharm-name', name || '');
     modal.setAttribute('data-pharm-addr', addr || '');
@@ -620,6 +640,11 @@
 
   function openModalShell() {
     lastFocused = document.activeElement;
+    var next = encodeURIComponent(window.location.pathname + window.location.search);
+    var gl = document.getElementById('rv-google-link');
+    if (gl) gl.href = '/auth/google/start?next=' + next;
+    var el = document.getElementById('rv-email-signup-link');
+    if (el) el.href = '/signup?next=' + next;
     document.getElementById('rv-modal').style.display = 'flex';
     document.getElementById('rv-modal').setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
@@ -792,14 +817,6 @@
 
   function doSubmit() {
     var modal = document.getElementById('rv-modal');
-    /* Only signed-in users may submit. If a stale cached copy shows the
-    button to a guest, route them to signup instead of submitting. */
-    if (modal.getAttribute('data-auth') !== '1') {
-      rvSaveDraft();
-      var next = encodeURIComponent(window.location.pathname + window.location.search);
-      window.location.href = '/signup?next=' + next;
-      return;
-    }
     var pharmId = modal.getAttribute('data-pharm-id');
     var pharmName = modal.getAttribute('data-pharm-name');
 
@@ -828,7 +845,9 @@
     body.append('stock_available', stockMap[stock] || 1);
     body.append('wait_time_rating', waitTime);
     body.append('service_rating', care);
-    body.append('comment', ['[' + purpose + ']', '[' + timeframe + ']', comment].filter(Boolean).join(' '));
+    body.append('comment', comment);
+    body.append('visit_purpose', purpose);
+    body.append('visit_timeframe', timeframe);
     body.append('user_name', displayName);
     body.append('is_caregiver', '0');
     body.append('csrfmiddlewaretoken', csrfToken());

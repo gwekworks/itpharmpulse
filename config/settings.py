@@ -270,6 +270,9 @@ ROLE_SCOPES = {
 # External APIs — keys come from environment. Empty string means unavailable;
 # affected flows return a friendly error surface.
 GOOGLE_PLACES_KEY = os.environ.get("GOOGLE_PLACES_KEY", "")
+# Translation API reuses the same Google Cloud project key as Places.
+# Ensure "Cloud Translation API" is enabled on that project in Cloud Console.
+GOOGLE_TRANSLATE_API_KEY = os.environ.get("GOOGLE_PLACES_KEY", "")
 GOOGLE_OAUTH_CLIENT_ID = os.environ.get("GOOGLE_OAUTH_CLIENT_ID", "")
 GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET", "")
 FACEBOOK_OAUTH_APP_ID = os.environ.get("FACEBOOK_OAUTH_APP_ID", "")

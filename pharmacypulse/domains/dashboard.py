@@ -50,6 +50,15 @@ def page_pharmacist_dashboard(request):
     approved_claimed = claimed_reviews.filter(moderation_status="approved")
     recent_reviews = list(claimed_reviews.order_by("-created_at")[:50])
 
+    # Pending reviews this pharmacist may moderate (depends on site setting)
+    from .common import get_review_moderation
+    mod_enabled, mod_who = get_review_moderation()
+    pharm_can_moderate = mod_enabled and mod_who in ("pharmacist", "both")
+    pending_reviews = (
+        list(claimed_reviews.filter(moderation_status="pending").order_by("-created_at"))
+        if pharm_can_moderate else []
+    )
+
     month = djtz.now().strftime("%Y-%m")
     responses_used = (ResponseCount.objects.filter(
         pharmacy__in=my_pharms_qs, month=month).aggregate(t=Sum("count"))["t"] or 0)
@@ -205,6 +214,8 @@ def page_pharmacist_dashboard(request):
                            "total": stock_in + stock_out}],
         "resp_count":    [{"total": responses_used}],
         "pharm_reviews": [_review_dict(r) for r in approved_claimed.order_by("-created_at")],
+        "pending_reviews": [_review_dict(r) for r in pending_reviews],
+        "pharm_can_moderate": pharm_can_moderate,
         "member_count":  [{"cnt": team_accepted_count}],
         "members":       team_for_template,
         "response_leaders": response_leaders,
@@ -380,6 +391,8 @@ def page_admin_claims(request):
 
 
 def page_admin_moderation(request):
+    from .common import get_review_moderation
+    mod_enabled, mod_who = get_review_moderation()
     flagged = Review.objects.filter(moderation_status__in=("pending", "flagged")).order_by("-created_at")
     keywords = list(ModerationKeyword.objects.order_by("category", "keyword"))
     all_qs = (Review.objects.filter(deleted_at__isnull=True)
@@ -389,11 +402,11 @@ def page_admin_moderation(request):
         "flagged_count": Row({"total": flagged.count()}),
         "keywords": [{"id": k.id, "keyword": k.keyword, "category": k.category}
                       for k in keywords],
-        # Legacy alias — template renders {% for item in all_reviews %} for the
-        # full moderation queue, with item.pharm_name from the joined pharmacy.
         "all_reviews": [{**_review_dict(r),
                          "pharm_name": (r.pharmacy.name if r.pharmacy_id else "")}
                         for r in all_qs],
+        "mod_enabled": mod_enabled,
+        "mod_who": mod_who,
     }
 
 

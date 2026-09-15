@@ -29,9 +29,8 @@ a { color: #008F82; }
   top: 5rem;
   width: 100%;
   min-width: 12rem;
-  color: #fff;
-  height: 100vh;
-  overflow-y: auto; 
+  height: auto;
+  overflow-y: visible; 
 }
 .pd-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
 .pd-header-left { flex: 1; min-width: 0; }
@@ -1091,8 +1090,9 @@ button.search-item.pp-loc-item.highlighted { background: #f0fdf4; }
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1.5rem;
+  flex-direction: column;
+  gap: 0.71rem;
+  padding: 1.25rem;
   background: #FAFBFC;
   border: 1px solid #E5E7EB;
   border-radius: 16px;
@@ -1116,7 +1116,7 @@ button.search-item.pp-loc-item.highlighted { background: #f0fdf4; }
   font-weight: 800;
   color: #1A1A2E;
   line-height: 1;
-  margin-bottom: 1rem;
+  /* margin-bottom: 1rem; */
 }
 .pp-stat-label {
   font-size: 0.8125rem;
@@ -1831,8 +1831,8 @@ button.search-item.pp-loc-item.highlighted { background: #f0fdf4; }
   justify-content: space-between;
 }
 @media (min-width: 640px) { .pp-topbar-inner { padding: 0 1.5rem; } }
-@media (min-width: 768px) { .pp-topbar-inner { padding: 0 3rem; } }
-@media (min-width: 1024px) { .pp-topbar-inner { padding: 0 4rem; } }
+@media (min-width: 1024px) { .pp-topbar-inner { padding: 0 3rem; } }
+@media (min-width: 1280px) { .pp-topbar-inner { padding: 0 4rem; } }
 .pp-topbar-logo {
   display: inline-flex;
   align-items: center;
@@ -1841,20 +1841,26 @@ button.search-item.pp-loc-item.highlighted { background: #f0fdf4; }
   line-height: 1;
 }
 .pp-topbar-logo-mark {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: #008F82;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+@media (min-width: 1024px) {
+  .pp-topbar-logo-mark { width: 28px; height: 28px; }
+}
 .pp-topbar-logo-text {
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: 1.125rem;
+  font-size: 0.9rem;
   font-weight: 800;
   color: #1A1A2E;
   letter-spacing: -0.02em;
+}
+@media (min-width: 1024px) {
+  .pp-topbar-logo-text { font-size: 1.125rem; }
 }
 .pp-topbar-logo-accent {
   color: #008F82;
@@ -1929,7 +1935,6 @@ button.search-item.pp-loc-item.highlighted { background: #f0fdf4; }
 .pp-topbar-lang-toggle {
   display: flex;
   align-items: center;
-  border: 1.5px solid #008F82;
   gap: 0;
   border: 1px solid #E5E7EB;
   border-radius: 9999px;
@@ -1937,9 +1942,9 @@ button.search-item.pp-loc-item.highlighted { background: #f0fdf4; }
   background: #fff;
 }
 .pp-topbar-lang-btn {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  padding: 0.25rem 0.75rem;
+  padding: 0.2rem 0.45rem;
   border-radius: 9999px;
   background: transparent;
   color: #008F82;
@@ -1948,6 +1953,12 @@ button.search-item.pp-loc-item.highlighted { background: #f0fdf4; }
   font-family: inherit;
   letter-spacing: 0.04em;
   transition: background 0.15s, color 0.15s;
+}
+@media (min-width: 1024px) {
+  .pp-topbar-lang-btn {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+  }
 }
 .pp-topbar-lang-btn:hover {
   background: #F0FAF9;
@@ -2485,7 +2496,7 @@ button.search-item.pp-loc-item.highlighted { background: #f0fdf4; }
   background: #0F1117;
   color: rgba(255,255,255,0.7);
   padding: 3.5rem 1.5rem 1.5rem;
-  margin-top: 3rem;
+  /* margin-top: 3rem; */
   font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif;
 }
 .pp-footer-inner { max-width: 72rem; margin: 0 auto; }
@@ -3044,10 +3055,22 @@ html, body { overflow-x: hidden; overflow-x: clip; }
    desktop. Uses a custom class rather than Tailwind's `.hidden` because the
    app CSS redefines `.hidden` with `!important`. */
 .pp-topbar-nav { display: none; }
-@media (min-width: 768px) { .pp-topbar-nav { display: flex; } }
+@media (min-width: 1024px) { .pp-topbar-nav { display: flex; } }
 
-/* Topbar touch targets + burger menu on mobile. */
-@media (max-width: 640px) {
+/* Desktop auth row: hidden on mobile, flex from tablet (768px) up */
+.pp-topbar-desktop-auth { display: none; }
+@media (min-width: 768px) { .pp-topbar-desktop-auth { display: flex; } }
+
+/* Items inside the auth row that only make sense on full desktop (1024px+) */
+.pp-topbar-desktop-only { display: none !important; }
+@media (min-width: 1024px) { .pp-topbar-desktop-only { display: inline-flex !important; } }
+
+/* Hamburger: visible below 1024px, hidden on desktop */
+.pp-topbar-hamburger { display: block; }
+@media (min-width: 1024px) { .pp-topbar-hamburger { display: none; } }
+
+/* Topbar touch targets + burger menu on mobile/tablet. */
+@media (max-width: 1023px) {
   .pp-topbar-burger {
     min-width: 44px;
     min-height: 44px;
@@ -3057,12 +3080,6 @@ html, body { overflow-x: hidden; overflow-x: clip; }
   }
   .pp-topbar-menu { right: 0.75rem; }
   .pp-topbar-menu-link { padding: 0.75rem 1rem; }
-  /* The burger menu carries these for mobile, so the inline row stays compact
-     instead of overflowing/clipping at ~360px. */
-  .pp-topbar .pp-topbar-saved-btn,
-  .pp-topbar .pp-topbar-claim-btn,
-  .pp-topbar a[data-nav="account"],
-  .pp-topbar form[action="/logout"] { display: none; }
 }
 
 /* AI copilot FAB: clear the PWA bottom-nav and the cookie banner on mobile

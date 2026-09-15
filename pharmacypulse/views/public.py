@@ -69,3 +69,7 @@ def privacy(request):
 
 def terms(request):
     return render_page(request, "terms.html", page_data.page_terms)
+
+
+def about(request):
+    return render_page(request, "about.html", page_data.page_about)

@@ -1399,7 +1399,7 @@ body.native-app .pp-footer { display: none !important; }
 .pd-main {
   flex: 1;
   background: #FAFBFC;
-  min-height: 100vh;
+  min-height: 100%;
 }
 .pd-main-inner {
   max-width: 56rem;

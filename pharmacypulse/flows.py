@@ -23,6 +23,7 @@ from .domains.flows.claims import (
 )
 from .domains.flows.reviews import (
     submit_review, respond_to_review, moderate_review, flag_review,
+    pharmacist_moderate_review,
 )
 from .domains.flows.pharmacies import (
     bulk_delete_pharmacies, bulk_delete_chain, report_pharmacy_data,
@@ -45,3 +46,4 @@ from .domains.flows.newsletter import (
     make_unsubscribe_url,
 )
 from .domains.flows.search import search_pharmacies, suggest_locations, place_details
+from .domains.flows.translate import translate_texts

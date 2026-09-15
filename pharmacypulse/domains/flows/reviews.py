@@ -89,6 +89,10 @@ def submit_review(request):
         if not user_name:
             user_name = "Anonymous Patient"
     from django.core.exceptions import ValidationError
+    from ..common import get_review_moderation
+    mod_enabled, _mod_who = get_review_moderation()
+    initial_status = "pending" if mod_enabled else "approved"
+
     try:
         review = Review.objects.create(
             pharmacy_id=pharmacy_id, pharmacy_name=pharmacy_name,
@@ -97,7 +101,10 @@ def submit_review(request):
             wait_time_rating=int(request.POST.get("wait_time_rating") or 3),
             service_rating=int(request.POST.get("service_rating") or 3),
             comment=request.POST.get("comment") or "",
+            visit_purpose=(request.POST.get("visit_purpose") or "").strip()[:100] or None,
+            visit_timeframe=(request.POST.get("visit_timeframe") or "").strip()[:50] or None,
             is_caregiver=int(request.POST.get("is_caregiver") or 0),
+            moderation_status=initial_status,
         )
     except ValidationError as exc:
         msg = (exc.messages[0] if getattr(exc, "messages", None)
@@ -116,7 +123,9 @@ def submit_review(request):
             return _json(False, error=str(exc), status=500)
         return _redirect_back(str(exc))
     if is_ajax:
-        return _json(True, review_id=review.id)
+        msg = ("Your review has been submitted and is awaiting moderation."
+               if mod_enabled else "Thank you — your review is live.")
+        return _json(True, review_id=review.id, message=msg)
     return redirect(f"/review?pharmacy_id={pharmacy_id}&pharmacy_name={urllib.parse.quote(pharmacy_name)}&success=1")
 
 
@@ -186,7 +195,48 @@ def moderate_review(request, review_id: int):
     Review.objects.filter(id=review_id).update(moderation_status=action)
     _activity(request, "review_moderated",
               f"Review #{review_id} {action} by {request.user.email}")
-    return JsonResponse({"status": action})
+
+    # Redirect back to the moderation page, preserving the ?status= tab.
+    # Fall back to /admin-moderation if no Referer header is present.
+    referer = request.META.get("HTTP_REFERER", "")
+    from urllib.parse import urlparse, parse_qs
+    parsed = urlparse(referer)
+    qs = parse_qs(parsed.query)
+    status_filter = qs.get("status", [None])[0]
+    if status_filter:
+        return redirect(f"/admin-moderation?status={status_filter}")
+    return redirect("/admin-moderation")
+
+
+@login_required
+def pharmacist_moderate_review(request, review_id: int):
+    """Pharmacist-accessible approve/reject for pending reviews on their own
+    pharmacy. Only reachable when moderation settings authorise it."""
+    from ..common import get_review_moderation
+    mod_enabled, mod_who = get_review_moderation()
+    if not mod_enabled or mod_who not in ("pharmacist", "both"):
+        return HttpResponseForbidden("Review moderation is not enabled for pharmacists.")
+
+    review = Review.objects.filter(id=review_id, deleted_at__isnull=True).first()
+    if not review:
+        return JsonResponse({"error": "Review not found."}, status=404)
+
+    # Gate: review must belong to a pharmacy claimed by this user.
+    claimed_ids = set(PharmacyClaim.objects.filter(
+        user=request.user, status="approved"
+    ).values_list("pharmacy_id", flat=True))
+    if review.pharmacy_id not in claimed_ids:
+        return HttpResponseForbidden("You can only moderate reviews for your own pharmacy.")
+
+    action = request.POST.get("action", "")
+    if action not in ("approved", "rejected"):
+        return JsonResponse({"error": "Invalid action."}, status=400)
+
+    Review.objects.filter(id=review_id).update(moderation_status=action)
+    _activity(request, "review_moderated",
+              f"Review #{review_id} {action} by pharmacist {request.user.email}")
+    next_url = request.POST.get("next", "/pharmacist-dashboard?tab=reviews")
+    return redirect(next_url)
 
 
 _FLAG_REASONS = {"wrong_pharmacy", "fraudulent", "spam", "inaccurate", "other"}

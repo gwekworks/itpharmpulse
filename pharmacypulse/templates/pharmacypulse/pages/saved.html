@@ -1,0 +1,158 @@
+{% extends "pharmacypulse/layouts/app.html" %}
+{% load pharmacypulse %}
+{% block title %}Saved Pharmacies · PharmacyPulse{% endblock %}
+{% block content %}
+{% include "pharmacypulse/partials/topbar.html" %}
+
+<div class="pp-member-page">
+  <div class="pp-member-container">
+
+    <!-- Header -->
+    <div class="pp-mb-24">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem">
+        <div>
+          <h1 class="pp-home-title">Saved Pharmacies</h1>
+          <p class="pp-home-subtitle">Your personal shortlist — pharmacies you want to revisit or compare.</p>
+        </div>
+        {% if saved %}
+        <div style="display:flex; gap:0.625rem; flex-wrap:wrap">
+          <a href="/compare" style="display:inline-flex; align-items:center; gap:0.375rem; padding:0.5rem 1rem; background:#F0FDF4; color:#008F82; font-size:0.8125rem; font-weight:600; border-radius:9999px; text-decoration:none; border:1px solid #B7E8E3">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Compare all
+          </a>
+          <form method="POST" action="/api/flow/compare/clear" style="margin:0">
+            {% csrf_token %}
+            <button type="submit" style="display:inline-flex; align-items:center; gap:0.375rem; padding:0.5rem 1rem; background:white; color:#9CA3AF; font-size:0.8125rem; font-weight:500; border-radius:9999px; border:1px solid #E5E7EB; cursor:pointer; font-family:inherit">
+              Clear all
+            </button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if saved %}
+
+    <!-- Saved count pill -->
+    <div style="margin-bottom:1.25rem">
+      <span style="display:inline-flex; align-items:center; gap:0.375rem; padding:0.3125rem 0.875rem; background:#E6F7F5; color:#008F82; font-size:0.75rem; font-weight:700; border-radius:9999px; letter-spacing:0.04em">
+        ★ {{ saved|length }} saved
+      </span>
+    </div>
+
+    <!-- Cards grid -->
+    <div class="pharmacy-grid pp-mb-32">
+      {% for item in saved %}
+      <div class="pp-pharmacy-item" style="position:relative" data-saved-id="{{ item.id }}">
+
+        <!-- Remove button -->
+        <button
+          onclick="removeSaved({{ item.id }}, this)"
+          title="Remove from saved"
+          style="position:absolute; top:0.625rem; right:0.625rem; width:28px; height:28px; border-radius:50%; background:white; border:1px solid #E5E7EB; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#9CA3AF; font-size:0.875rem; line-height:1; z-index:1; transition:all 0.15s"
+          onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444'"
+          onmouseout="this.style.borderColor='#E5E7EB';this.style.color='#9CA3AF'"
+          aria-label="Remove {{ item.name }} from saved"
+        >✕</button>
+
+        <!-- Card content -->
+        <a href="{{ item.url }}" style="display:block; text-decoration:none; color:inherit; padding-right:1.5rem">
+          <div class="pp-card-row">
+            <div class="pp-card-main">
+              <p class="pp-title-sm">
+                {{ item.name }}
+                {% if item.listing_verified %}
+                  <span class="pp-listing-verified-badge" title="Verified listing">&#10003; Verified</span>
+                {% endif %}
+              </p>
+              <p class="pp-meta-xs pp-mt-2">{{ item.address }}{% if item.city %}, {{ item.city }}{% endif %}{% if item.state %} {{ item.state }}{% endif %}</p>
+              {% if item.phone %}<p class="pp-meta-xs pp-mt-2">{{ item.phone }}</p>{% endif %}
+            </div>
+            <div class="pp-rating-block">
+              {% if item.total_reviews %}
+              <div class="pp-rating-row">
+                <span class="pp-star">★</span>
+                <span class="pp-rating-num">{{ item.avg_service_rating }}</span>
+              </div>
+              <p class="pp-review-count">{{ item.total_reviews }} review{{ item.total_reviews|pluralize }}</p>
+              {% else %}
+              <p class="pp-meta-xs">No reviews</p>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if item.total_reviews %}
+          <div class="pp-item-footer" style="margin-top:0.5rem">
+            <span class="pp-stock-info">{{ item.stock_confidence }}% stock</span>
+            <span class="pp-wait-info">~{{ item.avg_wait_time }} min wait</span>
+          </div>
+          {% endif %}
+        </a>
+
+        <!-- Inline action row -->
+        <div style="display:flex; gap:0.5rem; margin-top:0.875rem; padding-top:0.75rem; border-top:1px solid #F3F4F6">
+          <a href="{{ item.url }}" style="flex:1; text-align:center; padding:0.4375rem 0; background:#F0FDF4; color:#008F82; font-size:0.75rem; font-weight:600; border-radius:9999px; text-decoration:none; border:1px solid #B7E8E3">View details</a>
+          <a href="{{ item.url }}#reviews" style="flex:1; text-align:center; padding:0.4375rem 0; background:white; color:#6B7280; font-size:0.75rem; font-weight:500; border-radius:9999px; text-decoration:none; border:1px solid #E5E7EB">Reviews</a>
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Compare nudge banner -->
+    <div style="background:#F8F7FF; border:1.5px solid #EDE9FE; border-radius:14px; padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem; margin-bottom:2rem">
+      <div>
+        <p style="font-weight:700; font-size:0.9375rem; color:#1A1A2E; margin-bottom:0.125rem">Ready to decide?</p>
+        <p style="font-size:0.8125rem; color:#6B7280">Compare your saved pharmacies side-by-side on stock, wait time, and care ratings.</p>
+      </div>
+      <a href="/compare" style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.625rem 1.25rem; background:#7c3aed; color:white; font-size:0.875rem; font-weight:600; border-radius:9999px; text-decoration:none; white-space:nowrap">
+        Compare →
+      </a>
+    </div>
+
+    {% else %}
+
+    <!-- Empty state -->
+    <div class="pp-empty-state" style="padding:3rem 1.5rem; text-align:center">
+      <div style="font-size:2.5rem; margin-bottom:0.875rem">⭐</div>
+      <p style="font-weight:700; color:#1A1A2E; font-size:1rem; margin-bottom:0.375rem">No saved pharmacies yet</p>
+      <p style="font-size:0.875rem; color:#6B7280; margin-bottom:1.5rem; max-width:24rem; margin-left:auto; margin-right:auto">Star any pharmacy from the search results or its detail page to save it here for quick access.</p>
+      <a href="/list" style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.6875rem 1.5rem; background:#008F82; color:white; font-size:0.875rem; font-weight:600; border-radius:9999px; text-decoration:none">Find a pharmacy →</a>
+    </div>
+
+    {% endif %}
+
+  </div>
+</div>
+
+<script>
+function removeSaved(pharmId, btn) {
+  var card = document.querySelector('[data-saved-id="' + pharmId + '"]');
+  fetch('/api/flow/compare/remove', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.content || ''
+    },
+    body: 'pharmacy_id=' + pharmId
+  }).then(function(r) {
+    if (r.ok && card) {
+      card.style.transition = 'opacity 0.2s, transform 0.2s';
+      card.style.opacity = '0';
+      card.style.transform = 'scale(0.96)';
+      setTimeout(function() {
+        card.remove();
+        // Update saved count or show empty state if none left
+        var remaining = document.querySelectorAll('[data-saved-id]').length;
+        var pill = document.querySelector('[data-saved-count]');
+        if (pill) pill.textContent = '★ ' + remaining + ' saved';
+        if (remaining === 0) { location.reload(); }
+      }, 200);
+    }
+  });
+}
+</script>
+
+{% include "pharmacypulse/partials/footer.html" %}
+{% include "pharmacypulse/partials/bottom-nav.html" %}
+{% endblock %}

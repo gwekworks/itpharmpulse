@@ -11,6 +11,7 @@ from typing import Any
 import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import F, Sum
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse, HttpResponseBadRequest
@@ -40,6 +41,7 @@ def verify_and_submit_claim(request, pharmacy_id: int):
     if is_rate_limited(request, "claim", limit=5, window_s=3600):
         back = f"/claim?pharmacy_id={pharmacy_id}&error=Too+many+claim+attempts.+Try+again+in+an+hour."
         return redirect(back)
+
     if not (npi_number and license_number and pharmacy_name):
         back = f"/claim?pharmacy_id={pharmacy_id}&pharmacy_name={urllib.parse.quote(pharmacy_name)}&error=Missing+required+fields"
         return redirect(back)
@@ -91,6 +93,29 @@ def approve_claim(request, claim_id: int):
             body=(f"Your claim for {claim.pharmacy_name} has been approved. "
                   "Visit your Pharmacy Owner Dashboard to manage your listing."),
         )
+        # Send transactional email — failure must never break the approve flow
+        if claim_user and claim_user.email:
+            base = settings.BRAND.get("url", "").rstrip("/")
+            try:
+                send_mail(
+                    subject="Your pharmacy claim has been approved — PharmacyPulse",
+                    message=(
+                        f"Hi {claim_user.first_name or 'there'},\n\n"
+                        f"Great news! Your claim for {claim.pharmacy_name} has been approved.\n\n"
+                        f"You now have full access to your Pharmacy Owner Dashboard where you can:\n"
+                        f"  • Respond to patient reviews\n"
+                        f"  • View analytics and ratings\n"
+                        f"  • Manage your listing details\n\n"
+                        f"Visit your dashboard here:\n{base}/pharmacist-dashboard\n\n"
+                        f"Welcome to PharmacyPulse.\n\n"
+                        f"— The PharmacyPulse Team"
+                    ),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[claim_user.email],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass  # never block the approve flow on email errors
     return JsonResponse({"status": "approved", "claim_id": claim_id})
 
 
@@ -111,4 +136,28 @@ def reject_claim(request, claim_id: int):
             user_id=claim.user_id, title="Claim Rejected",
             body=f"Your claim for {claim.pharmacy_name} was not approved. Reason: {reason}",
         )
+        # Send transactional email — fetch the user here since reject_claim
+        # doesn't look them up above (approve_claim does for the team member step)
+        claim_user = User.objects.filter(id=claim.user_id).first()
+        if claim_user and claim_user.email:
+            base = settings.BRAND.get("url", "").rstrip("/")
+            try:
+                send_mail(
+                    subject="Update on your PharmacyPulse pharmacy claim",
+                    message=(
+                        f"Hi {claim_user.first_name or 'there'},\n\n"
+                        f"We've reviewed your claim for {claim.pharmacy_name} "
+                        f"and were unable to approve it at this time.\n\n"
+                        + (f"Reason: {reason}\n\n" if reason else "")
+                        + f"If you believe this is an error or would like to submit updated "
+                        f"documentation, you can reapply here:\n{base}/claim\n\n"
+                        f"If you have any questions, reply to this email and our team will help.\n\n"
+                        f"— The PharmacyPulse Team"
+                    ),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[claim_user.email],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass  # never block the reject flow on email errors
     return JsonResponse({"status": "rejected", "claim_id": claim_id})

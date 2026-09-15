@@ -62,3 +62,46 @@ def url_replace(context, **kwargs):
             query[k] = str(v)
     encoded = query.urlencode()
     return f"?{encoded}" if encoded else "?"
+
+
+_PURPOSE_LABELS = {
+    'refill':       ('🔄', 'Refill'),
+    'new_rx':       ('📋', 'New Rx'),
+    'transfer':     ('🔁', 'Transfer'),
+    'vaccine':      ('💉', 'Vaccine'),
+    'consultation': ('💬', 'Consultation'),
+    'other':        ('•••', 'Other'),
+}
+
+_TIMEFRAME_LABELS = {
+    'today':      'Today',
+    'yesterday':  'Yesterday',
+    'this_week':  'This week',
+    'last_week':  'Last week',
+    'this_month': 'This month',
+}
+
+
+@register.filter
+def visit_purpose_badges(value):
+    """Return a list of {'icon': ..., 'label': ...} dicts from a comma-separated
+    visit_purpose string, e.g. 'refill,new_rx' → [{'icon':'🔄','label':'Refill'}, ...]"""
+    if not value:
+        return []
+    badges = []
+    for p in str(value).split(','):
+        p = p.strip()
+        if p in _PURPOSE_LABELS:
+            icon, label = _PURPOSE_LABELS[p]
+            badges.append({'icon': icon, 'label': label})
+        elif p:
+            badges.append({'icon': '', 'label': p.replace('_', ' ').title()})
+    return badges
+
+
+@register.filter
+def visit_timeframe_label(value):
+    """Return a human-readable label for a visit_timeframe value."""
+    if not value:
+        return ''
+    return _TIMEFRAME_LABELS.get(str(value).strip(), str(value).replace('_', ' ').title())

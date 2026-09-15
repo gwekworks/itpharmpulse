@@ -16,26 +16,82 @@
     <div class="cmp-header">
       <span class="cmp-eyebrow">SIDE-BY-SIDE COMPARISON</span>
       <h1 class="cmp-title">Compare Local Pharmacies</h1>
-      <p class="cmp-subtitle">Select up to 3 pharmacies to evaluate stock, wait times, and staff care.</p>
+      <p class="cmp-subtitle">Search and add up to 4 pharmacies to compare side by side.</p>
     </div>
 
-    {% if user.is_authenticated %}
+    <!-- ── SEARCH & PICK ─────────────────────────────────────────────── -->
+    <!-- Works for both authenticated and anonymous users.               -->
+    <!-- Auth users: adding a pharmacy also saves it to their list.      -->
+    <!-- Anon users: selection stored in URL ?ids= — no login needed.   -->
+    <div class="cmp-search-section" style="margin-bottom: 1.5rem">
 
-    {% if saved %}
-    <div class="cmp-selector">
-      <span class="cmp-selector-label">SELECT TO COMPARE:</span>
-      <div class="cmp-selector-pills" id="cmp-pills">
+      <!-- Search input -->
+      <div style="position: relative; margin-bottom: 1rem">
+        <div style="display: flex; align-items: center; background: white; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; overflow: visible; transition: border-color 0.15s;"
+             onfocusin="this.style.borderColor='#008F82'" onfocusout="this.style.borderColor='#e5e7eb'">
+          <svg style="flex-shrink:0; margin-left:0.875rem; color:#94a3b8" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="cmp-search-input"
+                 placeholder="Search pharmacy name, city, or ZIP..."
+                 autocomplete="off"
+                 style="flex:1; padding:0.75rem 0.875rem; border:none; outline:none; font-size:0.875rem; background:transparent; color:#0f172a; font-family:inherit;">
+          <span id="cmp-search-spinner" style="display:none; margin-right:0.875rem">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:cmp-spin 0.8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          </span>
+        </div>
+        <!-- Dropdown results -->
+        <div id="cmp-search-dropdown"
+             style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:200; background:white; border:1px solid #e5e7eb; border-radius:0.75rem; box-shadow:0 8px 24px rgba(0,0,0,0.10); max-height:280px; overflow-y:auto;">
+        </div>
+      </div>
+
+      <!-- Selected pharmacies chips -->
+      <div id="cmp-selected-chips" style="display:flex; flex-wrap:wrap; gap:0.5rem; min-height:2rem">
         {% for item in saved %}
-        <button type="button" class="cmp-pill {% if forloop.counter0 < 3 %}cmp-pill-active{% endif %}"
-                data-cmp-id="{{ item.id }}"
-                onclick="toggleCmpPill(this)">
-          <svg class="cmp-pill-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          {{ item.name }}
-        </button>
+        <div class="cmp-chip" data-cmp-id="{{ item.id }}"
+             style="display:inline-flex; align-items:center; gap:0.375rem; padding:0.375rem 0.75rem; background:#E6F7F5; border:1.5px solid #B7E8E3; border-radius:9999px; font-size:0.8125rem; font-weight:600; color:#006B62;">
+          <span class="notranslate" translate="no">{{ item.name }}</span>
+          <button type="button" onclick="cmpRemoveChip({{ item.id }}, this)"
+                  style="display:flex; align-items:center; background:none; border:none; padding:0; cursor:pointer; color:#008F82; line-height:1;"
+                  aria-label="Remove {{ item.name }}">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
         {% endfor %}
       </div>
+
+      {% if saved %}
+      <div style="margin-top:0.5rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+        <span style="font-size:0.75rem; color:#94a3b8;">{{ saved|length }} selected &middot; max 4</span>
+        <button type="button" onclick="cmpClearAll()"
+                style="font-size:0.75rem; font-weight:600; color:#e11d48; background:none; border:none; padding:0; cursor:pointer; text-decoration:underline; text-underline-offset:2px;">
+          Clear all
+        </button>
+      </div>
+      {% endif %}
+
+      <!-- Saved favourites quick-pick (auth only, shown only when user actually has saved pharmacies) -->
+      {% if user.is_authenticated and saved_pharmacies %}
+      <div style="margin-top:1rem; padding:0.875rem 1rem; background:#fafbfc; border:1px solid #e5e7eb; border-radius:0.75rem;">
+        <span style="font-size:0.625rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; display:block; margin-bottom:0.5rem;">YOUR SAVED PHARMACIES</span>
+        <div style="display:flex; flex-wrap:wrap; gap:0.375rem;">
+          {% for item in saved_pharmacies %}
+          <button type="button"
+                  class="cmp-saved-pill"
+                  data-cmp-id="{{ item.id }}"
+                  data-cmp-name="{{ item.name|escapejs }}"
+                  data-cmp-meta="{% if item.is_chain %}Chain{% else %}Independent{% endif %}{% if item.city %} · {{ item.city }}{% endif %}"
+                  onclick="cmpToggleSavedPill(this)"
+                  style="display:inline-flex; align-items:center; gap:0.375rem; padding:0.3rem 0.75rem; background:white; border:1.5px solid #e5e7eb; border-radius:9999px; font-size:0.75rem; font-weight:600; color:#374151; cursor:pointer; transition:all 0.12s;">
+            <svg class="cmp-saved-check" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#008F82" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><polyline points="20 6 9 17 4 12"/></svg>
+            <span class="notranslate" translate="no">{{ item.name }}</span>
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
     </div>
-    {% endif %}
+    <!-- ── END SEARCH & PICK ─────────────────────────────────────────── -->
 
     {% if saved %}
     <div class="cmp-table-wrap">
@@ -163,38 +219,17 @@
     {% endif %}
 
     {% else %}
+    <!-- Empty state: no pharmacies selected yet -->
     <div class="cmp-empty">
-      <div class="cmp-empty-icon">&#9878;</div>
-      <p class="cmp-empty-title">No pharmacies in your comparison yet</p>
-      <p class="cmp-empty-desc">Use the search bar above, or add from any pharmacy page.</p>
-      <a href="/list" class="cmp-empty-btn">Browse pharmacies</a>
+      <!-- <div class="cmp-empty-icon">&#9878;</div>
+      <p class="cmp-empty-title">No pharmacies selected yet</p> -->
+      <p class="cmp-empty-desc">Search above to find pharmacies and add them to your comparison.</p>
+      <!-- <a href="/list" class="cmp-empty-btn">Browse pharmacies</a> -->
     </div>
     {% endif %}
 
-    {% else %}
-    {% include "pharmacypulse/partials/signin-gate.html" %}
-    <div class="signin-gate" style="margin-bottom: 1.5rem">
-      <div class="signin-gate-icon" style="font-size: 1.75rem; line-height: 1">&#9878;</div>
-      <h3>Compare the pharmacies that matter to you</h3>
-      <p>Sign in to save your own comparison set and make informed choices for you and your family.</p>
-      <div class="signin-gate-actions">
-        <a href="/login?next=/compare" class="signin-gate-btn signin-gate-btn-primary">Sign in</a>
-        <a href="/signup" class="signin-gate-btn signin-gate-btn-outline">Create account</a>
-      </div>
-      <p class="signin-gate-footer">Takes under a minute.</p>
-    </div>
-
-    <div class="cmp-preview-card">
-      <p class="cmp-preview-title">Or preview by ZIP code</p>
-      <p class="cmp-preview-desc">A quick look at top-rated pharmacies near you.</p>
-      <form action="/compare" method="GET" class="cmp-preview-form">
-        <input type="text" name="zip" placeholder="Enter ZIP code" value="{{param_zip}}" class="cmp-preview-input">
-        <button type="submit" class="cmp-preview-btn">Preview</button>
-      </form>
-    </div>
-
     {% if zip_results %}
-    <h2 class="cmp-section-title">Top-rated near {{ zip }}</h2>
+    <h2 class="cmp-section-title" style="margin-top:2rem">Top-rated near {{ zip }}</h2>
     <div class="cmp-table-wrap">
       <table class="cmp-table">
         <thead>
@@ -313,7 +348,6 @@
       </div>
     </div>
     {% endif %}
-    {% endif %}
 
   </div>
 </div>
@@ -321,22 +355,197 @@
 {% include "pharmacypulse/partials/footer.html" %}
 {% include "pharmacypulse/partials/bottom-nav.html" %}
 
-{% if user.is_authenticated %}
+<style>
+@keyframes cmp-spin { to { transform: rotate(360deg); } }
+</style>
+
 <script>
-function toggleCmpPill(btn) {
-  btn.classList.toggle('cmp-pill-active');
-}
-function removeFromCompare(id) {
-  document.querySelectorAll('[data-pharmacy-id="' + id + '"]').forEach(function(el){ el.remove(); });
-  fetch('/api/flow/compare/remove', {
-    method: 'POST',
-    headers: {'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':document.querySelector('meta[name=csrf-token]')?.content||''},
-    body: 'pharmacy_id=' + id
-  }).then(function(){
-    var tbody = document.getElementById('cmp-tbody');
-    if (tbody && !tbody.querySelector('tr')) window.location.reload();
-  });
-}
+(function() {
+  var MAX_COMPARE = 4;
+
+  // ── Collect currently selected IDs from rendered chips ────────────
+  function getSelectedIds() {
+    return Array.from(document.querySelectorAll('#cmp-selected-chips .cmp-chip'))
+      .map(function(el) { return parseInt(el.getAttribute('data-cmp-id'), 10); })
+      .filter(Boolean);
+  }
+
+  // ── Update URL ?ids= param so page can be shared / refreshed ──────
+  function syncUrl() {
+    var ids = getSelectedIds();
+    var url = new URL(window.location.href);
+    if (ids.length) {
+      url.searchParams.set('ids', ids.join(','));
+    } else {
+      url.searchParams.delete('ids');
+    }
+    window.history.replaceState({}, '', url.toString());
+  }
+
+  // ── Add a pharmacy chip to the selection ──────────────────────────
+  function cmpAddPharmacy(id, name, meta) {
+    var ids = getSelectedIds();
+    if (ids.indexOf(id) !== -1) return; // already added
+    if (ids.length >= MAX_COMPARE) {
+      alert('You can compare up to ' + MAX_COMPARE + ' pharmacies at a time. Remove one first.');
+      return;
+    }
+
+    // Create chip
+    var chip = document.createElement('div');
+    chip.className = 'cmp-chip';
+    chip.setAttribute('data-cmp-id', id);
+    chip.style.cssText = 'display:inline-flex;align-items:center;gap:0.375rem;padding:0.375rem 0.75rem;background:#E6F7F5;border:1.5px solid #B7E8E3;border-radius:9999px;font-size:0.8125rem;font-weight:600;color:#006B62;';
+    chip.innerHTML = '<span class="notranslate" translate="no">' + escHtml(name) + '</span>'
+      + '<button type="button" onclick="cmpRemoveChip(' + id + ', this)" style="display:flex;align-items:center;background:none;border:none;padding:0;cursor:pointer;color:#008F82;line-height:1;" aria-label="Remove">'
+      + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+    document.getElementById('cmp-selected-chips').appendChild(chip);
+
+    syncUrl();
+    updateSavedPillState(id, true);
+    refreshTable();
+  }
+
+  // ── Remove a pharmacy chip ─────────────────────────────────────────
+  window.cmpRemoveChip = function(id, btn) {
+    var chip = btn.closest('.cmp-chip') || btn.parentNode;
+    chip.remove();
+
+    syncUrl();
+    updateSavedPillState(id, false);
+    refreshTable();
+  };
+
+  // ── Clear all selections ───────────────────────────────────────────
+  window.cmpClearAll = function() {
+    window.location.href = '/compare';
+  };
+
+  // ── Saved pill toggle (quick-add from saved list) ─────────────────
+  window.cmpToggleSavedPill = function(btn) {
+    var id = parseInt(btn.getAttribute('data-cmp-id'), 10);
+    var name = btn.getAttribute('data-cmp-name');
+    var meta = btn.getAttribute('data-cmp-meta') || '';
+    var ids = getSelectedIds();
+    if (ids.indexOf(id) !== -1) {
+      cmpRemoveChip(id, btn);
+    } else {
+      cmpAddPharmacy(id, name, meta);
+    }
+  };
+
+  // ── Sync saved pill checked state ─────────────────────────────────
+  function updateSavedPillState(id, selected) {
+    document.querySelectorAll('.cmp-saved-pill[data-cmp-id="' + id + '"]').forEach(function(btn) {
+      var check = btn.querySelector('.cmp-saved-check');
+      if (selected) {
+        btn.style.background = '#E6F7F5';
+        btn.style.borderColor = '#B7E8E3';
+        btn.style.color = '#006B62';
+        if (check) check.style.display = '';
+      } else {
+        btn.style.background = 'white';
+        btn.style.borderColor = '#e5e7eb';
+        btn.style.color = '#374151';
+        if (check) check.style.display = 'none';
+      }
+    });
+  }
+
+  // ── Refresh the comparison table via page reload with updated ?ids= ─
+  // A full reload is the simplest approach since the table is server-rendered.
+  function refreshTable() {
+    // Debounce so rapid adds don't fire multiple reloads
+    clearTimeout(window._cmpReloadTimer);
+    window._cmpReloadTimer = setTimeout(function() {
+      window.location.reload();
+    }, 600);
+  }
+
+  // ── Search autocomplete ────────────────────────────────────────────
+  var searchInput = document.getElementById('cmp-search-input');
+  var searchDropdown = document.getElementById('cmp-search-dropdown');
+  var searchSpinner = document.getElementById('cmp-search-spinner');
+  var searchTimer;
+
+  // Exposed globally so inline onclick in dynamic HTML can reach it
+  window.cmpPickResult = function(id, name, meta) {
+    if (searchDropdown) searchDropdown.style.display = 'none';
+    if (searchInput) searchInput.value = '';
+    cmpAddPharmacy(id, name, meta);
+  };
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      clearTimeout(searchTimer);
+      var q = searchInput.value.trim();
+      if (q.length < 2) { searchDropdown.style.display = 'none'; return; }
+      searchSpinner.style.display = '';
+      searchTimer = setTimeout(function() {
+        fetch('/api/flow/search?q=' + encodeURIComponent(q))
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            searchSpinner.style.display = 'none';
+            var results = data.results || [];
+            if (!Array.isArray(results)) results = [results];
+            results = results.filter(function(p) { return !p.is_digital; }).slice(0, 8);
+            if (!results.length) {
+              searchDropdown.innerHTML = '<div style="padding:0.75rem 1rem;font-size:0.8125rem;color:#94a3b8;">No pharmacies found</div>';
+              searchDropdown.style.display = 'block';
+              return;
+            }
+            var selectedIds = getSelectedIds();
+            var html = '';
+            results.forEach(function(p) {
+              var alreadyAdded = selectedIds.indexOf(p.id) !== -1;
+              var meta = (p.city ? p.city : '') + (p.state ? ', ' + p.state : '') + (p.zip ? ' ' + p.zip : '');
+              html += '<div data-cmp-pick-id="' + p.id + '"'
+                + ' data-cmp-pick-name="' + escHtml(p.name) + '"'
+                + ' data-cmp-pick-meta="' + escHtml(meta) + '"'
+                + ' style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;padding:0.75rem 1rem;cursor:' + (alreadyAdded ? 'default' : 'pointer') + ';border-bottom:1px solid #f8fafc;user-select:none;"'
+                + ' onmousedown="event.preventDefault()"'
+                + ' onclick="if(!this.getAttribute(\'data-already\'))cmpPickResult(parseInt(this.getAttribute(\'data-cmp-pick-id\')),this.getAttribute(\'data-cmp-pick-name\'),this.getAttribute(\'data-cmp-pick-meta\'))"'
+                + (alreadyAdded ? ' data-already="1"' : '')
+                + ' onmouseover="if(!this.getAttribute(\'data-already\'))this.style.background=\'#f0fdf4\'" onmouseout="this.style.background=\'white\'">'
+                + '<div style="min-width:0;">'
+                + '<div style="font-weight:600;font-size:0.875rem;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" class="notranslate" translate="no">' + escHtml(p.name) + '</div>'
+                + '<div style="font-size:0.6875rem;color:#94a3b8;">' + escHtml(meta) + '</div>'
+                + '</div>'
+                + (alreadyAdded
+                  ? '<span style="font-size:0.6875rem;font-weight:700;color:#008F82;white-space:nowrap;flex-shrink:0;">Added ✓</span>'
+                  : '<span style="font-size:0.6875rem;font-weight:700;color:#008F82;white-space:nowrap;flex-shrink:0;">Select →</span>')
+                + '</div>';
+            });
+            searchDropdown.innerHTML = html;
+            searchDropdown.style.display = 'block';
+          })
+          .catch(function() { searchSpinner.style.display = 'none'; });
+      }, 220);
+    });
+
+    // Close dropdown when clicking outside — use mousedown so it fires
+    // before the item's onclick, but only close if the click is truly outside
+    document.addEventListener('mousedown', function(e) {
+      if (searchInput && !searchInput.closest('div').contains(e.target)
+          && searchDropdown && !searchDropdown.contains(e.target)) {
+        searchDropdown.style.display = 'none';
+      }
+    });
+  }
+
+  // ── HTML escape helper ────────────────────────────────────────────
+  function escHtml(s) {
+    return String(s).replace(/[&<>"']/g, function(c) {
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  // ── Init: mark already-selected saved pills as active ─────────────
+  (function init() {
+    var selectedIds = getSelectedIds();
+    selectedIds.forEach(function(id) { updateSavedPillState(id, true); });
+  })();
+
+})();
 </script>
-{% endif %}
 {% endblock %}

@@ -23,6 +23,7 @@ urlpatterns = [
     path("api/flow/search", flows.search_pharmacies, name="flow_search"),
     path("api/flow/location-suggest", flows.suggest_locations, name="flow_location_suggest"),
     path("api/flow/place-detail", flows.place_details, name="flow_place_detail"),
+    path("api/translate", flows.translate_texts, name="flow_translate"),
     path("api/flow/ccpa-export", flows.ccpa_export, name="flow_ccpa_export"),
     path("api/flow/ccpa-delete", flows.ccpa_delete, name="flow_ccpa_delete"),
     path("api/flow/ingest-pharmacies", flows.ingest_pharmacies_by_zip, name="flow_ingest_pharmacies"),
@@ -32,6 +33,7 @@ urlpatterns = [
     path("api/flow/submit-review", flows.submit_review, name="flow_submit_review"),
     path("api/flow/respond-review/<int:review_id>", flows.respond_to_review, name="flow_respond_review"),
     path("api/flow/moderate-review/<int:review_id>", flows.moderate_review, name="flow_moderate_review"),
+    path("api/flow/pharmacist-moderate-review/<int:review_id>", flows.pharmacist_moderate_review, name="flow_pharmacist_moderate_review"),
     path("api/flow/flag-review/<int:review_id>", flows.flag_review, name="flow_flag_review"),
     path("api/flow/report-pharmacy/<int:pharmacy_id>", flows.report_pharmacy_data, name="flow_report_pharmacy"),
     path("api/flow/flag-closed/<int:pharmacy_id>", flows.flag_as_closed, name="flow_flag_closed"),
@@ -74,9 +76,10 @@ urlpatterns = [
     # ===== 27 pages (paths match Benmore app.yaml) =====
     path("", views.index, name="index"),
     path("home", views.home, name="home"),
+    path("saved", views.saved, name="saved"),
     path("account", views.account, name="account"),
     path("list", views.pharmacy_list, name="list"),
-    path("map", views.pharmacy_map, name="map"),
+    # path("map", views.pharmacy_map, name="map"),  # hidden — returns 404
     path("online", views.online_pharmacies, name="online"),
     path("pharmacy", views.pharmacy_detail, name="pharmacy"),
     
@@ -84,7 +87,7 @@ urlpatterns = [
     # canonical and the slug is descriptive. The plain /pharmacy route above
     # still handles the legacy `/pharmacy?id=` links so they never 404.
     path("pharmacy/<int:pharmacy_id>/<slug:slug>/", views.pharmacy_detail, name="pharmacy_slug"),
-    path("review", views.write_review, name="review"),
+    # path("review", views.write_review, name="review"),  # hidden — returns 404
     path("reviews", views.reviews, name="reviews"),
     path("compare", views.compare, name="compare"),
     path("claim", views.claim, name="claim"),
@@ -95,6 +98,7 @@ urlpatterns = [
     path("widget", views.widget, name="widget"),
     path("privacy", views.privacy, name="privacy"),
     path("terms", views.terms, name="terms"),
+    path("about", views.about, name="about"),
 
     # admin pages (role=admin)
     path("admin-dashboard", views.admin_dashboard, name="admin_dashboard"),
