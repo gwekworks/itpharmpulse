@@ -201,15 +201,17 @@
             {% endfor %}
           </tr>
         </tbody>
+      <tfoot class="cmp-details-row">
+        <tr>
+          <td class="cmp-details-spacer"></td>
+          {% for item in saved %}
+          <td class="cmp-details-cell">
+            <a href="{{ item.url }}" class="cmp-view-btn">View Full Details</a>
+          </td>
+          {% endfor %}
+        </tr>
+      </tfoot>
       </table>
-      <div class="cmp-details-row">
-        <div class="cmp-details-spacer"></div>
-        {% for item in saved %}
-        <div class="cmp-details-cell">
-          <a href="{{ item.url }}" class="cmp-view-btn">View Full Details</a>
-        </div>
-        {% endfor %}
-      </div>
     </div>
 
     {% if saved|length == 1 %}
@@ -359,15 +361,17 @@
             {% endfor %}
           </tr>
         </tbody>
+      <tfoot class="cmp-details-row">
+        <tr>
+          <td class="cmp-details-spacer"></td>
+          {% for item in zip_results %}
+          <td class="cmp-details-cell">
+            <a href="{{ item.url }}" class="cmp-view-btn">View Full Details</a>
+          </td>
+          {% endfor %}
+        </tr>
+      </tfoot>
       </table>
-      <div class="cmp-details-row">
-        <div class="cmp-details-spacer"></div>
-        {% for item in zip_results %}
-        <div class="cmp-details-cell">
-          <a href="{{ item.url }}" class="cmp-view-btn">View Full Details</a>
-        </div>
-        {% endfor %}
-      </div>
     </div>
     {% endif %}
 
