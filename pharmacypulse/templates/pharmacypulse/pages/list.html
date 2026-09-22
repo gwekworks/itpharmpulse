@@ -4,6 +4,11 @@
 {% block meta_description %}Search and compare pharmacies near you. Filter by services, ownership, and patient reviews to find a trustworthy pharmacy.{% endblock %}
 {% block content %}
 {% include "pharmacypulse/partials/topbar.html" %}
+<style>
+  @media (max-width: 900px) {
+    .lp-map-panel-desktop { display: none !important; }
+  }
+</style>
 
 <div class="lp-layout">
   <!-- Left: results -->
@@ -52,7 +57,7 @@
         <h2 class="lp-results-title">Local pharmacy results</h2>
         <p class="lp-results-sub">{% if sorted_by_distance and not param_sort %}Sorted by nearest to you{% else %}Scores driven by recent neighborhood reports.{% endif %}</p>
       </div>
-      <span class="lp-results-count">{% if pharmacies %}{{ pharmacies|length }} results{% endif %}</span>
+      <span class="lp-results-count">{% if pharmacies %}{{ total_count.total }} results{% endif %}</span>
     </div>
 
     <!-- Table header -->
@@ -104,11 +109,44 @@
     </div>
     {% endif %}
 
+    <!-- Pagination -->
+    {% if paginator.num_pages > 1 %}
+    <div style="display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:1.25rem 0 0.5rem;flex-wrap:wrap;">
+      {% if page_obj.has_previous %}
+      <a href="{% url_replace page=page_obj.previous_page_number %}" style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.4375rem 0.875rem;border:1.5px solid #e5e7eb;border-radius:9999px;font-size:0.8125rem;font-weight:600;color:#374151;text-decoration:none;background:#fff;transition:all 0.12s;" onmouseover="this.style.borderColor='#008F82';this.style.color='#008F82'" onmouseout="this.style.borderColor='#e5e7eb';this.style.color='#374151'">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Prev
+      </a>
+      {% endif %}
+
+      {% for num in paginator.page_range %}
+        {% if num == page_obj.number %}
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#008F82;color:#fff;font-size:0.8125rem;font-weight:700;">{{ num }}</span>
+        {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+        <a href="{% url_replace page=num %}" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1.5px solid #e5e7eb;font-size:0.8125rem;font-weight:600;color:#374151;text-decoration:none;background:#fff;transition:all 0.12s;" onmouseover="this.style.borderColor='#008F82';this.style.color='#008F82'" onmouseout="this.style.borderColor='#e5e7eb';this.style.color='#374151'">{{ num }}</a>
+        {% elif num == 1 or num == paginator.num_pages %}
+        <a href="{% url_replace page=num %}" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1.5px solid #e5e7eb;font-size:0.8125rem;font-weight:600;color:#374151;text-decoration:none;background:#fff;">{{ num }}</a>
+        {% elif num == page_obj.number|add:"-3" or num == page_obj.number|add:"3" %}
+        <span style="font-size:0.875rem;color:#94a3b8;padding:0 0.125rem;">…</span>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+      <a href="{% url_replace page=page_obj.next_page_number %}" style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.4375rem 0.875rem;border:1.5px solid #e5e7eb;border-radius:9999px;font-size:0.8125rem;font-weight:600;color:#374151;text-decoration:none;background:#fff;transition:all 0.12s;" onmouseover="this.style.borderColor='#008F82';this.style.color='#008F82'" onmouseout="this.style.borderColor='#e5e7eb';this.style.color='#374151'">
+        Next
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+      {% endif %}
+
+      <span style="width:100%;text-align:center;font-size:0.75rem;color:#94a3b8;margin-top:0.25rem;">Page {{ page_obj.number }} of {{ paginator.num_pages }} · {{ total_count.total }} total</span>
+    </div>
+    {% endif %}
+
   </div>
 
-  <!-- Right: map -->
-  <div class="lp-map-panel">
-    <div class="lp-map-label">{{ param_q|default:"Your area" }} &middot; {{ pharmacies|length }} pharmacies shown</div>
+  <!-- Right: map — hidden on mobile -->
+  <div class="lp-map-panel lp-map-panel-desktop">
+    <div class="lp-map-label">{{ param_q|default:"Your area" }} &middot; {{ total_count.total }} pharmacies shown</div>
     {% if google_places_key %}
     <div id="lp-map" class="lp-map"></div>
     {% else %}
@@ -316,7 +354,26 @@ function initLpMap() {
 
   if (pharmacies.length > 1) map.fitBounds(bounds, 40);
   else if (pharmacies.length === 1) map.setZoom(13);
+
+  // Store map reference globally
+  window.__ppListMap = map;
 }
+
+// Trigger map resize after language switch (fixes map not showing in ES)
+(function() {
+  var origSetLang = window.ppSetLang;
+  window.ppSetLang = function(lang) {
+    if (origSetLang) origSetLang(lang);
+    // Wait for translation DOM changes to complete, then resize map
+    setTimeout(function() {
+      if (window.__ppListMap && typeof google !== 'undefined' && google.maps) {
+        google.maps.event.trigger(window.__ppListMap, 'resize');
+        var bounds = window.__ppListMap.getBounds();
+        if (bounds) window.__ppListMap.fitBounds(bounds);
+      }
+    }, 300);
+  };
+})();
 </script>
 <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_places_key }}&callback=initLpMap"></script>
 {% endif %}

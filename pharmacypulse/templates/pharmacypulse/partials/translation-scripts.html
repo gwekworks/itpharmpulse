@@ -1,0 +1,148 @@
+<!-- PPLOCALE translation scripts — included from blank.html for pages without topbar -->
+<script>
+window.PP_EN_ES = window.PP_EN_ES || {};
+
+(function() {
+  function getCookieLang() {
+    var m = document.cookie.match(/(?:^|;\s*)lang=([^;]+)/);
+    return m ? m[1] : 'en';
+  }
+
+  function _ppGetCacheKey(lang) {
+    return 'pp_tx_v2:' + lang + ':' + window.location.pathname;
+  }
+
+  // Only define these globals once — topbar may have already defined them
+  if (window.ppSetLang) return;
+
+  function _ppCollectNodes() {
+    var nodes = [];
+    var _SKIP = {SCRIPT:1,STYLE:1,NOSCRIPT:1,SVG:1,PATH:1,CIRCLE:1,LINE:1,POLYLINE:1,POLYGON:1,RECT:1,TITLE:1,META:1,OPTION:1,SELECT:1,INPUT:1,BUTTON:1};
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+      acceptNode: function(node) {
+        var el = node.parentNode;
+        while (el && el !== document.body) {
+          if (_SKIP[el.nodeName]) return NodeFilter.FILTER_REJECT;
+          if (el.getAttribute && (el.getAttribute('translate') === 'no' || (el.classList && el.classList.contains('notranslate')))) return NodeFilter.FILTER_REJECT;
+          if (el.getAttribute && el.hasAttribute('data-t')) return NodeFilter.FILTER_REJECT;
+          el = el.parentNode;
+        }
+        var t = (node.nodeValue || '').trim();
+        if (!t || t.length < 3) return NodeFilter.FILTER_REJECT;
+        if (/^[\d.,:%\/\-–—]+$/.test(t)) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    var n;
+    while ((n = walker.nextNode())) nodes.push(n);
+    return nodes;
+  }
+
+  function _ppApplyTranslations(nodes, originals, translations) {
+    nodes.forEach(function(node, i) {
+      if (!translations[i]) return;
+      var raw = node.nodeValue;
+      var leading = raw.match(/^\s*/)[0];
+      var trailing = raw.match(/\s*$/)[0];
+      node.nodeValue = leading + translations[i] + trailing;
+    });
+  }
+
+  // Collect and translate placeholder / aria-label attributes via Google API
+  function _ppCollectAttrs() {
+    var attrs = [];
+    document.querySelectorAll('[placeholder],[aria-label]').forEach(function(el) {
+      if (el.closest('[translate="no"]') || el.closest('.notranslate')) return;
+      ['placeholder', 'aria-label'].forEach(function(a) {
+        var v = (el.getAttribute(a) || '').trim();
+        if (v && v.length >= 3 && !/^[\d.,:%\-]+$/.test(v)) {
+          attrs.push({ el: el, attr: a, original: v });
+        }
+      });
+    });
+    return attrs;
+  }
+
+  function _ppTranslateAttrs(lang) {
+    var attrs = _ppCollectAttrs();
+    if (!attrs.length) return;
+    var texts = attrs.map(function(a) { return a.original; });
+    var cacheKey = 'pp_tx_attr_v1:' + lang + ':' + window.location.pathname;
+    try {
+      var cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        var translations = JSON.parse(cached);
+        if (translations && translations.length === attrs.length) {
+          attrs.forEach(function(a, i) { if (translations[i]) a.el.setAttribute(a.attr, translations[i]); });
+          return;
+        }
+      }
+    } catch(e) {}
+    fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts: texts, target: lang })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var translations = data.translations || [];
+      attrs.forEach(function(a, i) { if (translations[i]) a.el.setAttribute(a.attr, translations[i]); });
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(translations)); } catch(e) {}
+    })
+    .catch(function(err) { console.warn('PP Translate attrs error', err); });
+  }
+
+  function _ppRestoreFromCache(cacheKey) {
+    try {
+      var cached = sessionStorage.getItem(cacheKey);
+      if (!cached) return false;
+      var data = JSON.parse(cached);
+      if (!data || !data.nodes || !data.translations || !data.translations.length || data.nodes.length !== data.translations.length) {
+        sessionStorage.removeItem(cacheKey);
+        return false;
+      }
+      _ppApplyTranslations(_ppCollectNodes(), data.nodes, data.translations);
+      return true;
+    } catch(e) { return false; }
+  }
+
+  function _ppTranslateDOM(lang, onDone) {
+    var cacheKey = _ppGetCacheKey(lang);
+    if (_ppRestoreFromCache(cacheKey)) { if (onDone) onDone(); return; }
+    var nodes = _ppCollectNodes();
+    var texts = nodes.map(function(n) { return n.nodeValue.trim(); });
+    if (!texts.length) { if (onDone) onDone(); return; }
+    fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts: texts, target: lang })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var translations = data.translations || [];
+      _ppApplyTranslations(nodes, texts, translations);
+      try { sessionStorage.setItem(cacheKey, JSON.stringify({ nodes: texts, translations: translations })); } catch(e) {}
+      if (onDone) onDone();
+    })
+    .catch(function(err) { console.warn('PP Translate error', err); if (onDone) onDone(); });
+  }
+
+  window.ppSetLang = function(lang) {
+    document.cookie = 'lang=' + lang + '; path=/; max-age=31536000; SameSite=Lax';
+    window.location.reload();
+  };
+
+  var cur = getCookieLang();
+  if (cur === 'es') {
+    var run = function() {
+      setTimeout(function() {
+        _ppTranslateDOM('es', null);
+        _ppTranslateAttrs('es');
+      }, 0);
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', run);
+    } else { run(); }
+  }
+})();
+</script>

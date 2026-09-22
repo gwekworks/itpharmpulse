@@ -150,7 +150,7 @@
               <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2">
                   <span class="badge-{{ item.moderation_status }}">{{ item.moderation_status }}</span>
-                  <p class="text-xs font-semibold" style="color: #0f172a">{{ item.user_name }}</p>
+                  <p class="text-xs font-semibold notranslate" translate="no" style="color: #0f172a">{{ item.user_name }}</p>
                   <span class="text-xs" style="color: #94a3b8">→ {{ item.pharmacy_name }}</span>
                 </div>
                 <span class="text-xs" style="color: #94a3b8">{{ item.created_at|timesince }} ago</span>
@@ -186,7 +186,7 @@
             <div class="flex items-center justify-between p-3 rounded-lg" style="background: #f8fafc; border: 1px solid #e8edf4">
               <div>
                 <p class="text-sm font-semibold" style="color: #0f172a">{{ item.pharmacy_name }}</p>
-                <p class="text-xs" style="color: #64748b">by {{ item.user_name }} · NPI {{ item.npi_number }}</p>
+                <p class="text-xs notranslate" translate="no" style="color: #64748b">by {{ item.user_name }} · NPI {{ item.npi_number }}</p>
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-xs" style="color: #94a3b8">{{ item.created_at|timesince }} ago</span>

@@ -55,7 +55,7 @@
                   aria-label="Remove {{ item.name }}">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
-        </div>
+        </div>e
         {% endfor %}
       </div>
 
@@ -220,11 +220,33 @@
 
     {% else %}
     <!-- Empty state: no pharmacies selected yet -->
-    <div class="cmp-empty">
-      <!-- <div class="cmp-empty-icon">&#9878;</div>
-      <p class="cmp-empty-title">No pharmacies selected yet</p> -->
-      <p class="cmp-empty-desc">Search above to find pharmacies and add them to your comparison.</p>
-      <!-- <a href="/list" class="cmp-empty-btn">Browse pharmacies</a> -->
+    <div class="cmp-empty" style="text-align:center;padding:3rem 1.5rem;">
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:80px;height:80px;border-radius:50%;background:#f0fdf4;border:2px solid #B7E8E3;margin-bottom:1.25rem;">
+        <svg width="44" height="36" viewBox="0 0 56 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Back building (offset right, lighter) -->
+          <rect x="22" y="10" width="22" height="26" rx="2" fill="#B7E8E3" stroke="#008F82" stroke-width="1.5"/>
+          <rect x="27" y="22" width="5" height="7" rx="1" fill="#008F82" opacity="0.4"/>
+          <rect x="34" y="22" width="5" height="7" rx="1" fill="#008F82" opacity="0.4"/>
+          <rect x="27" y="14" width="5" height="5" rx="1" fill="#008F82" opacity="0.4"/>
+          <rect x="34" y="14" width="5" height="5" rx="1" fill="#008F82" opacity="0.4"/>
+          <line x1="33" y1="10" x2="33" y2="36" stroke="#008F82" stroke-width="1" opacity="0.3"/>
+          <!-- Roof triangle back -->
+          <polygon points="21,11 44,11 32.5,2" fill="#B7E8E3" stroke="#008F82" stroke-width="1.5" stroke-linejoin="round"/>
+          <!-- Front building (offset left, solid) -->
+          <rect x="8" y="14" width="22" height="26" rx="2" fill="#E6F7F5" stroke="#008F82" stroke-width="1.5"/>
+          <rect x="13" y="26" width="5" height="7" rx="1" fill="#008F82" opacity="0.6"/>
+          <rect x="20" y="26" width="5" height="7" rx="1" fill="#008F82" opacity="0.6"/>
+          <rect x="13" y="18" width="5" height="5" rx="1" fill="#008F82" opacity="0.6"/>
+          <rect x="20" y="18" width="5" height="5" rx="1" fill="#008F82" opacity="0.6"/>
+          <line x1="19" y1="14" x2="19" y2="40" stroke="#008F82" stroke-width="1" opacity="0.4"/>
+          <!-- Roof triangle front -->
+          <polygon points="7,15 30,15 18.5,6" fill="#E6F7F5" stroke="#008F82" stroke-width="1.5" stroke-linejoin="round"/>
+          <!-- Cross symbol on front building -->
+          <line x1="19" y1="9" x2="19" y2="13" stroke="#008F82" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="17" y1="11" x2="21" y2="11" stroke="#008F82" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <p style="font-weight:700;font-size:1rem;color:#1A1A2E;margin:0;">No pharmacies selected yet</p>
     </div>
     {% endif %}
 
