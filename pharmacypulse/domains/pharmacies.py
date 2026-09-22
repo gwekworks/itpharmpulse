@@ -276,7 +276,16 @@ def page_list(request):
     else:
         qs = qs.order_by(primary, "-total_reviews", "pk")
 
-    pharmacies = [_pharmacy_dict(p) for p in qs[:200]]
+    PER_PAGE = 20
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    all_pharmacies = [_pharmacy_dict(p) for p in qs[:400]]  # cap total at 400
+    paginator = Paginator(all_pharmacies, PER_PAGE)
+    page_num = request.GET.get("page", 1)
+    try:
+        page_obj = paginator.page(page_num)
+    except (PageNotAnInteger, EmptyPage):
+        page_obj = paginator.page(1)
+    pharmacies = list(page_obj.object_list)
     most_reviewed = [_pharmacy_dict(p) for p in
                      published_pharmacies().filter(is_digital=0, total_reviews__gt=0)
                      .order_by("-total_reviews")[:6]]
@@ -296,10 +305,17 @@ def page_list(request):
     return {
         "pharmacies": pharmacies,
         "most_reviewed": most_reviewed,
-        "total_count": Row({"total": len(pharmacies)}),
+        "total_count": Row({"total": paginator.count}),
+        "page_obj": page_obj,
+        "paginator": paginator,
         "q": q, "city": city, "zip": zip_filter,
         "service": service, "sort": sort,
+        "ownership": ownership,
         "state": state_code or "",
+        "param_q": q,
+        "param_sort": sort,
+        "param_ownership": ownership,
+        "param_service": service,
         "param_loc": param_loc,
         # Location-field autocomplete needs the US state list for its
         # state-name → code map (same source as the homepage hero).

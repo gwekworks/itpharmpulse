@@ -17,42 +17,14 @@
   </div>
 
   <!-- Existing claim status -->
-  
-  {% for item in existing_claim %}
-  <div style="padding: 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 1.5rem">
-    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem">
-      <span class="badge-{{ item.status }}">{{ item.status }}</span>
-      <span style="font-weight: 600; color: #0f172a; font-size: 0.875rem">{{ item.pharmacy_name }}</span>
-    </div>
-    {% if item.status == "pending" %}
-    <p style="font-size: 0.8125rem; color: #64748b">Your claim is being reviewed. Pharmacy claim reviews may take up to <strong>24 to 72 hours</strong>. We'll notify you when a decision is made.</p>
-    {% endif %}
-    {% if item.status == "approved" %}
-    <p style="font-size: 0.8125rem; color: #006B62">Your claim has been approved! <a href="/pharmacist-dashboard" style="font-weight: 600; color: #008F82; text-decoration: none">Go to your dashboard &rarr;</a></p>
-    {% endif %}
-    {% if item.status == "rejected" %}
-    <p style="font-size: 0.8125rem; color: #dc2626; margin-bottom: 0.25rem">Your claim was rejected.</p>
-    {% if item.rejection_reason %}<p style="font-size: 0.75rem; color: #64748b">Reason: {{ item.rejection_reason }}</p>{% endif %}
-    {% endif %}
-  </div>
-  {% endfor %}
-  
-
-  {% if param_error %}
-  <div style="padding: 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.75rem; margin-bottom: 1.5rem; font-size: 0.8125rem; color: #dc2626">
-    {{param_error}}
-  </div>
-  {% endif %}
-
   {% if existing_claim %}
-  <!-- Claims status — shows all pending/approved/rejected claims -->
   {% for claim in existing_claim %}
   {% if claim.status == "pending" %}
   <div style="padding: 1rem; background: #fffbeb; border: 1px solid #fde68a; border-radius: 0.75rem; margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 0.625rem;">
     <span style="font-size: 1rem; line-height: 1.4;">⏳</span>
     <div>
       <strong style="color: #92400e; display: block; margin-bottom: 0.125rem; font-size: 0.8125rem;">Claim in progress</strong>
-      <span style="font-size: 0.8125rem; color: #78350f;">Your claim for <strong>{{ claim.pharmacy_name }}</strong> is under review. We'll notify you within 24–72 hours.</span>
+      <span style="font-size: 0.8125rem; color: #78350f; display:block;">Your claim for <strong class="notranslate" translate="no" style="font-weight:700;">{{ claim.pharmacy_name }}</strong> is under review. We'll notify you within 24–72 hours.</span>
     </div>
   </div>
   {% elif claim.status == "approved" %}
@@ -60,19 +32,26 @@
     <span style="font-size: 1rem; line-height: 1.4;">✅</span>
     <div>
       <strong style="color: #166534; display: block; margin-bottom: 0.125rem; font-size: 0.8125rem;">Claim approved</strong>
-      <span style="font-size: 0.8125rem; color: #166534;"><strong>{{ claim.pharmacy_name }}</strong> is claimed. <a href="/pharmacist-dashboard" style="font-weight: 600; color: #008F82; text-decoration: none;">Go to dashboard →</a></span>
+      <span style="font-size: 0.8125rem; color: #166534; display:block;"><strong class="notranslate" translate="no" style="font-weight:700;">{{ claim.pharmacy_name }}</strong> is claimed. <a href="/pharmacist-dashboard" style="font-weight: 600; color: #008F82; text-decoration: none;">Go to dashboard →</a></span>
     </div>
   </div>
   {% elif claim.status == "rejected" %}
   <div style="padding: 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.75rem; margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 0.625rem;">
     <span style="font-size: 1rem; line-height: 1.4;">❌</span>
     <div>
-      <strong style="color: #991b1b; display: block; margin-bottom: 0.125rem; font-size: 0.8125rem;">Claim not approved — {{ claim.pharmacy_name }}</strong>
+      <strong style="color: #991b1b; display: block; margin-bottom: 0.125rem; font-size: 0.8125rem;">Claim not approved</strong>
+      <span class="notranslate" translate="no" style="font-size: 0.8125rem; color: #991b1b; font-weight: 600; display:block;">{{ claim.pharmacy_name }}</span>
       {% if claim.rejection_reason %}<span style="font-size: 0.8125rem; color: #7f1d1d;">Reason: {{ claim.rejection_reason }}</span>{% endif %}
     </div>
   </div>
   {% endif %}
   {% endfor %}
+  {% endif %}
+
+  {% if param_error %}
+  <div style="padding: 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.75rem; margin-bottom: 1.5rem; font-size: 0.8125rem; color: #dc2626">
+    {{param_error}}
+  </div>
   {% endif %}
 
   <!-- Claim form -->

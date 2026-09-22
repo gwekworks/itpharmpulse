@@ -374,8 +374,9 @@
     // Show/hide full content blocks
     document.getElementById('terms-en').style.display = isEs ? 'none' : '';
     document.getElementById('terms-es').style.display = isEs ? '' : 'none';
-    // Show/hide draft notice
-    document.getElementById('pp-terms-draft-notice').style.display = isEs ? '' : 'none';
+    // Show/hide draft notice (only if element exists)
+    var notice = document.getElementById('pp-terms-draft-notice');
+    if (notice) notice.style.display = isEs ? '' : 'none';
     // Page header strings
     document.getElementById('t-page-title').textContent = isEs ? 'Términos y Condiciones' : 'Terms and Conditions';
     document.getElementById('t-subtitle').textContent   = isEs ? 'Plataforma Comunitaria de Transparencia Farmacéutica — BORRADOR DE TRADUCCIÓN' : 'Community Pharmacy Transparency Platform';

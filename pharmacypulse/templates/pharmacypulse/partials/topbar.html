@@ -1,7 +1,8 @@
 {% load pharmacypulse %} {% load i18n %}
 <header class="pp-topbar">
   <div class="pp-topbar-inner">
-    <a translate="no"
+    <a
+      translate="no"
       href="{% if user.is_authenticated %}/home{% else %}/{% endif %}"
       class="pp-topbar-logo notranslate"
     >
@@ -44,19 +45,29 @@
         <a
           href="/pharmacist-dashboard"
           class="pp-topbar-desktop-only"
-          style="padding: 0.625rem 0.75rem; font-size: 0.875rem; font-weight: 600; color: #008f82; text-decoration: none;"
+          style="
+            padding: 0.625rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #008f82;
+            text-decoration: none;
+          "
           >{% trans "Dashboard" %}</a
         >
-        {% endif %}
-        {% if user.role == "admin" %}
+        {% endif %} {% if user.role == "admin" %}
         <a
           href="/admin-dashboard"
           class="pp-topbar-desktop-only"
-          style="padding: 0.625rem 0.75rem; font-size: 0.875rem; font-weight: 600; color: #7c3aed; text-decoration: none;"
+          style="
+            padding: 0.625rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #7c3aed;
+            text-decoration: none;
+          "
           >{% trans "Admin" %}</a
         >
-        {% endif %}
-        {% if user.is_authenticated %}
+        {% endif %} {% if user.is_authenticated %}
         <!-- <span
           class="pp-topbar-desktop-only notranslate"
           translate="no"
@@ -80,7 +91,7 @@
               points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
             />
           </svg>
-          <span data-t="nav.saved">Saved</span>
+          <span>Saved</span>
           {% if saved_compare_count %}<span class="pp-topbar-saved-badge"
             >{{ saved_compare_count }}</span
           >{% endif %}
@@ -106,7 +117,7 @@
           href="/claim"
           class="pp-topbar-desktop-only inline-flex items-center gap-1.5 pp-topbar-claim-btn"
         >
-          <span data-t="nav.claim">Claim a pharmacy</span>
+          <span>Claim a pharmacy</span>
         </a>
         {% else %}
         <a href="/login" class="inline-flex items-center gap-1 pp-topbar-link"
@@ -116,7 +127,7 @@
           href="/signup?next=/claim"
           class="pp-topbar-desktop-only inline-flex items-center gap-1.5 pp-topbar-claim-btn"
         >
-          <span data-t="nav.claim">Claim a pharmacy</span>
+          <span>Claim a pharmacy</span>
         </a>
         {% endif %}
       </div>
@@ -252,14 +263,14 @@
   </div>
 </header>
 <script>
-(function () {
-  document.addEventListener('click', function (e) {
-    var menu = document.querySelector('.pp-topbar-hamburger');
-    if (menu && menu.open && !menu.contains(e.target)) {
-      menu.open = false;
-    }
-  });
-})();
+  (function () {
+    document.addEventListener("click", function (e) {
+      var menu = document.querySelector(".pp-topbar-hamburger");
+      if (menu && menu.open && !menu.contains(e.target)) {
+        menu.open = false;
+      }
+    });
+  })();
 </script>
 
 <!-- =============================================================== -->
@@ -363,6 +374,8 @@
     "Search medications...": "Buscar medicamentos...",
     "Search pharmacy name, city, ZIP, or address...":
       "Buscar nombre, ciudad, código postal o dirección...",
+    "Search pharmacy name, city, or ZIP...":
+      "Buscar farmacia, ciudad o código postal...",
     "Tell others about your experience...":
       "Cuéntales a otros sobre tu experiencia...",
     "Search and add a pharmacy to compare...":
@@ -392,6 +405,23 @@
     "No pharmacies found": "No se encontraron farmacias",
     "Try a different search or adjust your filters.":
       "Prueba otra búsqueda o ajusta los filtros.",
+
+    // List page
+    "FIND A PHARMACY NEAR YOU": "ENCUENTRA UNA FARMACIA CERCA DE TI",
+    "Local pharmacy results": "Resultados de farmacias locales",
+    "Scores driven by recent neighborhood reports.":
+      "Puntuaciones basadas en reportes recientes del vecindario.",
+    "Sorted by nearest to you": "Ordenadas por cercanía a ti",
+    "Filter:": "Filtrar:",
+    Closest: "Más cercana",
+    "Best Stock": "Mejor stock",
+    "Shortest Wait": "Espera más corta",
+    "Best Service": "Mejor servicio",
+    "Distance unavailable": "Distancia no disponible",
+    "Open today · 8:00 AM – 7:00 PM": "Abierto hoy · 8:00 AM – 7:00 PM",
+    results: "resultados",
+    "pharmacies shown": "farmacias mostradas",
+    "Your area": "Tu área",
 
     // Review form
     "Share your experience at": "Comparte tu experiencia en",
@@ -836,8 +866,7 @@
               // Elements managed by their own data-t dictionary (homepage hero, etc) handle
               // their own translation. If we mutate these, their IIFE captures the swapped
               // Spanish into PP_I18N_EN and the EN/ES toggle gets corrupted (mobile-refresh flip).
-              if (p.closest("[data-t]"))
-                return NodeFilter.FILTER_REJECT;
+              if (p.closest("[data-t]")) return NodeFilter.FILTER_REJECT;
             }
             return NodeFilter.FILTER_ACCEPT;
           },
@@ -899,19 +928,21 @@
     // each unique page is only translated once per browser session.
 
     function _ppGetCacheKey(lang) {
-      return 'pp_tx_v2:' + lang + ':' + window.location.pathname;
+      return "pp_tx_v3:" + lang + ":" + window.location.pathname;
     }
 
     // Clear legacy cache keys from previous version (pp_tx:) to avoid stale no-op restores
-    (function() {
+    (function () {
       try {
         var toRemove = [];
         for (var i = 0; i < sessionStorage.length; i++) {
           var k = sessionStorage.key(i);
-          if (k && k.indexOf('pp_tx:') === 0) toRemove.push(k);
+          if (k && k.indexOf("pp_tx:") === 0) toRemove.push(k);
         }
-        toRemove.forEach(function(k) { sessionStorage.removeItem(k); });
-      } catch(e) {}
+        toRemove.forEach(function (k) {
+          sessionStorage.removeItem(k);
+        });
+      } catch (e) {}
     })();
 
     function _ppCollectNodes() {
@@ -920,25 +951,24 @@
         document.body,
         NodeFilter.SHOW_TEXT,
         {
-          acceptNode: function(node) {
+          acceptNode: function (node) {
             var p = node.parentNode;
             if (!p) return NodeFilter.FILTER_REJECT;
             var tag = p.nodeName;
-            if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT')
+            if (tag === "SCRIPT" || tag === "STYLE" || tag === "NOSCRIPT")
               return NodeFilter.FILTER_REJECT;
             // Skip elements explicitly marked as non-translatable
             if (p.closest) {
-              if (p.closest('[translate="no"]') || p.closest('.notranslate'))
+              if (p.closest('[translate="no"]') || p.closest(".notranslate"))
                 return NodeFilter.FILTER_REJECT;
               // Skip data-t managed nodes (homepage hero handles its own i18n)
-              if (p.closest('[data-t]'))
-                return NodeFilter.FILTER_REJECT;
+              if (p.closest("[data-t]")) return NodeFilter.FILTER_REJECT;
             }
-            var trimmed = (node.nodeValue || '').trim();
+            var trimmed = (node.nodeValue || "").trim();
             if (!trimmed) return NodeFilter.FILTER_REJECT;
             return NodeFilter.FILTER_ACCEPT;
-          }
-        }
+          },
+        },
       );
       var n;
       while ((n = walker.nextNode())) nodes.push(n);
@@ -946,12 +976,73 @@
     }
 
     function _ppApplyTranslations(nodes, originals, translations) {
-      nodes.forEach(function(node, i) {
+      nodes.forEach(function (node, i) {
         if (!translations[i]) return;
         var raw = node.nodeValue;
         var trimmed = raw.trim();
         node.nodeValue = raw.replace(trimmed, translations[i]);
       });
+    }
+
+    // Collect placeholder/aria-label attributes for translation
+    function _ppCollectAttrs() {
+      var attrs = [];
+      document
+        .querySelectorAll("[placeholder],[aria-label]")
+        .forEach(function (el) {
+          if (el.closest('[translate="no"]') || el.closest(".notranslate"))
+            return;
+          ["placeholder", "aria-label"].forEach(function (a) {
+            var v = (el.getAttribute(a) || "").trim();
+            if (v && v.length >= 3 && !/^[\d.,:%\-]+$/.test(v)) {
+              attrs.push({ el: el, attr: a, original: v });
+            }
+          });
+        });
+      return attrs;
+    }
+
+    function _ppTranslateAttrs(lang) {
+      var attrs = _ppCollectAttrs();
+      if (!attrs.length) return;
+      var texts = attrs.map(function (a) {
+        return a.original;
+      });
+      var cacheKey = "pp_tx_attr_v1:" + lang + ":" + window.location.pathname;
+      // Try cache first
+      try {
+        var cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          var translations = JSON.parse(cached);
+          if (translations && translations.length === attrs.length) {
+            attrs.forEach(function (a, i) {
+              if (translations[i]) a.el.setAttribute(a.attr, translations[i]);
+            });
+            return;
+          }
+        }
+      } catch (e) {}
+      // Call API
+      fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texts: texts, target: lang }),
+      })
+        .then(function (r) {
+          return r.json();
+        })
+        .then(function (data) {
+          var translations = data.translations || [];
+          attrs.forEach(function (a, i) {
+            if (translations[i]) a.el.setAttribute(a.attr, translations[i]);
+          });
+          try {
+            sessionStorage.setItem(cacheKey, JSON.stringify(translations));
+          } catch (e) {}
+        })
+        .catch(function (err) {
+          console.warn("PP Translate attrs error", err);
+        });
     }
 
     function _ppRestoreFromCache(cacheKey) {
@@ -961,24 +1052,36 @@
         var data = JSON.parse(cached);
         if (!data || !data.nodes || !data.translations) return false;
         // Reject empty or mismatched cache (could be from a failed prior run)
-        if (!data.translations.length || data.nodes.length !== data.translations.length) {
+        if (
+          !data.translations.length ||
+          data.nodes.length !== data.translations.length
+        ) {
           sessionStorage.removeItem(cacheKey);
           return false;
         }
-        console.log('[PP Translate] Restoring ' + data.translations.length + ' translations from sessionStorage cache');
+        console.log(
+          "[PP Translate] Restoring " +
+            data.translations.length +
+            " translations from sessionStorage cache",
+        );
         // Re-collect live nodes and match by index — must be same page DOM
         var nodes = _ppCollectNodes();
         _ppApplyTranslations(nodes, data.nodes, data.translations);
         return true;
-      } catch(e) {
-        console.warn('[PP Translate] Cache restore failed:', e);
+      } catch (e) {
+        console.warn("[PP Translate] Cache restore failed:", e);
         return false;
       }
     }
 
     function _ppTranslateDOM(lang, onDone) {
       var cacheKey = _ppGetCacheKey(lang);
-      console.log('[PP Translate] Starting translation, lang=' + lang + ', cache key=' + cacheKey);
+      console.log(
+        "[PP Translate] Starting translation, lang=" +
+          lang +
+          ", cache key=" +
+          cacheKey,
+      );
 
       // Try sessionStorage cache first — skip the API call if we have it
       if (_ppRestoreFromCache(cacheKey)) {
@@ -987,41 +1090,63 @@
       }
 
       var nodes = _ppCollectNodes();
-      var texts = nodes.map(function(n) { return n.nodeValue.trim(); });
-      console.log('[PP Translate] Collected ' + texts.length + ' text nodes, posting to /api/translate');
+      var texts = nodes.map(function (n) {
+        return n.nodeValue.trim();
+      });
+      console.log(
+        "[PP Translate] Collected " +
+          texts.length +
+          " text nodes, posting to /api/translate",
+      );
       if (!texts.length) {
-        console.warn('[PP Translate] No text nodes collected — DOM may be empty');
+        console.warn(
+          "[PP Translate] No text nodes collected — DOM may be empty",
+        );
         if (onDone) onDone();
         return;
       }
 
-      fetch('/api/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ texts: texts, target: lang })
+      fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texts: texts, target: lang }),
       })
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        var translations = data.translations || [];
-        console.log('[PP Translate] API returned ' + translations.length + ' translations for ' + texts.length + ' texts');
-        _ppApplyTranslations(nodes, texts, translations);
-        // Cache for the rest of this session
-        try {
-          sessionStorage.setItem(cacheKey, JSON.stringify({
-            nodes: texts,
-            translations: translations
-          }));
-        } catch(e) { /* sessionStorage full or blocked — ignore */ }
-        if (onDone) onDone();
-      })
-      .catch(function(err) {
-        console.warn('PharmacyPulse: translation API error', err);
-        if (onDone) onDone();
-      });
+        .then(function (r) {
+          return r.json();
+        })
+        .then(function (data) {
+          var translations = data.translations || [];
+          console.log(
+            "[PP Translate] API returned " +
+              translations.length +
+              " translations for " +
+              texts.length +
+              " texts",
+          );
+          _ppApplyTranslations(nodes, texts, translations);
+          // Cache for the rest of this session
+          try {
+            sessionStorage.setItem(
+              cacheKey,
+              JSON.stringify({
+                nodes: texts,
+                translations: translations,
+              }),
+            );
+          } catch (e) {
+            /* sessionStorage full or blocked — ignore */
+          }
+          if (onDone) onDone();
+        })
+        .catch(function (err) {
+          console.warn("PharmacyPulse: translation API error", err);
+          if (onDone) onDone();
+        });
     }
 
-    window.ppSetLang = function(lang) {
-      document.cookie = 'lang=' + lang + '; path=/; max-age=31536000; SameSite=Lax';
+    window.ppSetLang = function (lang) {
+      document.cookie =
+        "lang=" + lang + "; path=/; max-age=31536000; SameSite=Lax";
       // Set cookie then reload — Django LocaleMiddleware picks up the cookie on
       // the next request and re-renders all trans-tagged strings server-side.
       // The client-side API translation runs immediately after the reload from cache.
@@ -1031,20 +1156,21 @@
     // Apply on page load based on cookie — runs API translation if lang=es
     var cur = getCookieLang();
     highlightLang(cur);
-    if (cur === 'es') {
-      var _doTranslate = function() {
+    if (cur === "es") {
+      var _doTranslate = function () {
         // Small defer to ensure all inline scripts on the page have run
         // and the full DOM is available before we collect text nodes.
-        setTimeout(function() {
-          _ppTranslateDOM('es', null);
+        setTimeout(function () {
+          _ppTranslateDOM("es", null);
+          _ppTranslateAttrs("es");
           // Also apply the PP_EN_ES dict for any data-t managed nodes the API skips
           if (window.PP_EN_ES) {
             swapDOM(window.PP_EN_ES, window.PP_PATTERNS_EN_TO_ES);
           }
         }, 0);
       };
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', _doTranslate);
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", _doTranslate);
       } else {
         _doTranslate();
       }

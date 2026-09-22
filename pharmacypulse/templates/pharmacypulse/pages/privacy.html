@@ -378,6 +378,8 @@
     "12. Contact Us": "12. Contáctenos",
     "If you have questions about this Policy or wish to exercise a privacy right, contact us at:": "Si tiene preguntas sobre esta Política o desea ejercer un derecho de privacidad, contáctenos en:",
     "ByondRx, Inc. / PharmacyPulse — Attn: Privacy": "ByondRx, Inc. / PharmacyPulse — Atención: Privacidad",
+    "Email:": "Correo electrónico:",
+    "Website:": "Sitio web:",
 
     // Section 13
     "13. Changes to This Policy": "13. Cambios a esta Política",
@@ -395,6 +397,8 @@
   if (getCookieLang() === 'es') {
     var notice = document.getElementById('pp-privacy-draft-notice');
     if (notice) notice.style.display = 'block';
+    // Re-run swapDOM now that the page-specific dict entries are loaded
+    if (window.ppApplyUniversalLang) window.ppApplyUniversalLang('es');
   }
 })();
 </script>
