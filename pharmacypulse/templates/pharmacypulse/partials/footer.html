@@ -1,4 +1,4 @@
-{% load pharmacypulse %}
+{% load pharmacypulse i18n %}
 
 <footer class="pp-footer">
   <div class="pp-footer-inner">
@@ -57,7 +57,7 @@
           <li>
             <form method="POST" action="/logout" style="margin:0;padding:0">
               {% csrf_token %}
-              <button type="submit" style="font-weight: 400;font-size: 0.8125rem;">Log Out</button>
+              <button type="submit" style="font-weight: 400;font-size: 0.8125rem;">{% trans "Log out" %}</button>
             </form>
           </li>
           {% else %}

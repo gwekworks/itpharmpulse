@@ -38,3 +38,12 @@ msgstr "Escasez"
 msgid "Sign up"
 msgstr "Registrarse"
 
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
+msgid "Log out"
+msgstr "Cerrar sesión"
+
+msgid "Saved"
+msgstr "Guardados"
+

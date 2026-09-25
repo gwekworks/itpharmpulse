@@ -9,7 +9,7 @@
     <!-- Greeting -->
     <div class="pp-mb-24">
       <h1 class="pp-home-title">
-        Hello{% if user.first_name %}, {{user.first_name}}{% endif %}
+        Hello{% if user.first_name %}, <span class="notranslate" translate="no">{{ user.first_name }}</span>{% endif %}
       </h1>
       <p class="pp-home-subtitle">Find your pharmacy, share your experience.</p>
     </div>
