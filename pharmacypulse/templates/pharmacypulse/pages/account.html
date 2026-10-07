@@ -209,6 +209,31 @@
           {% endif %}
         </div>
 
+        <!-- My transfer requests -->
+        {% if my_transfers or user.role == "user" %}
+        <div class="acct-card">
+          <p class="acct-h2">My transfer requests <span style="color: #94a3b8; font-weight: 500">· {{ my_transfers|length }}</span></p>
+          {% for t in my_transfers %}
+          <div class="acct-row">
+            <div style="min-width: 0">
+              <p style="font-weight: 600; color: #0f172a; font-size: 0.8125rem; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap" class="notranslate" translate="no">{{ t.medication_name }}{% if t.medication_strength %} {{ t.medication_strength }}{% endif %}</p>
+              <p style="font-size: 0.6875rem; color: #94a3b8; margin: 0.125rem 0 0">{{ t.from_pharmacy_name }} → {{ t.to_pharmacy_name }}</p>
+            </div>
+            <span style="font-size: 0.6875rem; font-weight: 700; padding: 0.125rem 0.5rem; border-radius: 9999px; flex-shrink: 0; background: {% if t.status == 'cancelled' %}#f1f5f9; color: #64748b{% else %}#E6F7F5; color: #006B62{% endif %}">{{ t.status }}</span>
+          </div>
+          {% endfor %}
+          {% if not my_transfers %}
+          <p style="font-size: 0.8125rem; color: #64748b; margin: 0 0 0.75rem">No transfers yet — move a prescription between pharmacies in minutes.</p>
+          {% endif %}
+          <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap">
+            {% if user.role == "user" %}
+            <a href="/transfer" style="display: inline-block; padding: 0.5rem 1rem; background: #008F82; color: white; border-radius: 9999px; font-size: 0.8125rem; font-weight: 600; text-decoration: none">New transfer</a>
+            {% endif %}
+            <a href="/transfers" style="display: inline-block; padding: 0.5rem 1rem; background: white; color: #008F82; border: 1.5px solid #008F82; border-radius: 9999px; font-size: 0.8125rem; font-weight: 600; text-decoration: none">View &amp; track →</a>
+          </div>
+        </div>
+        {% endif %}
+
         <!-- Notifications -->
          {% comment %}
         <div class="acct-card">

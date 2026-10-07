@@ -1,0 +1,98 @@
+{% extends "pharmacypulse/layouts/app.html" %}
+{% load pharmacypulse %}
+{% block title %}My Transfer Requests{% endblock %}
+{% block content %}
+{% include "pharmacypulse/partials/topbar.html" %}
+<div style="background: #fafbfc; min-height: 100vh; padding-bottom: 0">
+  <div style="max-width: 40rem; margin: 0 auto; padding: 1.5rem">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 1.5rem">
+    <div style="display: flex; align-items: center; gap: 0.75rem">
+      <div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #e6f7f5; border-radius: 0.75rem">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#008F82" stroke-width="2"><path d="M17 3l4 4-4 4"/><path d="M21 7H8a5 5 0 0 0-5 5"/><path d="M7 21l-4-4 4-4"/><path d="M3 17h13a5 5 0 0 0 5-5"/></svg>
+      </div>
+      <div>
+        <h1 style="font-family: 'DM Serif Display', serif; font-size: 1.25rem; color: #0f172a">My Transfer Requests</h1>
+        <p style="font-size: 0.75rem; color: #64748b">Fax delivery per pharmacy — refresh for live status.</p>
+      </div>
+    </div>
+    <a href="/transfer" style="padding: 0.5rem 1rem; background: #008F82; color: white; border-radius: 9999px; font-size: 0.8125rem; font-weight: 600; text-decoration: none; white-space: nowrap">+ New</a>
+  </div>
+
+  {% if param_error %}
+  <div style="padding: 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.75rem; margin-bottom: 1rem; font-size: 0.8125rem; color: #dc2626">
+    {{param_error}}
+  </div>
+  {% endif %}
+  {% if param_msg %}
+  <div style="padding: 1rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.75rem; margin-bottom: 1rem; font-size: 0.8125rem; color: #166534">
+    {{param_msg}}
+  </div>
+  {% endif %}
+
+  {% if not my_transfers %}
+  <div style="padding: 2rem 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; text-align: center">
+    <p style="font-size: 0.875rem; color: #64748b; margin: 0 0 1rem">No transfer requests yet.</p>
+    <a href="/transfer" style="display: inline-block; padding: 0.625rem 1.5rem; background: #008F82; color: white; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; text-decoration: none">Start a transfer →</a>
+  </div>
+  {% endif %}
+  {% for t in my_transfers %}
+  <div style="padding: 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; margin-bottom: 1rem; font-size: 0.8125rem">
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <div>
+        <div style="font-weight: 600; color: #0f172a" class="notranslate">{{ t.medication_name }}{% if t.medication_strength %} {{ t.medication_strength }}{% endif %}</div>
+        <div style="font-size: 0.6875rem; color: #64748b">{{ t.from_pharmacy_name }} → {{ t.to_pharmacy_name }} · {{ t.status }}</div>
+      </div>
+      {% if t.status == "pending" %}
+      <form method="POST" action="/api/flow/transfer/cancel/{{ t.id }}" style="margin:0">
+        {% csrf_token %}
+        <button type="submit" style="padding: 0.375rem 0.75rem; background: white; border: 1px solid #e5e7eb; border-radius: 9999px; font-size: 0.75rem; cursor: pointer">Cancel</button>
+      </form>
+      {% endif %}
+    </div>
+    {% for f in t.faxes %}
+    <div style="margin-top: 0.5rem; padding: 0.5rem 0.625rem; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 0.625rem; font-size: 0.75rem">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem">
+        <span style="color: #334155">{% if f.kind == "from_pharmacy" %}Sending{% else %}Receiving{% endif %} · <span class="notranslate">{{ f.pharmacy }}</span>{% if f.to_number %} · <span class="notranslate">{{ f.to_number }}</span>{% endif %}</span>
+        {% if f.status == "delivered" %}
+        <span style="font-weight: 700; color: #166534; background: #dcfce7; padding: 0.125rem 0.5rem; border-radius: 9999px; white-space: nowrap">delivered</span>
+        {% elif f.status == "failed" %}
+        <span style="font-weight: 700; color: #991b1b; background: #fee2e2; padding: 0.125rem 0.5rem; border-radius: 9999px; white-space: nowrap">failed</span>
+        {% elif f.status == "skipped" %}
+        <span style="font-weight: 700; color: #64748b; background: #e2e8f0; padding: 0.125rem 0.5rem; border-radius: 9999px; white-space: nowrap">skipped</span>
+        {% elif f.status == "canceled" %}
+        <span style="font-weight: 700; color: #64748b; background: #e2e8f0; padding: 0.125rem 0.5rem; border-radius: 9999px; white-space: nowrap">canceled</span>
+        {% else %}
+        <span style="font-weight: 700; color: #92400e; background: #fef3c7; padding: 0.125rem 0.5rem; border-radius: 9999px; white-space: nowrap">{{ f.status }}</span>
+        {% endif %}
+      </div>
+      {% if f.failure_reason %}
+      <div style="margin-top: 0.25rem; color: #991b1b">Reason: {{ f.failure_reason }}</div>
+      {% endif %}
+      {% if f.sms_status != "unsent" %}
+      <div style="margin-top: 0.25rem; color: #006B62">SMS fallback: {{ f.sms_status }}{% if f.sms_to %} → <span class="notranslate">{{ f.sms_to }}</span>{% endif %}{% if f.sms_failure %} — {{ f.sms_failure }}{% endif %}</div>
+      {% endif %}
+      <div style="margin-top: 0.25rem; color: #64748b">
+        {% if f.page_count %}<span>{{ f.page_count }} page{{ f.page_count|pluralize }}</span>{% endif %}
+        {% if f.preview_url %} <a href="{{ f.preview_url }}" target="_blank" rel="noopener" style="color: #008F82; font-weight: 600">Preview</a>{% endif %}
+        {% if not f.is_final %}
+        <form method="POST" action="/api/flow/transfer/fax/{{ f.id }}/refresh" style="display:inline; margin:0">
+          {% csrf_token %}
+          <button type="submit" style="background: none; border: none; color: #008F82; font-weight: 600; font-size: 0.75rem; cursor: pointer; padding: 0">Refresh status</button>
+        </form>
+        <form method="POST" action="/api/flow/transfer/fax/{{ f.id }}/cancel" style="display:inline; margin:0 0 0 0.5rem">
+          {% csrf_token %}
+          <button type="submit" style="background: none; border: none; color: #991b1b; font-weight: 600; font-size: 0.75rem; cursor: pointer; padding: 0">Cancel fax</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+  </div>
+</div>
+{% include "pharmacypulse/partials/footer.html" %}
+{% include "pharmacypulse/partials/bottom-nav.html" %}
+{% endblock %}

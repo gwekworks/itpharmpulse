@@ -22,7 +22,7 @@ from .public import (
     widget,
     write_review,
 )
-from .member import account, claim, home, pharmacist_dashboard, saved
+from .member import account, claim, home, pharmacist_dashboard, saved, transfer, transfers
 from .admin import (
     admin_analytics,
     admin_claims,
@@ -56,6 +56,8 @@ __all__ = [
     "account",
     "saved",
     "claim",
+    "transfer",
+    "transfers",
     "pharmacist_dashboard",
     "admin_dashboard",
     "admin_analytics",

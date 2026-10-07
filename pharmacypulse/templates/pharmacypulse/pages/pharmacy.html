@@ -583,6 +583,15 @@ document.addEventListener('click', function(e) {
       </div>
       {% endif %}
 
+      {% if user.is_authenticated and user.role == "user" %}
+      <div class="pd-owner-card" style="border-color: #99f6e4">
+        <span class="pd-owner-label">PRESCRIPTION TRANSFER</span>
+        <h3 class="pd-owner-title">Move your prescription here</h3>
+        <p class="pd-owner-desc">Patient-authorized, pharmacist-to-pharmacist per 21 CFR 1306. Schedule II excluded.</p>
+        <a href="/transfer?to_id={{ item.id }}" class="pd-owner-btn" style="background: #008F82">Transfer here →</a>
+      </div>
+      {% endif %}
+
       {% if item.total_reviews %}
       <div style="background:#fff;border:1px solid #e2e8f0;border-radius:0.75rem;padding:1.25rem;">
         <div class="pd-checkins-stars">

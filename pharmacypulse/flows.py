@@ -47,3 +47,7 @@ from .domains.flows.newsletter import (
 )
 from .domains.flows.search import search_pharmacies, suggest_locations, place_details
 from .domains.flows.translate import translate_texts
+from .domains.flows.transfers import (
+    submit_transfer, cancel_transfer, refresh_transfer_fax,
+    cancel_transfer_fax,
+)

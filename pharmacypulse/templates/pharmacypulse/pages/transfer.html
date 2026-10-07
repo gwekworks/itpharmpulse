@@ -1,0 +1,314 @@
+{% extends "pharmacypulse/layouts/app.html" %}
+{% load pharmacypulse %}
+{% block title %}Transfer Prescription{% endblock %}
+{% block content %}
+{% include "pharmacypulse/partials/topbar.html" %}
+<div style="background: #fafbfc; min-height: 100vh; padding-bottom: 0">
+  <div style="max-width: 40rem; margin: 0 auto; padding: 1.5rem">
+
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem">
+      <div
+        style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #e6f7f5; border-radius: 0.75rem">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#008F82"
+          stroke-width="2">
+          <path d="M17 3l4 4-4 4" />
+          <path d="M21 7H8a5 5 0 0 0-5 5" />
+          <path d="M7 21l-4-4 4-4" />
+          <path d="M3 17h13a5 5 0 0 0 5-5" />
+        </svg>
+      </div>
+      <div>
+        <h1 style="font-family: 'DM Serif Display', serif; font-size: 1.25rem; color: #0f172a">Transfer Prescription
+        </h1>
+        <p style="font-size: 0.75rem; color: #64748b">Patient request — pharmacists complete the transfer per USA rules.
+        </p>
+      </div>
+    </div>
+
+    {% if param_error %}
+    <div
+      style="padding: 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.75rem; margin-bottom: 1rem; font-size: 0.8125rem; color: #dc2626">
+      {{param_error}}
+    </div>
+    {% endif %}
+    {% if param_msg %}
+    <div
+      style="padding: 1rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.75rem; margin-bottom: 1rem; font-size: 0.8125rem; color: #166534">
+      {{param_msg}}
+    </div>
+    {% endif %}
+
+    <!-- USA standard explainer -->
+    <div
+      style="padding: 0.875rem 1rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 1rem; font-size: 0.75rem; color: #1e40af; margin-bottom: 1rem">
+      <strong style="display:block; margin-bottom: 0.25rem">How the transfers work</strong>
+      <span>1) You authorize the move. 2) The two pharmacies transfer <strong>pharmacist-to-pharmacist</strong> — the
+        original is voided so it can't be filled twice.</span>
+    </div>
+
+    <!-- Transfer form -->
+    <div
+      style="padding: 1.5rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 1rem">
+      <form method="POST" action="/api/flow/transfer/submit" id="transfer-form">
+        {% csrf_token %}
+
+        <label
+          style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Current
+          pharmacy (sending)</label>
+        <div style="position: relative; margin-bottom: 1rem">
+          <input type="hidden" name="from_pharmacy_id" id="transfer-from-id" value="{{from_id}}" required>
+          <input type="text" id="transfer-from-search" placeholder="Search current pharmacy..." value="{{from_name}}"
+            autocomplete="off"
+            style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; outline: none; box-sizing: border-box; color: #0f172a">
+          <div id="transfer-from-dropdown"
+            style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 100; background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; box-shadow: 0 8px 24px rgba(0,0,0,0.12); max-height: 250px; overflow-y: auto">
+          </div>
+        </div>
+
+        <label
+          style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">New
+          pharmacy (receiving)</label>
+        <div style="position: relative; margin-bottom: 1rem">
+          <input type="hidden" name="to_pharmacy_id" id="transfer-to-id" value="{{to_id}}" required>
+          <input type="text" id="transfer-to-search" placeholder="Search new pharmacy..." value="{{to_name}}"
+            autocomplete="off"
+            style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; outline: none; box-sizing: border-box; color: #0f172a">
+          <div id="transfer-to-dropdown"
+            style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 100; background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; box-shadow: 0 8px 24px rgba(0,0,0,0.12); max-height: 250px; overflow-y: auto">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem">
+          <div>
+            <label
+              style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Patient
+              full name</label>
+            <input type="text" name="patient_full_name" required value="{{prefill_name}}"
+              placeholder="Jane Doe"
+              style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; box-sizing: border-box; color: #0f172a">
+          </div>
+          <div>
+            <label
+              style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Birth
+              date</label>
+            <input type="date" name="patient_dob" required value="{{prefill_dob}}"
+              style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; box-sizing: border-box; color: #0f172a">
+          </div>
+        </div>
+
+        <label
+          style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Patient
+          phone</label>
+        <input type="tel" name="patient_phone" required value="{{prefill_phone}}" placeholder="(555) 123-4567"
+          style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; box-sizing: border-box; color: #0f172a">
+
+        <label
+          style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Patient
+          address (optional)</label>
+        <input type="text" name="patient_address" value="{{prefill_address}}" placeholder="Street, city, state, ZIP"
+          style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; box-sizing: border-box; color: #0f172a">
+
+        <label
+          style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Medication
+          name</label>
+        <input type="text" name="medication_name" required
+          placeholder="e.g. Atorvastatin — never include in public reviews" class="notranslate"
+          style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; box-sizing: border-box; color: #0f172a">
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem">
+          <div>
+            <label
+              style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Strength</label>
+            <input type="text" name="medication_strength" placeholder="e.g. 20mg"
+              style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; box-sizing: border-box; color: #0f172a">
+          </div>
+          <div>
+            <label
+              style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Rx
+              number</label>
+            <input type="text" name="rx_number" placeholder="On label (if refill)"
+              style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; box-sizing: border-box; color: #0f172a">
+          </div>
+        </div>
+
+        <label
+          style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Directions</label>
+        <input type="text" name="directions" placeholder="e.g. Take once daily"
+          style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; box-sizing: border-box; color: #0f172a">
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem">
+          <div>
+            <label
+              style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Refills
+              left</label>
+            <input type="number" name="refills_remaining" min="0" max="99" placeholder="0"
+              style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; box-sizing: border-box; color: #0f172a">
+          </div>
+          <div>
+            <label
+              style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Last
+              filled</label>
+            <input type="date" name="last_filled_date"
+              style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; box-sizing: border-box; color: #0f172a">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem">
+          <div>
+            <label
+              style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Prescriber
+              name</label>
+            <input type="text" name="prescriber_name" placeholder="Dr. Smith"
+              style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; box-sizing: border-box; color: #0f172a">
+          </div>
+          <div>
+            <label
+              style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Prescriber
+              phone</label>
+            <input type="tel" name="prescriber_phone" placeholder="(555) ..."
+              style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; box-sizing: border-box; color: #0f172a">
+          </div>
+        </div>
+
+        <label
+          style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Medication
+          type</label>
+        <select name="medication_type" id="transfer-med-type" required
+          style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 0.5rem; box-sizing: border-box; color: #0f172a; background: white">
+          <option value="non_controlled">Non-controlled (regular prescription)</option>
+          <option value="schedule_iii_v">Schedule III–V (one-time transfer only)</option>
+          <option value="schedule_ii">Schedule II (cannot transfer)</option>
+          <option value="unsure">Not sure</option>
+        </select>
+        <div id="transfer-med-warning"
+          style="display:none; padding: 0.625rem 0.875rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.625rem; font-size: 0.75rem; color: #991b1b; margin-bottom: 1rem">
+        </div>
+
+        <label
+          style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Type
+          full name as signature</label>
+        <input type="text" name="patient_signature" required placeholder="Type your full legal name"
+          style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; box-sizing: border-box; color: #0f172a">
+
+        <label
+          style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.75rem; color: #334155; margin-bottom: 1.25rem; cursor: pointer">
+          <input type="checkbox" name="consent_given" value="1" required style="margin-top: 0.15rem">
+          <span>I authorize my current pharmacy to transfer this prescription (including refills) to the new pharmacy,
+            void the original to prevent duplicate fills, and share the records the pharmacists need under 21 CFR 1306.
+            I am the patient (18+) or authorized representative.</span>
+        </label>
+
+        <button type="submit"
+          style="width: 100%; padding: 0.75rem; background: #008F82; color: white; border: none; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; cursor: pointer">Send
+          transfer request</button>
+      </form>
+    </div>
+
+    <div
+      style="padding: 0.75rem 1rem; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 1rem; font-size: 0.75rem; color: #64748b; margin-bottom: 1rem">
+      <strong style="color: #0f172a">Privacy:</strong> medication details go only to the two pharmacies you chose —
+      never posted publicly. Records kept 2 years per DEA rule.
+    </div>
+
+    <!-- Past requests live on their own page now -->
+    <a href="/transfers" style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 1rem 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; margin-bottom: 1rem; text-decoration: none">
+      <span>
+        <strong style="display: block; color: #0f172a; font-size: 0.875rem;">My transfer requests{% if transfer_count %} · {{ transfer_count }}{% endif %}</strong>
+        <span style="font-size: 0.75rem; color: #64748b;">Track fax delivery per pharmacy</span>
+      </span>
+      <span style="font-size: 0.875rem; font-weight: 700; color: #008F82; white-space: nowrap;">View →</span>
+    </a>
+
+  </div>
+</div>
+{% include "pharmacypulse/partials/footer.html" %}
+{% include "pharmacypulse/partials/bottom-nav.html" %}
+<script>
+  (function () {
+    function showTransferToast(msg) {
+      var toast = document.getElementById('transfer-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'transfer-toast';
+        toast.setAttribute('role', 'alert');
+        toast.style.cssText = 'position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:9999;max-width:90vw;padding:0.875rem 1.25rem;background:#fffbeb;border:1.5px solid #f59e0b;border-radius:0.75rem;box-shadow:0 8px 24px rgba(0,0,0,0.15);font-size:0.8125rem;color:#92400e;display:flex;align-items:flex-start;gap:0.5rem;';
+        document.body.appendChild(toast);
+      }
+      toast.innerHTML = '<span style="font-size:1rem;line-height:1.2;">⚠️</span><span>' + msg + '</span>';
+      toast.style.display = 'flex';
+      clearTimeout(window._transferToastTimer);
+      window._transferToastTimer = setTimeout(function () { toast.style.display = 'none'; }, 6000);
+    }
+    function checkPharmacyContact(kind, name, fax, phone) {
+      if (!name) return;
+      if (!((fax || '').trim() || (phone || '').trim())) {
+        showTransferToast('Heads up: <strong>' + name.replace(/</g, '&lt;') + '</strong> (' + kind + ') has no fax or phone number on file. The transfer may be delayed — please confirm contact details with the pharmacy directly.');
+      }
+    }
+    function wire(inputId, dropId, hiddenId, kind) {
+      var input = document.getElementById(inputId);
+      var dropdown = document.getElementById(dropId);
+      var hidden = document.getElementById(hiddenId);
+      var timer;
+      if (!input) return;
+      input.addEventListener('input', function () {
+        clearTimeout(timer);
+        var q = input.value.trim();
+        if (q.length < 2) { dropdown.style.display = 'none'; return; }
+        timer = setTimeout(function () {
+          fetch('/api/flow/search?q=' + encodeURIComponent(q))
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              var results = data.results || [];
+              if (results && !Array.isArray(results)) results = [results];
+              var html = '';
+              results.forEach(function (p) {
+                if (p.is_digital == 1) return;
+                html += '<div data-id="' + p.id + '" data-name="' + (p.name || '').replace(/"/g, '&quot;') + '" data-fax="' + ((p.fax || '') + '').replace(/"/g, '&quot;') + '" data-phone="' + ((p.phone || '') + '').replace(/"/g, '&quot;') + '" style="padding:0.75rem 1rem;cursor:pointer;border-bottom:1px solid #f8fafc;font-size:0.8125rem">'
+                  + '<div style="font-weight:600;color:#0f172a">' + (p.name || '') + '</div>'
+                  + '<div style="font-size:0.6875rem;color:#94a3b8">' + (p.city || '') + ', ' + (p.state || '') + ' ' + (p.zip || '') + '</div></div>';
+              });
+              if (!html) html = '<div style="padding:0.75rem 1rem;font-size:0.8125rem;color:#94a3b8">No physical pharmacies found</div>';
+              dropdown.innerHTML = html;
+              dropdown.style.display = 'block';
+              dropdown.querySelectorAll('[data-id]').forEach(function (el) {
+                el.addEventListener('click', function () {
+                  hidden.value = el.getAttribute('data-id');
+                  input.value = el.getAttribute('data-name');
+                  dropdown.style.display = 'none';
+                  checkPharmacyContact(kind, el.getAttribute('data-name'), el.getAttribute('data-fax'), el.getAttribute('data-phone'));
+                });
+              });
+            });
+        }, 250);
+      });
+      input.addEventListener('blur', function () { setTimeout(function () { dropdown.style.display = 'none'; }, 200); });
+    }
+    wire('transfer-from-search', 'transfer-from-dropdown', 'transfer-from-id', 'sending pharmacy');
+    wire('transfer-to-search', 'transfer-to-dropdown', 'transfer-to-id', 'receiving pharmacy');
+    checkPharmacyContact('sending pharmacy', "{{from_name|escapejs}}", "{{from_fax|escapejs}}", "{{from_phone|escapejs}}");
+    checkPharmacyContact('receiving pharmacy', "{{to_name|escapejs}}", "{{to_fax|escapejs}}", "{{to_phone|escapejs}}");
+
+    var medType = document.getElementById('transfer-med-type');
+    var warn = document.getElementById('transfer-med-warning');
+    function updateWarning() {
+      if (!medType || !warn) return;
+      if (medType.value === 'schedule_ii') {
+        warn.style.display = 'block';
+        warn.textContent = 'Schedule II cannot be transferred. Ask your prescriber for a new prescription — the pharmacies cannot move it (21 CFR 1306).';
+      } else if (medType.value === 'schedule_iii_v') {
+        warn.style.display = 'block';
+        warn.style.background = '#fffbeb'; warn.style.borderColor = '#fde68a'; warn.style.color = '#92400e';
+        warn.textContent = 'Schedule III–V transfers once only and must go pharmacist-to-pharmacist. Refills move with the prescription.';
+      } else if (medType.value === 'unsure') {
+        warn.style.display = 'block';
+        warn.style.background = '#fffbeb'; warn.style.borderColor = '#fde68a'; warn.style.color = '#92400e';
+        warn.textContent = 'Not sure? Submit as non-controlled — the receiving pharmacist will verify the schedule before transferring.';
+      } else {
+        warn.style.display = 'none';
+      }
+    }
+    if (medType) { medType.addEventListener('change', updateWarning); updateWarning(); }
+  })();
+</script>
+{% endblock %}

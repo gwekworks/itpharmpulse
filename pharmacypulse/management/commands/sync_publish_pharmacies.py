@@ -28,7 +28,7 @@ from pharmacypulse.models import Pharmacy, PharmacyPublishable
 
 # Columns copied across from the source pharmacy.
 _COPY_FIELDS = [
-    "name", "address", "city", "state", "zip", "phone",
+    "name", "address", "city", "state", "zip", "phone", "fax_number",
     "latitude", "longitude", "stock_confidence", "avg_wait_time",
     "avg_service_rating", "total_reviews", "is_digital", "website",
     "npi_number", "place_id", "taxonomy_code", "enumeration_date",

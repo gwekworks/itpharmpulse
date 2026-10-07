@@ -46,3 +46,30 @@ def healthcheck(request):
         return JsonResponse({"status": "ok", "db": "ok"}, status=200)
     except Exception as e:  # noqa: BLE001
         return JsonResponse({"status": "error", "db": str(e)[:200]}, status=503)
+
+
+@require_GET
+def transfer_doc(request, transfer_id: int):
+    """Serve a transfer authorization PDF. Login-free so the fax provider can
+    fetch it — access is gated by the signed `?s=` token (90-day validity),
+    same pattern as the public newsletter-unsubscribe link."""
+    from django.http import FileResponse, HttpResponseForbidden
+    from .models import PrescriptionTransfer
+    from .transfer_doc import build_transfer_pdf, unsign_doc_token
+
+    try:
+        if unsign_doc_token(request.GET.get("s", "")) != transfer_id:
+            raise ValueError("token mismatch")
+    except Exception:
+        return HttpResponseForbidden("Invalid or expired document link.")
+    t = (PrescriptionTransfer.objects
+         .select_related("from_pharmacy", "to_pharmacy")
+         .filter(id=transfer_id).first())
+    if not t:
+        return HttpResponseForbidden("Not found.")
+    import io
+    pdf = build_transfer_pdf(t)
+    resp = FileResponse(io.BytesIO(pdf), content_type="application/pdf")
+    resp["Content-Disposition"] = (
+        f'inline; filename="transfer-authorization-{t.id}.pdf"')
+    return resp

@@ -5,8 +5,8 @@ from .models import (
     ActivityLog, DataRequest, DrugShortage, ModerationKeyword,
     NewsletterSubscriber, Notification, Pharmacy, PharmacyClaim, PharmacyHours,
     PharmacyOrg, PharmacyPublishable, PharmacyService, PharmacyTeamMember,
-    PinnedShortage, ResponseCount, Review, ReviewResponse, SavedComparison,
-    User, UserConsent,
+    PinnedShortage, PrescriptionTransfer, ResponseCount, Review, ReviewResponse, SavedComparison,
+    TransferFax, User, UserConsent,
 )
 
 
@@ -63,8 +63,15 @@ class ShortageAdmin(admin.ModelAdmin):
     search_fields = ("drug_name", "generic_name", "manufacturer")
 
 
+@admin.register(PrescriptionTransfer)
+class PrescriptionTransferAdmin(admin.ModelAdmin):
+    list_display = ("medication_name", "medication_type", "from_pharmacy_name", "to_pharmacy_name", "status", "created_at")
+    list_filter = ("status", "medication_type")
+    search_fields = ("medication_name", "patient_full_name", "from_pharmacy_name", "to_pharmacy_name")
+
+
 for m in (ActivityLog, DataRequest, ModerationKeyword, NewsletterSubscriber,
           Notification, PharmacyHours, PharmacyOrg, PharmacyService,
           PharmacyTeamMember, PinnedShortage, ResponseCount, ReviewResponse,
-          SavedComparison, UserConsent):
+          SavedComparison, TransferFax, UserConsent):
     admin.site.register(m)

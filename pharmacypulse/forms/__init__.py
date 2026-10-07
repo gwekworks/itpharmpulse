@@ -6,5 +6,6 @@ every form so existing imports (`from .forms import SignupForm`) keep working.
 from .auth import LoginForm, SignupForm
 from .reviews import WriteReviewForm
 from .claims import ClaimPharmacyForm
+from .transfers import PrescriptionTransferForm
 
-__all__ = ["LoginForm", "SignupForm", "WriteReviewForm", "ClaimPharmacyForm"]
+__all__ = ["LoginForm", "SignupForm", "WriteReviewForm", "ClaimPharmacyForm", "PrescriptionTransferForm"]

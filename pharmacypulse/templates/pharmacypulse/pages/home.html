@@ -80,6 +80,21 @@
         <p class="pp-title-sm">Compare</p>
         <p class="pp-sub-sm">Side-by-side</p>
       </a>
+      {% if user.role != "pharmacist" and user.role != "admin" %}
+      {% if user.is_authenticated %}
+      <a href="/transfer" class="pp-quick-card" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)'" onmouseout="this.style.boxShadow='none'">
+        <span class="pp-quick-icon">🔄</span>
+        <p class="pp-title-sm">Transfer Rx</p>
+        <p class="pp-sub-sm">Move prescription</p>
+      </a>
+      {% else %}
+      <a href="/signup?next=/transfer" class="pp-quick-card" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)'" onmouseout="this.style.boxShadow='none'">
+        <span class="pp-quick-icon">🔄</span>
+        <p class="pp-title-sm">Transfer Rx</p>
+        <p class="pp-sub-sm">Move prescription</p>
+      </a>
+      {% endif %}
+      {% endif %}
     </div>
 
     <!-- Stats -->
