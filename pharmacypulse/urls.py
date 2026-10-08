@@ -43,6 +43,7 @@ urlpatterns = [
     path("api/flow/bulk-publish-pharmacies", flows.bulk_publish_pharmacies, name="flow_bulk_publish_pharmacies"),
     path("api/flow/bulk-delete-chain", flows.bulk_delete_chain, name="flow_bulk_delete_chain"),
     path("api/flow/edit-pharmacy/<int:pharmacy_id>", flows.edit_pharmacy_publishable, name="flow_edit_pharmacy"),
+    path("api/flow/pharmacist-update-pharmacy/<int:pharmacy_id>", flows.pharmacist_update_pharmacy, name="flow_pharmacist_update_pharmacy"),
     path("newsletter/unsubscribe", flows.newsletter_unsubscribe_public, name="newsletter_unsubscribe_public"),
     path("api/flow/verify-claim/<int:pharmacy_id>", flows.verify_and_submit_claim, name="flow_verify_claim"),
     path("api/flow/approve-claim/<int:claim_id>", flows.approve_claim, name="flow_approve_claim"),

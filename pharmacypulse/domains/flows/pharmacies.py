@@ -30,7 +30,7 @@ from .common import admin_required, _activity
 
 # Columns copied from Pharmacy → PharmacyPublishable (mirrors sync_publish_pharmacies)
 _PUBLISH_COPY_FIELDS = [
-    "name", "address", "city", "state", "zip", "phone",
+    "name", "address", "city", "state", "zip", "phone", "fax_number",
     "latitude", "longitude", "stock_confidence", "avg_wait_time",
     "avg_service_rating", "total_reviews", "is_digital", "website",
     "npi_number", "place_id", "taxonomy_code", "enumeration_date",
@@ -39,6 +39,80 @@ _PUBLISH_COPY_FIELDS = [
     "phone_wait_time", "delivery_wait_time", "delivery_rating",
     "customer_service_hours", "listing_completed_at",
 ]
+
+
+def _user_controls_pharmacy(user, pharmacy: Pharmacy) -> bool:
+    """True if this user may edit the pharmacy: direct claim (claimed_by),
+    an approved PharmacyClaim, or membership in the pharmacy's org team."""
+    if not user or not user.is_authenticated or pharmacy is None:
+        return False
+    if pharmacy.claimed_by and pharmacy.claimed_by == user.id:
+        return True
+    if PharmacyClaim.objects.filter(
+        user_id=user.id, pharmacy_id=pharmacy.id, status="approved"
+    ).exists():
+        return True
+    org_id = pharmacy.org_id
+    if org_id and PharmacyTeamMember.objects.filter(
+        org_id=org_id, user_id=user.id, accepted_at__isnull=False
+    ).exists():
+        return True
+    return False
+
+
+# Fields a pharmacist may edit on their own claimed pharmacies. These are
+# the contact/listing fields most often missing after an API import — the
+# aggregates (ratings, review counts, stock confidence) stay derived.
+_PHARMACIST_EDITABLE_FIELDS = (
+    "name", "address", "city", "state", "zip", "phone", "fax_number", "website",
+)
+
+
+@login_required
+@require_POST
+def pharmacist_update_pharmacy(request, pharmacy_id: int):
+    """Save a pharmacist's edit to one of their claimed pharmacies.
+
+    Writes to BOTH `pharmacies` (source of truth) and
+    `pharmacies_publishable` (what public search reads) so the public
+    listing updates immediately. Never touches aggregates or publish_status.
+    """
+    from ...models import PharmacyPublishable
+    pharmacy = Pharmacy.objects.filter(id=pharmacy_id).first()
+    if not pharmacy:
+        return redirect("/pharmacist-dashboard?tab=pharmacies&error=Pharmacy+not+found")
+    if not _user_controls_pharmacy(request.user, pharmacy):
+        return redirect("/pharmacist-dashboard?tab=pharmacies&error=Not+authorized")
+
+    updates = {}
+    for f in _PHARMACIST_EDITABLE_FIELDS:
+        if f in request.POST:
+            updates[f] = (request.POST.get(f) or "").strip()
+
+    # Required listing fields must not be blanked out.
+    for f in ("name", "address", "city", "state", "zip"):
+        if f in updates and not updates[f]:
+            return redirect(
+                f"/pharmacist-dashboard?tab=pharmacies&error={f}+is+required")
+
+    if not updates:
+        return redirect("/pharmacist-dashboard?tab=pharmacies&error=Nothing+to+save")
+
+    for f, v in updates.items():
+        setattr(pharmacy, f, v)
+    pharmacy.save(update_fields=list(updates.keys()))
+
+    pub = PharmacyPublishable.objects.filter(pharmacy_id=pharmacy.id).first()
+    if pub is not None:
+        for f, v in updates.items():
+            setattr(pub, f, v)
+        pub.save(update_fields=list(updates.keys()))
+
+    _activity(request, "pharmacy_owner_edit",
+              f"{request.user.email} updated pharmacy #{pharmacy.id} "
+              f"({', '.join(sorted(updates.keys()))})")
+    return redirect(
+        f"/pharmacist-dashboard?tab=pharmacies&msg=Saved+changes+for+{urllib.parse.quote(pharmacy.name)}")
 
 
 @admin_required
@@ -553,7 +627,7 @@ def pharmacy_hours_save(request):
 # Fields an admin may edit on the publishable row from /admin-pharmacies.
 # Everything else (aggregates, ratings, timestamps) is derived data.
 _EDITABLE_PUB_FIELDS = (
-    "name", "address", "city", "state", "zip", "phone", "website",
+    "name", "address", "city", "state", "zip", "phone", "fax_number", "website",
     "is_digital",
 )
 

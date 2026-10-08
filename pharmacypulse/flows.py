@@ -34,6 +34,7 @@ from .domains.flows.pharmacies import (
     pharmacy_hours_save,
     add_to_compare, remove_from_compare, clear_compare,
     edit_pharmacy_publishable, bulk_publish_pharmacies,
+    pharmacist_update_pharmacy,
 )
 from .domains.flows.users import (
     suspend_user, unsuspend_user, change_user_role, ccpa_export,

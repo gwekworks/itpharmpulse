@@ -134,6 +134,25 @@ def page_pharmacist_dashboard(request):
                     .values_list("services__service_type", flat=True).distinct())
     services = [{"service_type": s} for s in services if s]
 
+    # All pharmacies this pharmacist controls (claims + team org), oldest
+    # claim first. Each row flags which contact fields are still missing so
+    # the Pharmacies tab can nudge the owner to complete their listing.
+    # Fax number lives on the source Pharmacy row (and its publishable copy).
+    _MISSING_LABELS = {
+        "phone": "Phone", "fax_number": "Fax", "website": "Website",
+        "address": "Address", "city": "City", "state": "State", "zip": "ZIP",
+    }
+    claimed_pharmacies = []
+    for p in my_pharms_qs.order_by("name"):
+        d = _pharmacy_dict(p)
+        missing = [k for k in
+                   ("phone", "fax_number", "website", "address", "city", "state", "zip")
+                   if not (getattr(p, k, "") or "").strip()]
+        d["missing"] = missing
+        d["missing_labels"] = [_MISSING_LABELS[k] for k in missing]
+        d["is_primary"] = (p.id == primary_pid)
+        claimed_pharmacies.append(d)
+
     hours = list(PharmacyHours.objects.filter(pharmacy_id__in=claimed_ids)
                  .order_by("day_of_week")
                  .values("day_of_week", "day_name", "open_time", "close_time", "is_closed"))
@@ -189,6 +208,7 @@ def page_pharmacist_dashboard(request):
         # Public-facing context
         "org": Row({"id": org.id, "name": org.name}) if org else None,
         "pharmacies": [_pharmacy_dict(p) for p in my_pharms_qs],
+        "claimed_pharmacies": claimed_pharmacies,
         "recent_reviews": [_review_dict(r) for r in recent_reviews],
         "pending_reviews": Row({"count": sum(1 for r in recent_reviews if not r.response_text)}),
         "responses_used": Row({"total": responses_used, "limit": 10}),

@@ -200,6 +200,7 @@ def _pharmacy_dict(p: Pharmacy) -> dict:
     return {
         "id": p.id, "name": display_name, "address": p.address, "city": p.city,
         "state": p.state, "zip": p.zip, "phone": p.phone or "",
+        "fax_number": p.fax_number or "",
         "slug": slug, "url": detail_url,
         "latitude": p.latitude, "longitude": p.longitude,
         "stock_confidence": p.stock_confidence,

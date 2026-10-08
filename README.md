@@ -120,3 +120,33 @@ python manage.py seed_dummy_users
    admin		admin@test.com		AdminPass123!
    pharmacist	pharmacist@test.com	PharmPass123!
    user		user@test.com		UserPass123!
+
+#### Ops you can run on Heruko CLI
+
+heroku pg:copy pharmacypulse-byondrx::DATABASE_URL DATABASE_URL -a pharmacypulse-staging
+
+heroku run python manage.py migrate -a pharmacypulse-staging
+
+heroku run python manage.py seed_dummy_users -a pharmacypulse-staging
+
+4. Dabase to delete user
+heroku run python manage.py shell -a pharmacypulse-byondrx
+
+from django.contrib.auth import get_user_model
+
+# 4.1. Fetch the active user model dynamically
+User = get_user_model()
+
+# 4.22. Delete the user
+User.objects.filter(email='user@test.com').delete()
+
+
+heroku run python manage.py sync_publish_pharmacies -a pharmacypulse-staging
+
+
+heroku run python manage.py migrate -a pharmacypulse-byondrx
+
+
+heroku pg:copy pharmacypulse-staging::DATABASE_URL DATABASE_URL -a pharmacypulse-byondrx
+
+.wp-block-tenup-modal__dialog:not([aria-hidden=true]) .wp-block-tenup-modal.has-slideout-enabled
