@@ -76,15 +76,18 @@ source .venv/bin/activate # Windows (Git Bash): source .venv/Scripts/activate # 
 
 pip install -r requirements.txt
 
+
 # 3. Database (SQLite is default, no Postgres needed)
 
 python manage.py migrate
 
 python manage.py sync_publish_pharmacies
 
+
 # 4. Seed demo data (optional but recommended)
 
 python manage.py seed_demo --reset
+
 
 # 5. Run it
 

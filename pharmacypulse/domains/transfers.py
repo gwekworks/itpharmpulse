@@ -40,6 +40,14 @@ def page_transfer(request):
             prefill_address = u.zip_code or ""
         transfer_count = PrescriptionTransfer.objects.filter(user=u).count()
 
+    def _addr(p):
+        if not p:
+            return ""
+        parts = [p.address, f"{p.city}, {p.state} {p.zip}".strip(", ")]
+        if getattr(p, "address_2", ""):
+            parts.insert(1, p.address_2)
+        return ", ".join(x for x in parts if x and str(x).strip(", "))
+
     return {
         "from_pharmacy": Row(_pharmacy_dict(from_p)) if from_p else None,
         "to_pharmacy": Row(_pharmacy_dict(to_p)) if to_p else None,
@@ -47,6 +55,12 @@ def page_transfer(request):
         "to_id": to_p.id if to_p else "",
         "from_name": from_p.name if from_p else "",
         "to_name": to_p.name if to_p else "",
+        "from_address": _addr(from_p),
+        "from_phone": (from_p.phone or "") if from_p else "",
+        "from_fax": (getattr(from_p, "fax_number", "") or "") if from_p else "",
+        "to_address": _addr(to_p),
+        "to_phone": (to_p.phone or "") if to_p else "",
+        "to_fax": (getattr(to_p, "fax_number", "") or "") if to_p else "",
         "prefill_name": prefill_name,
         "prefill_phone": prefill_phone,
         "prefill_dob": prefill_dob,
@@ -84,9 +98,6 @@ def _my_transfers_list(user):
                     "page_count": f.page_count,
                     "failure_reason": f.failure_reason,
                     "preview_url": f.preview_url,
-                    "sms_status": f.sms_status,
-                    "sms_to": f.sms_to,
-                    "sms_failure": f.sms_failure,
                 } for f in t.faxes.all()],
         })
     return rows

@@ -94,15 +94,6 @@ def login(force: bool = False) -> str:
         )
     except requests.RequestException as exc:
         raise EffyApiError(f"EffyMobile login unreachable: {exc}") from exc
-    if resp.status_code in (400, 401, 422):
-        # Some deployments expect `username` instead of `email` — retry once.
-        try:
-            resp = requests.post(
-                url, json={"username": email, "password": password},
-                timeout=_TIMEOUT_S,
-            )
-        except requests.RequestException as exc:
-            raise EffyApiError(f"EffyMobile login unreachable: {exc}") from exc
     if resp.status_code >= 400:
         raise EffyApiError(
             f"EffyMobile login failed ({resp.status_code}): "
@@ -181,15 +172,6 @@ def get_fax(fax_id: str) -> dict:
 def cancel_fax(fax_id: str) -> dict:
     """Cancel an in-flight fax (no-op-safe once final)."""
     return _request("DELETE", f"/api/fax/{fax_id}")
-
-
-def send_sms(to: str, text: str, media_urls=None) -> dict:
-    """Send an SMS (fallback when a fax leg fails)."""
-    payload = {"to": to, "text": text, "media_urls": media_urls or []}
-    data = _request("POST", "/api/sms/send", json_body=payload)
-    if data.get("status") == "error" or "error" in data:
-        raise EffyApiError(f"SMS rejected: {str(data)[:300]}")
-    return data
 
 
 # EffyMobile → local status mapping.

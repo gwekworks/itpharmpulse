@@ -42,6 +42,11 @@ class PrescriptionTransfer(models.Model):
     )
     from_pharmacy_name = models.TextField(blank=True, default="")
     to_pharmacy_name = models.TextField(blank=True, default="")
+    # Patient-corrected contact for the sending pharmacy (this request only).
+    # Auto-filled from pharmacies.phone/fax_number but editable in the form.
+    # Used for the fax leg + PDF block instead of the directory value.
+    from_phone_override = models.CharField(max_length=32, blank=True, default="")
+    from_fax_override = models.CharField(max_length=32, blank=True, default="")
 
     # ---- Patient identity (1306.05 required elements) ----
     patient_full_name = models.TextField(blank=True, default="")
@@ -101,12 +106,6 @@ class TransferFax(models.Model):
     page_count = models.IntegerField(blank=True, null=True)
     failure_reason = models.TextField(blank=True, default="")
     preview_url = models.TextField(blank=True, default="")
-    # SMS fallback (EffyMobile /api/sms/send) when the fax leg fails.
-    # Sent to the pharmacy's voice line so the transfer isn't silently lost.
-    pharmacy_phone = models.CharField(max_length=32, blank=True, default="")
-    sms_status = models.TextField(default="unsent")
-    sms_to = models.CharField(max_length=32, blank=True, default="")
-    sms_failure = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -5,9 +5,14 @@ from django.db import models
 class Pharmacy(models.Model):
     name = models.TextField()
     address = models.TextField()
+    # Suite / unit / building from NPPES address_2 (e.g. "SUITE 110", "PLAZA-2").
+    # Kept separate so directions + fax cover sheets stay accurate.
+    address_2 = models.TextField(blank=True, default="")
     city = models.TextField(default="Philadelphia")
     state = models.TextField(default="PA")
     zip = models.TextField()
+    # Full 9-digit ZIP from NPPES when present (zip holds ZIP-5 only).
+    zip_full = models.CharField(max_length=10, blank=True, default="")
     phone = models.TextField(blank=True, null=True)
     fax_number = models.TextField(blank=True, null=True)
     latitude = models.FloatField(blank=True, null=True)
@@ -35,6 +40,18 @@ class Pharmacy(models.Model):
     # 'Owned by Jane Doe' on the detail page humanizes independent pharmacies.
     authorized_official_name = models.TextField(blank=True, default="")
     authorized_official_title = models.TextField(blank=True, default="")
+    # Authorized-official phone from NPPES basic.authorized_official_telephone_number.
+    authorized_official_phone = models.TextField(blank=True, default="")
+    # Legal organization name from NPPES basic.organization_name (vs DBA in name).
+    legal_name = models.TextField(blank=True, default="")
+    organizational_subpart = models.CharField(max_length=8, blank=True, default="")
+    taxonomy_license = models.TextField(blank=True, default="")
+    taxonomy_state = models.CharField(max_length=2, blank=True, default="")
+    taxonomy_licenses = models.TextField(blank=True, default="")
+    nppes_last_updated = models.DateField(blank=True, null=True)
+    certification_date = models.DateField(blank=True, null=True)
+    identifiers_json = models.TextField(blank=True, default="")
+    other_names_json = models.TextField(blank=True, default="")
     # Comma-separated secondary taxonomy codes — e.g. a retail pharmacy that
     # also offers compounding has 3336C0003X primary + 3336C0004X here. Drives
     # 'Compounding', 'Specialty', 'Mail Order' service badges.
@@ -101,9 +118,11 @@ class PharmacyPublishable(models.Model):
     # ---- Mirror of the display/searchable columns on `pharmacies` ----
     name = models.TextField()
     address = models.TextField()
+    address_2 = models.TextField(blank=True, default="")
     city = models.TextField(default="Philadelphia")
     state = models.TextField(default="PA")
     zip = models.TextField()
+    zip_full = models.CharField(max_length=10, blank=True, default="")
     phone = models.TextField(blank=True, null=True)
     fax_number = models.TextField(blank=True, null=True)
     latitude = models.FloatField(blank=True, null=True)
@@ -120,6 +139,16 @@ class PharmacyPublishable(models.Model):
     enumeration_date = models.DateField(blank=True, null=True)
     authorized_official_name = models.TextField(blank=True, default="")
     authorized_official_title = models.TextField(blank=True, default="")
+    authorized_official_phone = models.TextField(blank=True, default="")
+    legal_name = models.TextField(blank=True, default="")
+    organizational_subpart = models.CharField(max_length=8, blank=True, default="")
+    taxonomy_license = models.TextField(blank=True, default="")
+    taxonomy_state = models.CharField(max_length=2, blank=True, default="")
+    taxonomy_licenses = models.TextField(blank=True, default="")
+    nppes_last_updated = models.DateField(blank=True, null=True)
+    certification_date = models.DateField(blank=True, null=True)
+    identifiers_json = models.TextField(blank=True, default="")
+    other_names_json = models.TextField(blank=True, default="")
     secondary_taxonomies = models.TextField(blank=True, default="")
     chain_size = models.IntegerField(default=1, db_index=True)
     claimed_by = models.IntegerField(blank=True, null=True)

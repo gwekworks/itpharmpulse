@@ -198,7 +198,9 @@ def _pharmacy_dict(p: Pharmacy) -> dict:
     detail_url = f"/pharmacy/{p.id}/{slug}/"
 
     return {
-        "id": p.id, "name": display_name, "address": p.address, "city": p.city,
+        "id": p.id, "name": display_name, "address": p.address,
+        "address_2": getattr(p, "address_2", "") or "",
+        "city": p.city,
         "state": p.state, "zip": p.zip, "phone": p.phone or "",
         "fax_number": p.fax_number or "",
         "slug": slug, "url": detail_url,

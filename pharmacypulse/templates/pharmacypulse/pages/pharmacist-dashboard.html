@@ -331,30 +331,30 @@
       {% endif %}
 
       <details>
-        <summary style="font-size: 0.8125rem; font-weight: 600; color: #008F82; cursor: pointer">Edit pharmacy info</summary>
+        <summary style="font-size: 0.8125rem; font-weight: 600; color: #008F82; cursor: pointer">Edit phone / fax</summary>
         <form method="POST" action="/api/flow/pharmacist-update-pharmacy/{{ pharm.id }}" style="display: grid; gap: 0.75rem; margin-top: 1rem">
           {% csrf_token %}
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem">
             <div style="grid-column: 1 / -1">
-              <label style="display: block; font-size: 0.6875rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem">Pharmacy name *</label>
-              <input type="text" name="name" required value="{{ pharm.name }}" style="width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #0f172a; box-sizing: border-box">
+              <label style="display: block; font-size: 0.6875rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem">Pharmacy name</label>
+              <input type="text" value="{{ pharm.name }}" readonly disabled style="width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #64748b; background: #f8fafc; box-sizing: border-box">
             </div>
             <div style="grid-column: 1 / -1">
-              <label style="display: block; font-size: 0.6875rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem">Street address *</label>
-              <input type="text" name="address" required value="{{ pharm.address }}" style="width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #0f172a; box-sizing: border-box">
+              <label style="display: block; font-size: 0.6875rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem">Street address</label>
+              <input type="text" value="{{ pharm.address }}" readonly disabled style="width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #64748b; background: #f8fafc; box-sizing: border-box">
             </div>
             <div>
-              <label style="display: block; font-size: 0.6875rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem">City *</label>
-              <input type="text" name="city" required value="{{ pharm.city }}" style="width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #0f172a; box-sizing: border-box">
+              <label style="display: block; font-size: 0.6875rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem">City</label>
+              <input type="text" value="{{ pharm.city }}" readonly disabled style="width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #64748b; background: #f8fafc; box-sizing: border-box">
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem">
               <div>
-                <label style="display: block; font-size: 0.6875rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem">State *</label>
-                <input type="text" name="state" required maxlength="2" value="{{ pharm.state }}" style="width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #0f172a; box-sizing: border-box">
+                <label style="display: block; font-size: 0.6875rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem">State</label>
+                <input type="text" value="{{ pharm.state }}" readonly disabled style="width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #64748b; background: #f8fafc; box-sizing: border-box">
               </div>
               <div>
-                <label style="display: block; font-size: 0.6875rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem">ZIP *</label>
-                <input type="text" name="zip" required value="{{ pharm.zip }}" style="width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #0f172a; box-sizing: border-box">
+                <label style="display: block; font-size: 0.6875rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem">ZIP</label>
+                <input type="text" value="{{ pharm.zip }}" readonly disabled style="width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #64748b; background: #f8fafc; box-sizing: border-box">
               </div>
             </div>
             <div>
@@ -367,7 +367,7 @@
             </div>
             <div style="grid-column: 1 / -1">
               <label style="display: block; font-size: 0.6875rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem">Website</label>
-              <input type="url" name="website" value="{{ pharm.website }}" placeholder="https://…" style="width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #0f172a; box-sizing: border-box">
+              <input type="url" value="{{ pharm.website }}" placeholder="https://…" readonly disabled style="width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; color: #64748b; background: #f8fafc; box-sizing: border-box">
             </div>
           </div>
           <button type="submit" style="padding: 0.5rem 1.25rem; background: #008F82; color: white; border: none; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; cursor: pointer; justify-self: start">Save changes</button>

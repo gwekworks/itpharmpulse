@@ -30,11 +30,16 @@ from .common import admin_required, _activity
 
 # Columns copied from Pharmacy → PharmacyPublishable (mirrors sync_publish_pharmacies)
 _PUBLISH_COPY_FIELDS = [
-    "name", "address", "city", "state", "zip", "phone", "fax_number",
+    "name", "address", "address_2", "city", "state", "zip", "zip_full",
+    "phone", "fax_number",
     "latitude", "longitude", "stock_confidence", "avg_wait_time",
     "avg_service_rating", "total_reviews", "is_digital", "website",
-    "npi_number", "place_id", "taxonomy_code", "enumeration_date",
+    "npi_number", "place_id", "taxonomy_code", "taxonomy_license",
+    "taxonomy_state", "taxonomy_licenses", "enumeration_date",
+    "nppes_last_updated", "certification_date",
     "authorized_official_name", "authorized_official_title",
+    "authorized_official_phone", "legal_name", "organizational_subpart",
+    "identifiers_json", "other_names_json",
     "secondary_taxonomies", "chain_size", "claimed_by", "org_id",
     "phone_wait_time", "delivery_wait_time", "delivery_rating",
     "customer_service_hours", "listing_completed_at",
@@ -60,11 +65,11 @@ def _user_controls_pharmacy(user, pharmacy: Pharmacy) -> bool:
     return False
 
 
-# Fields a pharmacist may edit on their own claimed pharmacies. These are
-# the contact/listing fields most often missing after an API import — the
-# aggregates (ratings, review counts, stock confidence) stay derived.
+# Fields a pharmacist may edit on their own claimed pharmacies. Phone + fax
+# only — names, addresses, and website are NPI-sourced and must not be
+# edited from the pharmacist dashboard. Aggregates stay derived.
 _PHARMACIST_EDITABLE_FIELDS = (
-    "name", "address", "city", "state", "zip", "phone", "fax_number", "website",
+    "phone", "fax_number",
 )
 
 
@@ -88,12 +93,6 @@ def pharmacist_update_pharmacy(request, pharmacy_id: int):
     for f in _PHARMACIST_EDITABLE_FIELDS:
         if f in request.POST:
             updates[f] = (request.POST.get(f) or "").strip()
-
-    # Required listing fields must not be blanked out.
-    for f in ("name", "address", "city", "state", "zip"):
-        if f in updates and not updates[f]:
-            return redirect(
-                f"/pharmacist-dashboard?tab=pharmacies&error={f}+is+required")
 
     if not updates:
         return redirect("/pharmacist-dashboard?tab=pharmacies&error=Nothing+to+save")

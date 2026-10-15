@@ -76,64 +76,52 @@ def submit_transfer(request):
     patient_name = g("patient_full_name")
     dob_raw = g("patient_dob")
     patient_phone = g("patient_phone")
-    medication_name = g("medication_name")
-    medication_type = g("medication_type") or "non_controlled"
-    signature = g("patient_signature")
-    consent = g("consent_given") in ("1", "on", "true", "True")
 
-    if medication_type == "unsure":
-        medication_type = "non_controlled"
-    if medication_type == "schedule_ii":
-        return _back(
-            error="Schedule II prescriptions cannot be transferred. "
-                  "Ask your prescriber for a new prescription (21 CFR 1306)."
-        )
-    if medication_type not in ("non_controlled", "schedule_iii_v"):
-        return _back(error="Select the medication type.")
-    if not (patient_name and dob_raw and patient_phone and medication_name):
-        return _back(error="Patient name, birth date, phone, and medication are required.")
+    if not (patient_name and dob_raw and patient_phone):
+        return _back(error="Patient name, birth date, and phone are required.")
     dob = parse_date(dob_raw)
     if not dob:
         return _back(error="Birth date must be YYYY-MM-DD.")
-    if not consent or not signature:
+    # Patient-initiated request only (not a prescription): no medication,
+    # signature, or consent checkbox collected. Generating the form implies
+    # direction to deliver + consent to be contacted at the listed phone.
+    medication_name = ""
+    medication_type = "non_controlled"
+    signature = patient_name
+    from_phone = g("from_phone")
+    from_fax = g("from_fax")
+    if not from_phone or not from_fax:
         return _back(
-            error="Your consent and typed signature are required "
-                  "(patient authorization per 21 CFR 1306)."
+            error="Current pharmacy needs both a phone and fax number. "
+                  "Please correct the contact before sending.",
+            from_pharmacy_id=str(from_id), to_pharmacy_id=str(to_id),
         )
-
-    refills = None
-    if g("refills_remaining"):
-        try:
-            refills = int(g("refills_remaining"))
-            if refills < 0:
-                refills = 0
-        except (TypeError, ValueError):
-            refills = None
-    last_filled = parse_date(g("last_filled_date")) if g("last_filled_date") else None
 
     t = PrescriptionTransfer.objects.create(
         user=request.user,
         from_pharmacy=from_p, to_pharmacy=to_p,
         from_pharmacy_name=from_p.name, to_pharmacy_name=to_p.name,
+        from_phone_override=g("from_phone"),
+        from_fax_override=g("from_fax"),
         patient_full_name=patient_name, patient_dob=dob,
-        patient_phone=patient_phone, patient_address=g("patient_address"),
-        medication_name=medication_name, medication_strength=g("medication_strength"),
-        directions=g("directions"), rx_number=g("rx_number"),
-        refills_remaining=refills, last_filled_date=last_filled,
-        prescriber_name=g("prescriber_name"), prescriber_phone=g("prescriber_phone"),
+        patient_phone=patient_phone, patient_address="",
+        medication_name="", medication_strength="",
+        directions="", rx_number="",
+        refills_remaining=None, last_filled_date=None,
+        prescriber_name="", prescriber_phone="",
         medication_type=medication_type, consent_given=True,
-        patient_signature=signature, notes=g("notes"), status="pending",
+        patient_signature=signature, notes="", status="pending",
     )
     _activity(
         request, "transfer_submitted",
-        f"Transfer #{t.id} {medication_name} "
-        f"{from_p.name} -> {to_p.name} ({medication_type})",
+        f"Transfer request #{t.id} "
+        f"{from_p.name} -> {to_p.name} for {patient_name}",
     )
     fax_summary = _fax_transfer_to_pharmacies(request, t, from_p, to_p)
     _email_transfer_receipt(request, t, from_p, to_p, fax_summary)
     return _back(base="/transfers", msg=(
         "Transfer request sent. "
-        + ("Faxes queued to both pharmacies. " if fax_summary["queued"] == 2
+        + ("Fax queued to the current pharmacy. " if fax_summary["queued"] == 1
            else "Check your email receipt for fax status. ")
         + "Track delivery below."
     ))
@@ -177,27 +165,26 @@ def _email_transfer_receipt(request, t, from_p, to_p, fax_summary) -> bool:
         f"<td style='padding:6px 8px;border:1px solid #e5e7eb;'>{leg['detail']}</td></tr>"
         for leg in legs
     )
-    med = f"{t.medication_name} {t.medication_strength or ''}".strip()
+    med = ""
     html = f"""\
 <html><body style="font-family:Arial,sans-serif;color:#0f172a;font-size:14px;">
 <p>Hi {user.first_name or 'there'},</p>
 <p>Your prescription transfer request <strong>#{t.id}</strong> was sent. Here is exactly what was submitted:</p>
 <table style="border-collapse:collapse;margin:12px 0;">
-<tr><td style='padding:6px 8px;border:1px solid #e5e7eb;color:#64748b;'>Medication</td><td style='padding:6px 8px;border:1px solid #e5e7eb;'><strong>{med}</strong></td></tr>
+<tr><td style='padding:6px 8px;border:1px solid #e5e7eb;color:#64748b;'>Patient</td><td style='padding:6px 8px;border:1px solid #e5e7eb;'><strong>{t.patient_full_name}</strong></td></tr>
 <tr><td style='padding:6px 8px;border:1px solid #e5e7eb;color:#64748b;'>From (current)</td><td style='padding:6px 8px;border:1px solid #e5e7eb;'>{t.from_pharmacy_name}</td></tr>
 <tr><td style='padding:6px 8px;border:1px solid #e5e7eb;color:#64748b;'>To (new)</td><td style='padding:6px 8px;border:1px solid #e5e7eb;'>{t.to_pharmacy_name}</td></tr>
-<tr><td style='padding:6px 8px;border:1px solid #e5e7eb;color:#64748b;'>Rx number</td><td style='padding:6px 8px;border:1px solid #e5e7eb;'>{t.rx_number or '—'}</td></tr>
-<tr><td style='padding:6px 8px;border:1px solid #e5e7eb;color:#64748b;'>Type</td><td style='padding:6px 8px;border:1px solid #e5e7eb;'>{_transfer_type_label(t.medication_type)}</td></tr>
 </table>
-<p><strong>Fax status</strong> (authorization sent to each pharmacy):</p>
+<p style="color:#64748b;font-size:12px;">Not a prescription — patient-initiated request only. PharmacyPulse is not a pharmacy and does not dispense or transfer prescriptions.</p>
+<p><strong>Fax status</strong> (request sent to each pharmacy):</p>
 <table style="border-collapse:collapse;margin:12px 0;">{leg_rows}</table>
-<p style="color:#64748b;font-size:12px;">Track live delivery under “My transfer requests” on the Transfer page. The two pharmacies complete the transfer pharmacist-to-pharmacist per 21 CFR 1306 — this receipt confirms your request was routed, not that the pharmacies have finished.</p>
+<p style="color:#64748b;font-size:12px;">Track live delivery under “My transfer requests” on the Transfer page. The two pharmacies complete any transfer pharmacist-to-pharmacist — this receipt confirms your request was routed, not that the pharmacies have finished.</p>
 <p>— The PharmacyPulse Team</p>
 </body></html>"""
     text = (
         f"Hi {user.first_name or 'there'},\n\n"
         f"Your prescription transfer request #{t.id} was sent.\n"
-        f"Medication: {med}\nFrom: {t.from_pharmacy_name}\nTo: {t.to_pharmacy_name}\n"
+        f"Patient: {t.patient_full_name}\nFrom: {t.from_pharmacy_name}\nTo: {t.to_pharmacy_name}\n"
         + "".join(
             f"{'Sending' if leg['kind'] == 'from_pharmacy' else 'Receiving'} "
             f"({leg['pharmacy']}): {leg['detail']}\n" for leg in legs
@@ -206,7 +193,7 @@ def _email_transfer_receipt(request, t, from_p, to_p, fax_summary) -> bool:
     )
     try:
         send_mail(
-            subject=f"Transfer request #{t.id} sent — {med}",
+            subject=f"Transfer request #{t.id} sent — {t.from_pharmacy_name} to {t.to_pharmacy_name}",
             message=text,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
@@ -220,8 +207,13 @@ def _email_transfer_receipt(request, t, from_p, to_p, fax_summary) -> bool:
 
 
 def _fax_transfer_to_pharmacies(request, t, from_p, to_p) -> dict:
-    """Queue an EffyMobile fax leg per pharmacy. Returns
-    {"queued": n, "legs": [{"kind", "pharmacy", "detail"}]} for the receipt."""
+    """Queue an EffyMobile fax leg for the CURRENT (sending) pharmacy only.
+
+    The receiving pharmacy is not faxed. If the sending pharmacy has no
+    usable fax, the form is blocked upstream in submit_transfer and here
+    we record skipped.
+    Returns {"queued": n, "legs": [{"kind", "pharmacy", "detail"}]}.
+    """
     from ... import effymobile
     from ...transfer_doc import make_doc_url
 
@@ -230,131 +222,72 @@ def _fax_transfer_to_pharmacies(request, t, from_p, to_p) -> dict:
     media_url = make_doc_url(
         settings.SITE_URL, t.id,
     )
-    for kind, pharm in (("from_pharmacy", from_p), ("to_pharmacy", to_p)):
-        raw_fax = (getattr(pharm, "fax_number", "") or "").strip()
-        voice = (pharm.phone or "").strip()
-        if not raw_fax:
-            TransferFax.objects.create(
-                transfer=t, recipient_kind=kind,
-                pharmacy_name=pharm.name, to_number="",
-                pharmacy_phone=voice,
-                media_url=media_url, status="skipped",
-                failure_reason="No fax number on file for this pharmacy.",
-            )
-            legs.append({"kind": kind, "pharmacy": pharm.name,
-                         "detail": "Not faxed — no fax number on file."})
-            continue
-        try:
-            to_number = effymobile.normalize_us_fax(raw_fax)
-        except ValueError:
-            TransferFax.objects.create(
-                transfer=t, recipient_kind=kind,
-                pharmacy_name=pharm.name, to_number=raw_fax,
-                pharmacy_phone=voice,
-                media_url=media_url, status="skipped",
-                failure_reason=f"Fax number {raw_fax!r} is not dialable.",
-            )
-            legs.append({"kind": kind, "pharmacy": pharm.name,
-                         "detail": f"Not faxed — invalid fax number ({raw_fax})."})
-            continue
-        try:
-            fax = effymobile.send_fax(
-                to_number, media_url, quality="high",
-                from_display_name="PharmacyPulse",
-            )
-            TransferFax.objects.create(
-                transfer=t, recipient_kind=kind,
-                pharmacy_name=pharm.name, to_number=to_number,
-                pharmacy_phone=voice,
-                media_url=media_url,
-                effy_id=str(fax.get("id", "")),
-                fax_id=str(fax.get("fax_id", "")),
-                status=effymobile.STATUS_MAP.get(
-                    str(fax.get("status", "queued")), "queued"),
-                page_count=fax.get("page_count"),
-                preview_url=str(fax.get("preview_url", "")
-                                or fax.get("stored_media_url", "") or ""),
-            )
-            queued += 1
-            legs.append({"kind": kind, "pharmacy": pharm.name,
-                         "detail": f"Fax queued to {to_number}."})
-            _activity(request, "transfer_fax_queued",
-                      f"Transfer #{t.id} fax queued to {pharm.name} ({to_number})")
-        except effymobile.EffyDisabledError as exc:
-            TransferFax.objects.create(
-                transfer=t, recipient_kind=kind,
-                pharmacy_name=pharm.name, to_number=to_number,
-                pharmacy_phone=voice,
-                media_url=media_url, status="skipped",
-                failure_reason=str(exc),
-            )
-            legs.append({"kind": kind, "pharmacy": pharm.name,
-                         "detail": "Not faxed — fax service not configured."})
-        except effymobile.EffyApiError as exc:
-            row = TransferFax.objects.create(
-                transfer=t, recipient_kind=kind,
-                pharmacy_name=pharm.name, to_number=to_number,
-                pharmacy_phone=voice,
-                media_url=media_url, status="failed",
-                failure_reason=str(exc)[:500],
-            )
-            sms_note = _sms_fallback(request, row, t)
-            legs.append({"kind": kind, "pharmacy": pharm.name,
-                         "detail": f"Fax failed to queue: {exc} {sms_note}"})
-    return {"queued": queued, "legs": legs}
-
-
-def _sms_fallback(request, row: TransferFax, t) -> str:
-    """Notify the pharmacy by SMS that its fax leg failed. Returns a short
-    note for receipts/messages. Never raises — failures are recorded."""
-    from ... import effymobile
-    if row.sms_status == "sent":
-        return "SMS fallback already sent."
-    phone = (row.pharmacy_phone or "").strip()
-    if not phone:
-        row.sms_status = "skipped"
-        row.sms_failure = "No phone number on file for SMS fallback."
-        row.save(update_fields=["sms_status", "sms_failure", "updated_at"])
-        return "No phone on file for SMS fallback."
+    kind, pharm = "from_pharmacy", from_p
+    raw_fax = ((getattr(t, "from_fax_override", "") or "").strip()
+               or (getattr(pharm, "fax_number", "") or "").strip())
+    if not raw_fax:
+        TransferFax.objects.create(
+            transfer=t, recipient_kind=kind,
+            pharmacy_name=pharm.name, to_number="",
+            media_url=media_url, status="skipped",
+            failure_reason="No fax number on file for this pharmacy.",
+        )
+        legs.append({"kind": kind, "pharmacy": pharm.name,
+                      "detail": "Not faxed — no fax number on file."})
+        return {"queued": queued, "legs": legs}
     try:
-        to_number = effymobile.normalize_us_fax(phone)
+        to_number = effymobile.normalize_us_fax(raw_fax)
     except ValueError:
-        row.sms_status = "skipped"
-        row.sms_failure = f"Phone number {phone!r} is not dialable."
-        row.save(update_fields=["sms_status", "sms_failure", "updated_at"])
-        return f"Bad phone number ({phone}) — SMS skipped."
-    direction = "from" if row.recipient_kind == "from_pharmacy" else "to"
-    med = f"{t.medication_name} {t.medication_strength or ''}".strip()
-    text = (
-        f"PharmacyPulse: {t.patient_full_name} requested Rx transfer "
-        f"#{t.id} ({med}) {direction} your pharmacy. "
-        f"Our fax to {row.to_number or 'your fax line'} failed. "
-        f"Patient: {t.patient_phone}. Please call them to complete "
-        f"the pharmacist-to-pharmacist transfer."
-    )
+        TransferFax.objects.create(
+            transfer=t, recipient_kind=kind,
+            pharmacy_name=pharm.name, to_number=raw_fax,
+            media_url=media_url, status="skipped",
+            failure_reason=f"Fax number {raw_fax!r} is not dialable.",
+        )
+        legs.append({"kind": kind, "pharmacy": pharm.name,
+                      "detail": f"Not faxed — invalid fax number ({raw_fax})."})
+        return {"queued": queued, "legs": legs}
     try:
-        effymobile.send_sms(to_number, text)
+        fax = effymobile.send_fax(
+            to_number, media_url, quality="high",
+            from_display_name="PharmacyPulse",
+        )
+        TransferFax.objects.create(
+            transfer=t, recipient_kind=kind,
+            pharmacy_name=pharm.name, to_number=to_number,
+            media_url=media_url,
+            effy_id=str(fax.get("id", "")),
+            fax_id=str(fax.get("fax_id", "")),
+            status=effymobile.STATUS_MAP.get(
+                str(fax.get("status", "queued")), "queued"),
+            page_count=fax.get("page_count"),
+            preview_url=str(fax.get("preview_url", "")
+                             or fax.get("stored_media_url", "") or ""),
+        )
+        queued += 1
+        legs.append({"kind": kind, "pharmacy": pharm.name,
+                      "detail": f"Fax queued to {to_number}."})
+        _activity(request, "transfer_fax_queued",
+                  f"Transfer #{t.id} fax queued to {pharm.name} ({to_number})")
     except effymobile.EffyDisabledError as exc:
-        row.sms_status = "skipped"
-        row.sms_failure = str(exc)
-        row.save(update_fields=["sms_status", "sms_failure", "updated_at"])
-        return "SMS skipped — messaging not configured."
+        TransferFax.objects.create(
+            transfer=t, recipient_kind=kind,
+            pharmacy_name=pharm.name, to_number=to_number,
+            media_url=media_url, status="skipped",
+            failure_reason=str(exc),
+        )
+        legs.append({"kind": kind, "pharmacy": pharm.name,
+                      "detail": "Not faxed — fax service not configured."})
     except effymobile.EffyApiError as exc:
-        row.sms_status = "failed"
-        row.sms_failure = str(exc)[:500]
-        row.save(update_fields=["sms_status", "sms_failure", "updated_at"])
-        _activity(request, "transfer_sms_failed",
-                  f"Transfer #{t.id} SMS fallback to {row.pharmacy_name} failed")
-        return "SMS fallback also failed."
-    row.sms_status = "sent"
-    row.sms_to = to_number
-    row.sms_failure = ""
-    row.save(update_fields=["sms_status", "sms_to", "sms_failure",
-                            "updated_at"])
-    _activity(request, "transfer_sms_sent",
-              f"Transfer #{t.id} SMS fallback sent to {row.pharmacy_name} "
-              f"({to_number})")
-    return f"SMS fallback sent to {to_number}."
+        TransferFax.objects.create(
+            transfer=t, recipient_kind=kind,
+            pharmacy_name=pharm.name, to_number=to_number,
+            media_url=media_url, status="failed",
+            failure_reason=str(exc)[:500],
+        )
+        legs.append({"kind": kind, "pharmacy": pharm.name,
+                      "detail": f"Fax failed to queue: {exc}"})
+    return {"queued": queued, "legs": legs}
 
 
 def _sync_fax_row(row: TransferFax) -> TransferFax:
@@ -408,19 +341,12 @@ def refresh_transfer_fax(request, fax_id: int):
                       f"{row.pharmacy_name} is {row.status}."
                       + (f" Reason: {row.failure_reason}" if row.status == "failed" and row.failure_reason else "")),
             )
-    sms_note = ""
-    if row.status == "failed" and row.sms_status == "unsent":
-        t = (PrescriptionTransfer.objects
-             .select_related("from_pharmacy", "to_pharmacy")
-             .filter(id=row.transfer_id).first())
-        if t:
-            sms_note = " " + _sms_fallback(request, row, t)
     label = {"delivered": "delivered ✓", "failed": "failed",
              "sending": "sending…", "processing": "processing…",
              "queued": "queued…", "canceled": "canceled"}.get(
                  row.status, row.status)
     extra = f" {row.failure_reason}" if row.status == "failed" and row.failure_reason else ""
-    return _back(base="/transfers", msg=f"Fax to {row.pharmacy_name}: {label}.{extra}{sms_note}"[:500])
+    return _back(base="/transfers", msg=f"Fax to {row.pharmacy_name}: {label}.{extra}"[:500])
 
 
 @login_required

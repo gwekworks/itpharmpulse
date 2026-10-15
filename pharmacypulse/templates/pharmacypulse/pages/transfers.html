@@ -69,9 +69,6 @@
       {% if f.failure_reason %}
       <div style="margin-top: 0.25rem; color: #991b1b">Reason: {{ f.failure_reason }}</div>
       {% endif %}
-      {% if f.sms_status != "unsent" %}
-      <div style="margin-top: 0.25rem; color: #006B62">SMS fallback: {{ f.sms_status }}{% if f.sms_to %} → <span class="notranslate">{{ f.sms_to }}</span>{% endif %}{% if f.sms_failure %} — {{ f.sms_failure }}{% endif %}</div>
-      {% endif %}
       <div style="margin-top: 0.25rem; color: #64748b">
         {% if f.page_count %}<span>{{ f.page_count }} page{{ f.page_count|pluralize }}</span>{% endif %}
         {% if f.preview_url %} <a href="{{ f.preview_url }}" target="_blank" rel="noopener" style="color: #008F82; font-weight: 600">Preview</a>{% endif %}
