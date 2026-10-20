@@ -1,0 +1,821 @@
+"""Pharmacy admin ops: bulk delete, data reporting, services, compare."""
+from __future__ import annotations
+
+import json
+import re
+import secrets
+import urllib.parse
+from datetime import datetime, timedelta, timezone
+from typing import Any
+
+import requests
+from django.conf import settings
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db import transaction
+from django.db.models import F, Sum
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse, HttpResponseBadRequest
+from django.shortcuts import redirect
+from django.utils import timezone as djtz
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST
+
+from ...models import (
+    ActivityLog, ClosedFlag, DataRequest, DrugShortage, NewsletterSubscriber, Notification,
+    Pharmacy, PharmacyClaim, PharmacyCoveragePlan, PharmacyHours,
+    PharmacyInsuranceProvider, PharmacyOrg, PharmacyTeamMember, ResponseCount,
+    Review, ReviewResponse, SavedComparison, User, UserConsent,
+)
+
+from ..common import invalidate_online_pharmacies_cache
+from ...forms import ManualPharmacyForm
+from .common import admin_required, _activity
+
+# Columns copied from Pharmacy → PharmacyPublishable (mirrors sync_publish_pharmacies)
+_PUBLISH_COPY_FIELDS = [
+    "name", "address", "address_2", "city", "state", "zip", "zip_full",
+    "phone", "fax_number",
+    "latitude", "longitude", "stock_confidence", "avg_wait_time",
+    "avg_service_rating", "total_reviews", "is_digital", "website",
+    "npi_number", "place_id", "taxonomy_code", "taxonomy_license",
+    "taxonomy_state", "taxonomy_licenses", "enumeration_date",
+    "nppes_last_updated", "certification_date",
+    "authorized_official_name", "authorized_official_title",
+    "authorized_official_phone", "legal_name", "organizational_subpart",
+    "identifiers_json", "other_names_json",
+    "secondary_taxonomies", "chain_size", "claimed_by", "org_id",
+    "phone_wait_time", "delivery_wait_time", "delivery_rating",
+    "customer_service_hours", "listing_completed_at",
+]
+
+
+@admin_required
+@require_POST
+def add_pharmacy_manually(request):
+    form = ManualPharmacyForm(request.POST)
+    if not form.is_valid():
+        error = next(iter(form.errors.values()))[0]
+        return redirect(
+            "/admin-pharmacies?error="
+            f"{urllib.parse.quote(str(error))}#all-pharmacies")
+
+    data = form.cleaned_data
+    if data["npi_number"] and Pharmacy.objects.filter(
+        npi_number=data["npi_number"],
+    ).exists():
+        return redirect(
+            "/admin-pharmacies?error="
+            f"{urllib.parse.quote('A pharmacy with that NPI already exists.')}#all-pharmacies")
+    if Pharmacy.objects.filter(
+        name__iexact=data["name"],
+        address__iexact=data["address"],
+        zip=data["zip"],
+        deleted_at__isnull=True,
+    ).exists():
+        return redirect(
+            "/admin-pharmacies?error="
+            f"{urllib.parse.quote('A pharmacy with that name, address, and ZIP already exists.')}#all-pharmacies")
+
+    from ...models import PharmacyPublishable
+
+    with transaction.atomic():
+        pharmacy = Pharmacy.objects.create(
+            name=data["name"].strip(),
+            address=data["address"].strip(),
+            address_2=data["address_2"].strip(),
+            city=data["city"].strip(),
+            state=data["state"],
+            zip=data["zip"],
+            phone=data["phone"].strip() or None,
+            fax_number=data["fax_number"].strip() or None,
+            website=data["website"] or None,
+            npi_number=data["npi_number"] or None,
+            is_digital=1 if data["is_digital"] else 0,
+            status="deleted",
+        )
+        publishable_data = {
+            field: getattr(pharmacy, field) for field in _PUBLISH_COPY_FIELDS
+        }
+        PharmacyPublishable.objects.create(
+            pharmacy_id=pharmacy.id,
+            **publishable_data,
+            status="deleted",
+            publish_status="unpublished",
+            admin_edited=True,
+        )
+
+    _activity(
+        request,
+        "pharmacy_manual_create",
+        f"{request.user.email} added pharmacy #{pharmacy.id} ({pharmacy.name})",
+    )
+    query = urllib.parse.urlencode({
+        "publish_status": "unpublished",
+        "q": pharmacy.name,
+        "success": "Pharmacy added to Unpublished for review.",
+    })
+    return redirect(f"/admin-pharmacies?{query}#all-pharmacies")
+
+
+def _user_controls_pharmacy(user, pharmacy: Pharmacy) -> bool:
+    """True if this user may edit the pharmacy: direct claim (claimed_by),
+    an approved PharmacyClaim, or membership in the pharmacy's org team."""
+    if not user or not user.is_authenticated or pharmacy is None:
+        return False
+    if pharmacy.claimed_by and pharmacy.claimed_by == user.id:
+        return True
+    if PharmacyClaim.objects.filter(
+        user_id=user.id, pharmacy_id=pharmacy.id, status="approved"
+    ).exists():
+        return True
+    org_id = pharmacy.org_id
+    if org_id and PharmacyTeamMember.objects.filter(
+        org_id=org_id, user_id=user.id, accepted_at__isnull=False
+    ).exists():
+        return True
+    return False
+
+
+# Fields a pharmacist may edit on their own claimed pharmacies. Phone + fax
+# only — names, addresses, and website are NPI-sourced and must not be
+# edited from the pharmacist dashboard. Aggregates stay derived.
+_PHARMACIST_EDITABLE_FIELDS = (
+    "phone", "fax_number",
+)
+
+
+@login_required
+@require_POST
+def pharmacist_update_pharmacy(request, pharmacy_id: int):
+    """Save a pharmacist's edit to one of their claimed pharmacies.
+
+    Writes to BOTH `pharmacies` (source of truth) and
+    `pharmacies_publishable` (what public search reads) so the public
+    listing updates immediately. Never touches aggregates or publish_status.
+    """
+    from ...models import PharmacyPublishable
+    pharmacy = Pharmacy.objects.filter(id=pharmacy_id).first()
+    if not pharmacy:
+        return redirect("/pharmacist-dashboard?tab=pharmacies&error=Pharmacy+not+found")
+    if not _user_controls_pharmacy(request.user, pharmacy):
+        return redirect("/pharmacist-dashboard?tab=pharmacies&error=Not+authorized")
+
+    updates = {}
+    for f in _PHARMACIST_EDITABLE_FIELDS:
+        if f in request.POST:
+            updates[f] = (request.POST.get(f) or "").strip()
+
+    if not updates:
+        return redirect("/pharmacist-dashboard?tab=pharmacies&error=Nothing+to+save")
+
+    for f, v in updates.items():
+        setattr(pharmacy, f, v)
+    pharmacy.save(update_fields=list(updates.keys()))
+
+    pub = PharmacyPublishable.objects.filter(pharmacy_id=pharmacy.id).first()
+    if pub is not None:
+        for f, v in updates.items():
+            setattr(pub, f, v)
+        pub.save(update_fields=list(updates.keys()))
+        invalidate_online_pharmacies_cache()
+
+    _activity(request, "pharmacy_owner_edit",
+              f"{request.user.email} updated pharmacy #{pharmacy.id} "
+              f"({', '.join(sorted(updates.keys()))})")
+    return redirect(
+        f"/pharmacist-dashboard?tab=pharmacies&msg=Saved+changes+for+{urllib.parse.quote(pharmacy.name)}")
+
+
+@admin_required
+@require_POST
+def bulk_publish_pharmacies(request):
+    """Create PharmacyPublishable rows for selected pharmacies from the source table.
+
+    Selected pharmacies get publish_status='published' and are immediately visible
+    in public search. If a publishable row already exists, it's updated (unless
+    admin_edited=True, in which case it's skipped to preserve curator edits).
+    """
+    from ...models import Pharmacy, PharmacyPublishable
+
+    ids = request.POST.getlist("pharmacy_id")
+    ids = [int(x) for x in ids if x.isdigit()][:500]  # hard cap
+    if not ids:
+        return redirect("/admin-pharmacies?error=No+pharmacies+selected")
+
+    src_qs = Pharmacy.objects.filter(id__in=ids)
+    existing = {
+        r.pharmacy_id: r
+        for r in PharmacyPublishable.objects.filter(pharmacy_id__in=ids).iterator()
+    }
+
+    to_create, to_update, skipped = [], [], 0
+    for src in src_qs.iterator():
+        data = {f: getattr(src, f) for f in _PUBLISH_COPY_FIELDS}
+        data["status"] = "active"
+        row = existing.get(src.id)
+        if row is None:
+            data["publish_status"] = "published"
+            to_create.append(PharmacyPublishable(pharmacy_id=src.id, **data))
+        elif row.admin_edited:
+            skipped += 1  # admin owns this row → don't overwrite
+        else:
+            for field, value in data.items():
+                setattr(row, field, value)
+            row.publish_status = "published"
+            to_update.append(row)
+
+    with transaction.atomic():
+        if to_create:
+            PharmacyPublishable.objects.bulk_create(to_create, batch_size=1000)
+        if to_update:
+            PharmacyPublishable.objects.bulk_update(
+                to_update, fields=_PUBLISH_COPY_FIELDS + ["status", "publish_status"], batch_size=1000
+            )
+    if to_create or to_update:
+        invalidate_online_pharmacies_cache()
+
+    created = len(to_create)
+    updated = len(to_update)
+    msg = f"Published {created} new, updated {updated} existing"
+    if skipped:
+        msg += f", skipped {skipped} admin-edited"
+    _activity(request, "pharmacy_bulk_publish",
+              f"{request.user.email} bulk published {created}+{updated} pharmacies "
+              f"(ids {min(ids)}–{max(ids)})")
+    return redirect(f"/admin-pharmacies?success={msg}")
+
+
+def _admin_pharmacy_action_redirect(request, message_type, message):
+    params = {}
+    query = (request.POST.get("return_q") or "").strip()
+    kind = request.POST.get("return_kind", "")
+    publish_status = request.POST.get("return_publish_status", "")
+    page = request.POST.get("return_pharmacy_page", "")
+    if query:
+        params["q"] = query
+    if kind in ("all", "digital", "other"):
+        params["kind"] = kind
+    if publish_status in ("published", "unpublished"):
+        params["publish_status"] = publish_status
+    if page.isdigit() and int(page) > 0:
+        params["pharmacy_page"] = page
+    params[message_type] = message
+    return redirect(f"/admin-pharmacies?{urllib.parse.urlencode(params)}")
+
+
+@admin_required
+def bulk_delete_pharmacies(request):
+    from ...models import PharmacyPublishable
+    ids = request.POST.getlist("pharmacy_id")
+    ids = [int(x) for x in ids if x.isdigit()][:500]  # hard cap
+    if not ids:
+        return _admin_pharmacy_action_redirect(
+            request, "error", "No pharmacies selected")
+    n = Pharmacy.objects.filter(id__in=ids).count()
+    with transaction.atomic():
+        # Permanently remove the row from BOTH tables: first the searchable
+        # copy the public reads, then the source row. Deleting the source
+        # cascades to hours/services/coverage/insurance/etc.; reviews and
+        # claims survive (their FK is SET_NULL → pharmacy_id becomes NULL).
+        PharmacyPublishable.objects.filter(pharmacy_id__in=ids).delete()
+        Pharmacy.objects.filter(id__in=ids).delete()
+    invalidate_online_pharmacies_cache()
+    _activity(request, "pharmacy_bulk_delete",
+              f"{request.user.email} permanently deleted {n} pharmacies "
+              f"(id {min(ids)}–{max(ids)})")
+    return _admin_pharmacy_action_redirect(
+        request, "success", f"Deleted {n} pharmacies")
+
+
+@admin_required
+@require_POST
+def bulk_update_pharmacy_publish_status(request):
+    """Publish or unpublish selected existing pharmacy listings."""
+    from ...models import PharmacyPublishable
+
+    publish_status = request.POST.get("publish_status")
+    if publish_status not in ("published", "unpublished"):
+        return _admin_pharmacy_action_redirect(
+            request, "error", "Invalid publish status")
+
+    ids = [int(value) for value in request.POST.getlist("pharmacy_id")
+           if value.isdigit()][:500]
+    if not ids:
+        return _admin_pharmacy_action_redirect(
+            request, "error", "No pharmacies selected")
+
+    rows = list(
+        PharmacyPublishable.objects.filter(pharmacy_id__in=ids)
+        .select_related("pharmacy")
+    )
+    pharmacy_status = "active" if publish_status == "published" else "deleted"
+    for row in rows:
+        row.publish_status = publish_status
+        row.status = pharmacy_status
+        row.admin_edited = True
+        row.pharmacy.status = pharmacy_status
+
+    with transaction.atomic():
+        if rows:
+            PharmacyPublishable.objects.bulk_update(
+                rows, fields=["publish_status", "status", "admin_edited"], batch_size=500,
+            )
+            Pharmacy.objects.bulk_update(
+                [row.pharmacy for row in rows], fields=["status"], batch_size=500,
+            )
+    if rows:
+        invalidate_online_pharmacies_cache()
+
+    label = "Published" if publish_status == "published" else "Unpublished"
+    _activity(
+        request,
+        f"pharmacy_bulk_{publish_status}",
+        f"{request.user.email} {label.lower()} {len(rows)} pharmacies",
+    )
+    return _admin_pharmacy_action_redirect(
+        request, "success", f"{label} {len(rows)} pharmacies")
+
+
+@admin_required
+def bulk_delete_chain(request):
+    from ... import page_data
+    from django.core.cache import cache
+    chain_key = (request.POST.get("chain") or "").strip()
+    entry = page_data.BRAND_PATTERNS_BY_KEY.get(chain_key)
+    if not entry:
+        return redirect("/admin-pharmacies?error=Unknown+chain")
+    label, qexp = entry
+    confirm = (request.POST.get("confirm") or "").strip().lower()
+    if confirm != chain_key.lower():
+        return redirect("/admin-pharmacies?error=Type+the+chain+key+to+confirm")
+    # Soft-delete every active row in that chain. Reviews stay linked.
+    n = Pharmacy.objects.filter(qexp, status="active").update(
+        status="closed", deleted_at=djtz.now(),
+    )
+    _activity(request, "chain_bulk_delete",
+              f"{request.user.email} soft-closed {n} {label} pharmacies")
+    # Invalidate the /insights cache so the brands chart updates immediately.
+    cache.delete("pp:insights:v4")
+    return redirect(f"/admin-pharmacies?success=Soft-closed+{n}+{label}+pharmacies")
+
+
+_DATA_ISSUES = {"address", "hours", "phone", "closed", "duplicate", "wrong_info", "other"}
+
+
+_NOTE_MAX = 500
+
+
+_NOTE_BAD_CHARS = re.compile(r"[\x00-\x08\x0b-\x1f\x7f]")
+
+
+def _clean_note(s: str) -> str:
+    s = (s or "")[:_NOTE_MAX]
+    s = _NOTE_BAD_CHARS.sub("", s)
+    s = s.replace("\r", " ").replace("\n", " ").replace("\t", " ")
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
+def report_pharmacy_data(request, pharmacy_id: int):
+    from ...views_extra import is_rate_limited
+    safe_next = f"/pharmacy?id={pharmacy_id}"
+
+    # (2) Honeypot — any non-empty value means a bot filled the hidden field.
+    if (request.POST.get("hp_email") or "").strip():
+        # Pretend success; don't tip off the bot that we caught it.
+        return redirect(f"{safe_next}&report=ok")
+
+    # (3) Submit-too-fast guard. Form embeds a hidden epoch-second timestamp at
+    # render time; legitimate submissions take at least a couple seconds.
+    try:
+        ts = int(request.POST.get("ts") or "0")
+        if ts and (djtz.now().timestamp() - ts) < 2:
+            return redirect(f"{safe_next}&report=ok")  # silent drop
+    except (TypeError, ValueError):
+        pass
+
+    # (4a) Global IP rate limit.
+    if is_rate_limited(request, "report_pharmacy", limit=10, window_s=3600):
+        return redirect(f"{safe_next}&error=Too+many+reports.+Try+again+later.")
+    # (4b) Per-(IP, pharmacy) rate limit — stop pile-on attacks on one row.
+    if is_rate_limited(request, f"report_pharmacy_p{pharmacy_id}", limit=3, window_s=3600):
+        return redirect(f"{safe_next}&error=You%27ve+already+reported+this+pharmacy.")
+
+    # (5) Whitelist + cap.
+    issue = (request.POST.get("issue") or "other").strip()
+    if issue not in _DATA_ISSUES:
+        issue = "other"
+    # (6) Clean note.
+    note = _clean_note(request.POST.get("note") or "")
+
+    pharm = Pharmacy.objects.filter(id=pharmacy_id).only("id", "name").first()
+    if not pharm:
+        # Don't leak existence — same redirect either way.
+        return redirect(f"{safe_next}&report=ok")
+
+    actor = request.user.email if request.user.is_authenticated else "anonymous"
+    user_id = request.user.id if request.user.is_authenticated else None
+    # Sanitize the pharmacy name into the log too — NPPES data has been clean
+    # historically but it's another untrusted source from the admin's POV.
+    safe_name = _clean_note(pharm.name)[:100]
+    ActivityLog.objects.create(
+        type="pharmacy_data_report",
+        user_id=user_id,
+        message=(
+            f"#{pharmacy_id} {safe_name}: {issue} (by {actor})"
+            + (f" — {note}" if note else "")
+        ),
+    )
+    # (7) Never honor `next` from the request — always send back to the
+    # pharmacy page. Closes the open-redirect vector.
+    return redirect(f"{safe_next}&report=ok")
+
+
+def flag_as_closed(request, pharmacy_id: int):
+    from ...views_extra import is_rate_limited
+    safe_next = f"/pharmacy?id={pharmacy_id}"
+
+    if request.method != "POST":
+        return redirect(safe_next)
+
+    # Honeypot guard
+    if (request.POST.get("hp_email") or "").strip():
+        return redirect(f"{safe_next}&flagged=ok")
+
+    # Fast submission guard
+    try:
+        ts = int(request.POST.get("ts") or "0")
+        if ts and (djtz.now().timestamp() - ts) < 2:
+            return redirect(f"{safe_next}&flagged=ok")
+    except (TypeError, ValueError):
+        pass
+
+    # Rate limits
+    if is_rate_limited(request, "flag_closed", limit=10, window_s=3600):
+        return redirect(f"{safe_next}&error=Too+many+requests.+Please+try+again+later.")
+    if is_rate_limited(request, f"flag_closed_p{pharmacy_id}", limit=2, window_s=3600):
+        return redirect(f"{safe_next}&error=You+have+already+flagged+this+pharmacy.")
+
+    note = _clean_note(request.POST.get("note") or "")
+
+    pharm = Pharmacy.objects.filter(id=pharmacy_id).only("id", "name").first()
+    if not pharm:
+        return redirect(f"{safe_next}&flagged=ok")
+
+    actor = request.user.email if request.user.is_authenticated else "anonymous"
+    user_id = request.user.id if request.user.is_authenticated else None
+    actor_ip = request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[0].strip() or request.META.get("REMOTE_ADDR", "")
+
+    ClosedFlag.objects.create(
+        pharmacy=pharm,
+        reporter_user_id=user_id,
+        reporter_ip=actor_ip,
+        note=note,
+        status="pending",
+    )
+
+    safe_name = _clean_note(pharm.name)[:100]
+    ActivityLog.objects.create(
+        type="pharmacy_closed_flag",
+        user_id=user_id,
+        message=f"#{pharmacy_id} {safe_name} flagged as closed by {actor}" + (f": {note}" if note else ""),
+    )
+
+    return redirect(f"{safe_next}&flagged=ok")
+
+
+@admin_required
+@require_POST
+def dismiss_closed_flag(request, flag_id: int):
+    flag = ClosedFlag.objects.filter(id=flag_id).first()
+    if flag:
+        flag.status = "dismissed"
+        flag.reviewed_at = djtz.now()
+        flag.reviewed_by = request.user
+        flag.save(update_fields=["status", "reviewed_at", "reviewed_by"])
+        _activity(request, "dismiss_closed_flag", f"{request.user.email} dismissed closed flag #{flag_id}")
+    return redirect("/admin-pharmacies?tab=flags&success=Flag+dismissed")
+
+
+@admin_required
+@require_POST
+def delete_flagged_pharmacy(request, pharmacy_id: int):
+    from ...models import PharmacyPublishable
+    pharm = Pharmacy.objects.filter(id=pharmacy_id).first()
+    if not pharm:
+        return redirect("/admin-pharmacies?tab=flags&error=Pharmacy+not+found")
+    
+    pharm_name = pharm.name
+    with transaction.atomic():
+        ClosedFlag.objects.filter(pharmacy_id=pharmacy_id, status="pending").update(
+            status="dismissed",
+            reviewed_at=djtz.now(),
+            reviewed_by=request.user,
+        )
+        PharmacyPublishable.objects.filter(pharmacy_id=pharmacy_id).delete()
+        Pharmacy.objects.filter(id=pharmacy_id).delete()
+    invalidate_online_pharmacies_cache()
+
+    _activity(request, "pharmacy_flagged_delete", f"{request.user.email} deleted flagged pharmacy #{pharmacy_id} ({pharm_name})")
+    return redirect("/admin-pharmacies?tab=flags&success=Pharmacy+permanently+deleted")
+
+
+
+@login_required
+def add_to_compare(request):
+    try:
+        pharmacy_id = int(request.POST.get("pharmacy_id"))
+    except (TypeError, ValueError):
+        return HttpResponseBadRequest("pharmacy_id required")
+    SavedComparison.objects.get_or_create(user=request.user, pharmacy_id=pharmacy_id)
+    return JsonResponse({"ok": True})
+
+
+@login_required
+def remove_from_compare(request):
+    try:
+        pharmacy_id = int(request.POST.get("pharmacy_id"))
+    except (TypeError, ValueError):
+        return HttpResponseBadRequest("pharmacy_id required")
+    SavedComparison.objects.filter(user=request.user, pharmacy_id=pharmacy_id).delete()
+    return JsonResponse({"ok": True})
+
+
+@login_required
+def clear_compare(request):
+    SavedComparison.objects.filter(user=request.user).delete()
+    return redirect("/compare")
+
+
+@login_required
+def pharmacy_services_add(request):
+    """POST handler for the services-tab form on /pharmacist-dashboard.
+
+    Accepts one or more service types at once (the `service_type` checkbox
+    list) plus an optional custom service (`service_type_custom`)."""
+    from ...models import PharmacyService
+    pid = request.POST.get("pharmacy_id")
+    types = [t.strip() for t in request.POST.getlist("service_type")]
+    custom = (request.POST.get("service_type_custom") or "").strip()
+    if custom:
+        types.append(custom)
+    types = list(dict.fromkeys(t for t in types if t))
+    if not (pid and types):
+        return redirect("/pharmacist-dashboard?tab=services&error=Missing+fields")
+    pharmacy = Pharmacy.objects.filter(id=pid).first()
+    if not pharmacy or pharmacy.claimed_by != request.user.id:
+        return redirect("/pharmacist-dashboard?tab=services&error=Not+authorized")
+    for t in types:
+        PharmacyService.objects.get_or_create(pharmacy=pharmacy, service_type=t)
+    _activity(request, "service_added", f"Added services: {', '.join(types)}")
+    return redirect("/pharmacist-dashboard?tab=services&msg=Services+added")
+
+
+@login_required
+def pharmacy_services_remove(request, service_id: int):
+    from ...models import PharmacyService
+    s = PharmacyService.objects.filter(id=service_id).select_related("pharmacy").first()
+    if not s:
+        return redirect("/pharmacist-dashboard?tab=services&error=Not+found")
+    if s.pharmacy.claimed_by != request.user.id:
+        return redirect("/pharmacist-dashboard?tab=services&error=Not+authorized")
+    s.delete()
+    return redirect("/pharmacist-dashboard?tab=services&msg=Service+removed")
+
+
+_POPULAR_COVERAGE_PLANS = (
+    ("Medicare Part D", "Medicare"),
+    ("Medicare Advantage", "Medicare"),
+    ("Medicaid", "Medicaid"),
+    ("Tricare", "VA / Tricare"),
+    ("Veterans Affairs (VA)", "VA / Tricare"),
+    ("Marketplace / Exchange", "Marketplace / Exchange"),
+    ("Commercial / Employer Plans", "Commercial / PBM"),
+    ("Catastrophic Plans", "Other"),
+)
+
+_POPULAR_INSURANCE_COMPANIES = (
+    "Aetna",
+    "Blue Cross Blue Shield",
+    "Caremark (CVS)",
+    "Cigna",
+    "Express Scripts",
+    "Humana",
+    "Kaiser Permanente",
+    "Molina Healthcare",
+    "OptumRx",
+    "Oscar Health",
+    "UnitedHealthcare",
+    "Wellcare",
+)
+
+
+@login_required
+def coverage_plan_add(request):
+    """POST handler for the coverage-plans tab form on /pharmacist-dashboard.
+
+    Accepts one or more plan names at once: the common-plan checkboxes
+    (`plan_name` list) plus an optional custom plan (`plan_name_custom` with
+    `plan_type`)."""
+    pid = request.POST.get("pharmacy_id")
+    names = [n.strip() for n in request.POST.getlist("plan_name")]
+    custom = (request.POST.get("plan_name_custom") or "").strip()
+    if custom:
+        names.append(custom)
+    names = list(dict.fromkeys(n for n in names if n))
+    if not (pid and names):
+        return redirect("/pharmacist-dashboard?tab=insurance&error=Missing+fields")
+    pharmacy = Pharmacy.objects.filter(id=pid).first()
+    if not pharmacy or pharmacy.claimed_by != request.user.id:
+        return redirect("/pharmacist-dashboard?tab=insurance&error=Not+authorized")
+    type_map = dict(_POPULAR_COVERAGE_PLANS)
+    custom_type = (request.POST.get("plan_type") or "").strip()
+    for name in names:
+        PharmacyCoveragePlan.objects.get_or_create(
+            pharmacy=pharmacy, plan_name=name,
+            defaults={"plan_type": type_map.get(name, custom_type)},
+        )
+    _activity(request, "coverage_added", f"Added coverage plans: {', '.join(names)}")
+    return redirect("/pharmacist-dashboard?tab=insurance&msg=Plans+added")
+
+
+@login_required
+def coverage_plan_remove(request, plan_id: int):
+    i = PharmacyCoveragePlan.objects.filter(id=plan_id).select_related("pharmacy").first()
+    if not i:
+        return redirect("/pharmacist-dashboard?tab=insurance&error=Not+found")
+    if i.pharmacy.claimed_by != request.user.id:
+        return redirect("/pharmacist-dashboard?tab=insurance&error=Not+authorized")
+    i.delete()
+    return redirect("/pharmacist-dashboard?tab=insurance&msg=Plan+removed")
+
+
+@login_required
+def insurance_provider_add(request):
+    """POST handler for the insurance tab form on /pharmacist-dashboard.
+
+    Accepts one or more provider names at once: the popular-company checkboxes
+    (`provider_name` list) plus an optional custom provider
+    (`provider_name_custom`)."""
+    pid = request.POST.get("pharmacy_id")
+    names = [n.strip() for n in request.POST.getlist("provider_name")]
+    custom = (request.POST.get("provider_name_custom") or "").strip()
+    if custom:
+        names.append(custom)
+    names = list(dict.fromkeys(n for n in names if n))
+    if not (pid and names):
+        return redirect("/pharmacist-dashboard?tab=insurance&error=Missing+fields")
+    pharmacy = Pharmacy.objects.filter(id=pid).first()
+    if not pharmacy or pharmacy.claimed_by != request.user.id:
+        return redirect("/pharmacist-dashboard?tab=insurance&error=Not+authorized")
+    for name in names:
+        PharmacyInsuranceProvider.objects.get_or_create(
+            pharmacy=pharmacy, provider_name=name,
+        )
+    _activity(request, "insurance_added", f"Added insurance providers: {', '.join(names)}")
+    return redirect("/pharmacist-dashboard?tab=insurance&msg=Providers+added")
+
+
+@login_required
+def insurance_provider_remove(request, provider_id: int):
+    i = PharmacyInsuranceProvider.objects.filter(id=provider_id).select_related("pharmacy").first()
+    if not i:
+        return redirect("/pharmacist-dashboard?tab=insurance&error=Not+found")
+    if i.pharmacy.claimed_by != request.user.id:
+        return redirect("/pharmacist-dashboard?tab=insurance&error=Not+authorized")
+    i.delete()
+    return redirect("/pharmacist-dashboard?tab=insurance&msg=Provider+removed")
+
+
+@login_required
+@require_POST
+def insurance_plans_add(request):
+    """POST handler for the merged Insurance tab form on /pharmacist-dashboard.
+
+    One form saves both insurance providers (checkbox `provider_name` list +
+    custom `provider_name_custom`) and government coverage plans
+    (`plan_name` list + custom `plan_name_custom` with `plan_type`)."""
+    pid = request.POST.get("pharmacy_id")
+    pharmacy = Pharmacy.objects.filter(id=pid).first()
+    if not pharmacy or pharmacy.claimed_by != request.user.id:
+        return redirect("/pharmacist-dashboard?tab=insurance&error=Not+authorized")
+
+    provider_names = [n.strip() for n in request.POST.getlist("provider_name")]
+    custom_provider = (request.POST.get("provider_name_custom") or "").strip()
+    if custom_provider:
+        provider_names.append(custom_provider)
+    provider_names = list(dict.fromkeys(n for n in provider_names if n))
+    for name in provider_names:
+        PharmacyInsuranceProvider.objects.get_or_create(
+            pharmacy=pharmacy, provider_name=name,
+        )
+
+    plan_names = [n.strip() for n in request.POST.getlist("plan_name")]
+    custom_plan = (request.POST.get("plan_name_custom") or "").strip()
+    if custom_plan:
+        plan_names.append(custom_plan)
+    plan_names = list(dict.fromkeys(n for n in plan_names if n))
+    type_map = dict(_POPULAR_COVERAGE_PLANS)
+    custom_type = (request.POST.get("plan_type") or "").strip()
+    for name in plan_names:
+        PharmacyCoveragePlan.objects.get_or_create(
+            pharmacy=pharmacy, plan_name=name,
+            defaults={"plan_type": type_map.get(name, custom_type)},
+        )
+
+    if not (provider_names or plan_names):
+        return redirect("/pharmacist-dashboard?tab=insurance&error=Missing+fields")
+    if plan_names:
+        _activity(request, "coverage_added", f"Added coverage plans: {', '.join(plan_names)}")
+    if provider_names:
+        _activity(request, "insurance_added",
+                  f"Added insurance providers: {', '.join(provider_names)}")
+    return redirect("/pharmacist-dashboard?tab=insurance&msg=Insurance+saved")
+
+
+_HOURS_DAYS = (
+    (0, "Monday"), (1, "Tuesday"), (2, "Wednesday"),
+    (3, "Thursday"), (4, "Friday"), (5, "Saturday"), (6, "Sunday"),
+)
+
+
+@login_required
+def pharmacy_hours_save(request):
+    """POST handler for the hours-tab form on /pharmacist-dashboard.
+
+    Upserts one PharmacyHours row per weekday from the form's day_* fields so
+    owners can add or edit hours when Google Places hasn't ingested them."""
+    from ...models import PharmacyHours
+    pid = request.POST.get("pharmacy_id")
+    pharmacy = Pharmacy.objects.filter(id=pid).first()
+    if not pharmacy or pharmacy.claimed_by != request.user.id:
+        return redirect("/pharmacist-dashboard?tab=hours&error=Not+authorized")
+    for day, day_name in _HOURS_DAYS:
+        is_closed = 1 if request.POST.get(f"day_{day}_closed") else 0
+        open_time = (request.POST.get(f"day_{day}_open") or "").strip()
+        close_time = (request.POST.get(f"day_{day}_close") or "").strip()
+        if not is_closed and not (open_time or close_time):
+            continue
+        hours, _ = PharmacyHours.objects.get_or_create(
+            pharmacy=pharmacy, day_of_week=day,
+            defaults={"day_name": day_name})
+        hours.day_name = day_name
+        hours.is_closed = is_closed
+        hours.open_time = "" if is_closed else open_time
+        hours.close_time = "" if is_closed else close_time
+        hours.save()
+    _activity(request, "hours_saved", "Updated operating hours")
+    return redirect("/pharmacist-dashboard?tab=hours&msg=Hours+saved")
+
+
+# Fields an admin may edit on the publishable row from /admin-pharmacies.
+# Everything else (aggregates, ratings, timestamps) is derived data.
+_EDITABLE_PUB_FIELDS = (
+    "name", "address", "city", "state", "zip", "phone", "fax_number", "website",
+    "is_digital",
+)
+
+
+@admin_required
+@require_POST
+def edit_pharmacy_publishable(request, pharmacy_id: int):
+    """Save an admin edit to a pharmacy's publishable row.
+
+    Edits land on `pharmacies_publishable` (the table the public search reads)
+    and set `admin_edited=True`, so the next publish sync won't overwrite the
+    curated values with fresh API data. publish_status toggles visibility:
+    'published' shows in search, 'unpublished' hides it.
+    """
+    from ...models import PharmacyPublishable
+    row = (
+        PharmacyPublishable.objects.filter(pk=pharmacy_id)
+        .select_related("pharmacy").first()
+    )
+    if not row:
+        return redirect("/admin-pharmacies?error=Pharmacy+not+found")
+
+    for f in _EDITABLE_PUB_FIELDS:
+        if f == "is_digital":
+            row.is_digital = 1 if request.POST.get("is_digital") else 0
+        else:
+            val = (request.POST.get(f) or "").strip()
+            setattr(row, f, val)
+
+    publish_status = (request.POST.get("publish_status") or "published").strip()
+    row.publish_status = publish_status if publish_status in (
+        "published", "unpublished") else "published"
+    row.status = "active" if row.publish_status == "published" else "deleted"
+    row.admin_edited = True
+    row.save(update_fields=_EDITABLE_PUB_FIELDS + (
+        "publish_status", "status", "admin_edited"))
+    invalidate_online_pharmacies_cache()
+
+    # Reflect the soft status change on the source pharmacy too, so the
+    # canonical table stays in sync with what the public sees.
+    if row.pharmacy:
+        row.pharmacy.status = row.status
+        row.pharmacy.save(update_fields=["status"])
+
+    _activity(request, "pharmacy_publishable_edit",
+              f"{request.user.email} edited publishable #{row.pk} -> {publish_status}")
+    return redirect("/admin-pharmacies?success=Saved+edits+for+pharmacy+%23"
+                    f"{row.pk}")

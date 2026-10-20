@@ -1,0 +1,74 @@
+{% load pharmacypulse %}
+<script>
+(function(){
+  var timer, dropdown, input, highlighted = -1;
+
+  function initSearch(inputEl) {
+    input = inputEl;
+    var wrap = input.closest('.search-wrap');
+    if (!wrap) return;
+    dropdown = wrap.querySelector('.search-dropdown');
+    if (!dropdown) return;
+
+    input.addEventListener('input', function() {
+      clearTimeout(timer);
+      var q = input.value.trim();
+      if (q.length < 2) { dropdown.classList.remove('open'); return; }
+      timer = setTimeout(function(){ doSearch(q); }, 250);
+    });
+
+    input.addEventListener('keydown', function(e) {
+      var items = dropdown.querySelectorAll('.search-item');
+      if (e.key === 'ArrowDown') { e.preventDefault(); highlighted = Math.min(highlighted + 1, items.length - 1); updateHighlight(items); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); highlighted = Math.max(highlighted - 1, 0); updateHighlight(items); }
+      else if (e.key === 'Enter' && highlighted >= 0 && items[highlighted]) { e.preventDefault(); items[highlighted].click(); }
+      else if (e.key === 'Escape') { dropdown.classList.remove('open'); highlighted = -1; }
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!wrap.contains(e.target)) { dropdown.classList.remove('open'); highlighted = -1; }
+    });
+  }
+
+  function updateHighlight(items) {
+    items.forEach(function(el, i) {
+      el.classList.toggle('highlighted', i === highlighted);
+    });
+  }
+
+  function doSearch(q) {
+    fetch('/api/flow/search?q=' + encodeURIComponent(q))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var results = data.results || [];
+        if (results && !Array.isArray(results)) results = [results];
+        if (!results.length) {
+          dropdown.innerHTML = '<div class="search-footer">No results for "' + q.replace(/</g,'&lt;') + '"</div>';
+          dropdown.classList.add('open');
+          return;
+        }
+        var html = '';
+        results.forEach(function(p) {
+          var stars = p.total_reviews > 0 ? '<span class="search-item-stars">&#9733;</span> ' + p.avg_service_rating : '';
+          var badge = p.is_digital == 1 ? ' <span class="search-item-badge">Online</span>' : '';
+          var reviews = p.total_reviews > 0 ? p.total_reviews + ' reviews' : 'No reviews';
+          html += '<a class="search-item" href="/pharmacy/' + p.id + '/' + p.slug + '/">'
+            + '<div><div class="search-item-name">' + p.name + badge + '</div>'
+            + '<div class="search-item-meta">' + p.city + ', ' + p.state + ' ' + p.zip + '</div></div>'
+            + '<div class="search-item-right"><div class="search-item-rating">' + stars + '</div>'
+            + '<div class="search-item-meta">' + reviews + '</div></div></a>';
+        });
+        html += '<div class="search-footer"><a href="/list?q=' + encodeURIComponent(q) + '">See all results for "' + q.replace(/</g,'&lt;') + '" &rarr;</a></div>';
+        dropdown.innerHTML = html;
+        dropdown.classList.add('open');
+        highlighted = -1;
+      })
+      .catch(function() { dropdown.classList.remove('open'); });
+  }
+
+  // Auto-init all search inputs with data-autocomplete
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-autocomplete]').forEach(initSearch);
+  });
+})();
+</script>

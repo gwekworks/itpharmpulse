@@ -1,0 +1,34 @@
+{% load pharmacypulse %}
+
+<div id="pp-modal" class="pp-modal-overlay" onclick="if(event.target===this)ppModalClose()">
+  <div class="pp-modal">
+    <h3 id="pp-modal-title"></h3>
+    <p id="pp-modal-body"></p>
+    <div class="pp-modal-actions" id="pp-modal-actions"></div>
+  </div>
+</div>
+
+<script>
+function ppModal(opts) {
+  document.getElementById('pp-modal-title').textContent = opts.title || '';
+  document.getElementById('pp-modal-body').textContent = opts.body || '';
+  var actions = document.getElementById('pp-modal-actions');
+  actions.innerHTML = '';
+  if (opts.cancel !== false) {
+    var cb = document.createElement('button');
+    cb.className = 'pp-modal-btn pp-modal-btn-cancel';
+    cb.textContent = opts.cancelText || 'Cancel';
+    cb.onclick = function() { ppModalClose(); if (opts.onCancel) opts.onCancel(); };
+    actions.appendChild(cb);
+  }
+  if (opts.action) {
+    var ab = document.createElement('button');
+    ab.className = 'pp-modal-btn ' + (opts.actionClass || 'pp-modal-btn-primary');
+    ab.textContent = opts.actionText || 'Confirm';
+    ab.onclick = function() { ppModalClose(); opts.action(); };
+    actions.appendChild(ab);
+  }
+  document.getElementById('pp-modal').classList.add('open');
+}
+function ppModalClose() { document.getElementById('pp-modal').classList.remove('open'); }
+</script>

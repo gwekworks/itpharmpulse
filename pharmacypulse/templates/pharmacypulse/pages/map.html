@@ -1,0 +1,240 @@
+{% extends "pharmacypulse/layouts/app.html" %}
+{% load pharmacypulse %}
+{% block title %}Pharmacy Map — Find Pharmacies Near You{% endblock %}
+{% block meta_description %}Browse pharmacies on an interactive US map. Search by name or ZIP to find nearby pharmacies with patient reviews, stock confidence, and wait times.{% endblock %}
+{% block content %}
+{% include "pharmacypulse/partials/topbar.html" %}
+<div style="background: #fafbfc; min-height: 100vh; padding-bottom: 0">
+  <div style="max-width: 72rem; margin: 0 auto; padding: 1.5rem 1.5rem">
+
+    <h1 style="font-family: 'DM Serif Display', serif; font-size: 1.5rem; color: #0f172a; margin-bottom: 0.25rem">Pharmacy Map</h1>
+    <p style="font-size: 0.8125rem; color: #64748b; margin-bottom: 1rem">Browse pharmacies near you</p>
+
+    <form action="/map" method="GET" style="margin-bottom: 1rem">
+      <div style="display: flex; background: white; border: 1.5px solid #e5e7eb; border-radius: 9999px; overflow: hidden" onfocusin="this.style.borderColor='#008F82'" onfocusout="this.style.borderColor='#e5e7eb'">
+        <input type="text" name="q" placeholder="Search by name or ZIP..." value="{{param_q}}" style="flex: 1; padding: 0.75rem 1rem; border: none; outline: none; font-size: 0.875rem; background: transparent; color: #0f172a">
+        <button type="submit" style="margin: 0.25rem; padding: 0.5rem 1rem; border-radius: 9999px; background: #008F82; box-shadow: 0 1px 3px rgba(0,143,130,0.2); color: white; border: none; font-weight: 600; font-size: 0.8125rem; cursor: pointer">Search</button>
+      </div>
+    </form>
+
+    {% if google_places_key %}
+    <!-- Google Map -->
+    <div id="pharmacy-map" style="height: 480px; border-radius: 0.75rem; margin-bottom: 1rem; border: 1px solid #e5e7eb; background: #eef2f5"></div>
+    {% else %}
+    <div style="height: 480px; border-radius: 0.75rem; margin-bottom: 1rem; border: 1px solid #e5e7eb; background: #eef2f5; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 0.875rem">Map not available</div>
+    {% endif %}
+
+    <!-- Pharmacy data: serialized as JSON (much faster to parse than inline JS objects). -->
+    {{ map_pharmacies|json_script:"pharmacy-data" }}
+
+    <!-- Pharmacy list — capped at 60 cards for DOM performance. -->
+    <div id="map-list-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem">
+      <p style="font-size: 0.8125rem; color: #64748b; margin: 0">
+        Showing nearest <strong id="map-list-shown">0</strong> of <strong id="map-list-total">0</strong> pharmacies
+      </p>
+      <button type="button" id="map-list-recenter" style="font-size: 0.75rem; color: #008F82; background: transparent; border: none; cursor: pointer; font-weight: 600; padding: 0">Re-center on map view</button>
+    </div>
+    <div id="pharmacy-list" class="pharmacy-grid" style="display: grid; gap: 0.5rem"></div>
+
+    <script>
+    var userLat = {{ user_lat|default:"null" }};
+    var userLng = {{ user_lng|default:"null" }};
+    function haversineMi(lat, lng) {
+      if (userLat == null || userLng == null || !lat || !lng) return Infinity;
+      var R = 3959, toRad = Math.PI / 180;
+      var dLat = (lat - userLat) * toRad, dLng = (lng - userLng) * toRad;
+      var a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+            + Math.cos(userLat * toRad) * Math.cos(lat * toRad)
+            * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      return 2 * R * Math.asin(Math.sqrt(a));
+    }
+    (function(){
+      var raw = document.getElementById('pharmacy-data');
+      var pharmacies = raw ? JSON.parse(raw.textContent) : [];
+      // Sort closest-first to the user's location; pharmacies without
+      // coordinates (distance Infinity) fall to the end.
+      pharmacies.sort(function(a, b) {
+        return haversineMi(a.latitude, a.longitude) - haversineMi(b.latitude, b.longitude);
+      });
+      window.__ppPharmacies = pharmacies;
+      document.getElementById('map-list-total').textContent = pharmacies.length;
+    })();
+
+    function renderPharmacyList(items, limit) {
+      var listEl = document.getElementById('pharmacy-list');
+      var shown = items.slice(0, limit);
+      // Build with one innerHTML write — far cheaper than 1000 createElement calls.
+      var html = '';
+      for (var i = 0; i < shown.length; i++) {
+        var p = shown[i];
+        var rating = p.avg_service_rating != null ? p.avg_service_rating : '—';
+        html += '<a href="/pharmacy/' + p.id + '/' + p.slug + '/" style="display:block;padding:0.75rem 1rem;background:white;border:1px solid #e5e7eb;border-radius:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);text-decoration:none">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center">' +
+            '<div style="min-width:0;flex:1">' +
+              '<p style="font-weight:600;color:#0f172a;font-size:0.8125rem;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escapeHTML(p.name || '') + '</p>' +
+              '<p style="font-size:0.6875rem;color:#94a3b8;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escapeHTML((p.address || '') + ', ' + (p.city || '')) + '</p>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:0.25rem;font-size:0.8125rem;flex-shrink:0;margin-left:0.5rem">' +
+              '<span style="color:#f59e0b">★</span>' +
+              '<span style="font-weight:700;color:#0f172a">' + rating + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</a>';
+      }
+      listEl.innerHTML = html;
+      document.getElementById('map-list-shown').textContent = shown.length;
+    }
+    function escapeHTML(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+    // Initial list render (top 60 by distance, already sorted above).
+    renderPharmacyList(window.__ppPharmacies, 60);
+
+    function initPharmacyMap() {
+      if (window.__ppMapInit) return;
+      if (typeof google === 'undefined' || !google.maps) {
+        // Safety net if the async loader hasn't landed yet; bail after ~10s.
+        if ((window.__ppMapTries = (window.__ppMapTries || 0) + 1) < 50) setTimeout(initPharmacyMap, 200);
+        return;
+      }
+      window.__ppMapInit = true;
+      var mapEl = document.getElementById('pharmacy-map');
+      if (!mapEl) return;
+      var pharmacies = window.__ppPharmacies || [];
+      // Initial center: user's resolved location (auth zip → IP) when available,
+      // otherwise the first pharmacy in the data, otherwise continental US center.
+      var userLat = {{ user_lat|default:"null" }};
+      var userLng = {{ user_lng|default:"null" }};
+      var initialZoom = 5;
+      var center;
+      if (userLat != null && userLng != null) {
+        center = {lat: parseFloat(userLat), lng: parseFloat(userLng)};
+        initialZoom = 11; // city-level — enough to see ~30 cluster markers
+      } else if (pharmacies.length > 0) {
+        center = {lat: parseFloat(pharmacies[0].latitude), lng: parseFloat(pharmacies[0].longitude)};
+      } else {
+        center = {lat: 39.8283, lng: -98.5795};
+      }
+      var map = new google.maps.Map(mapEl, {
+        zoom: initialZoom,
+        center: center,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+        gestureHandling: 'greedy',
+        clickableIcons: false,
+        styles: [{featureType: "poi", stylers: [{visibility: "off"}]}, {featureType: "transit", stylers: [{visibility: "off"}]}]
+      });
+
+      var infoWindow = new google.maps.InfoWindow();
+      var bounds = new google.maps.LatLngBounds();
+      var markers = [];
+      var pharmacyByMarkerIdx = [];
+
+      // Lightweight circle icon — shared instance, no per-marker allocation cost.
+      var icon = {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 6,
+        fillColor: '#008F82',
+        fillOpacity: 0.85,
+        strokeColor: '#fff',
+        strokeWeight: 1.5,
+      };
+
+      for (var i = 0; i < pharmacies.length; i++) {
+        var p = pharmacies[i];
+        var lat = parseFloat(p.latitude), lng = parseFloat(p.longitude);
+        if (!lat || !lng) continue;
+        var pos = {lat: lat, lng: lng};
+        bounds.extend(pos);
+        var marker = new google.maps.Marker({
+          position: pos,
+          title: p.name,
+          icon: icon,
+          optimized: true, // canvas-rendered markers are ~10× faster
+        });
+        pharmacyByMarkerIdx.push(p);
+        (function(p, marker) {
+          marker.addListener('click', function() {
+            var rating = p.avg_service_rating != null ? p.avg_service_rating : '—';
+            var stock = p.stock_confidence != null ? p.stock_confidence : '—';
+            infoWindow.setContent(
+              '<div style="font-family:Inter,sans-serif;max-width:220px">' +
+                '<strong style="font-size:13px">' + escapeHTML(p.name) + '</strong><br>' +
+                '<span style="font-size:11px;color:#64748b">' + escapeHTML((p.address || '') + ', ' + (p.city || '')) + '</span><br>' +
+                '<span style="color:#f59e0b">★</span> <strong>' + rating + '</strong> · ' +
+                '<span style="color:#008F82;font-weight:600">' + stock + '% stock</span><br>' +
+                '<a href="/pharmacy/' + p.id + '/' + p.slug + '/" style="color:#008F82;font-size:12px;font-weight:600">View details →</a>' +
+              '</div>'
+            );
+            infoWindow.open(map, marker);
+          });
+        })(p, marker);
+        markers.push(marker);
+      }
+
+      // MarkerClusterer handles thousands of markers smoothly by grouping them
+      // into clusters at low zoom levels. Without it, the browser repaints
+      // every marker on every pan/zoom — that's the choppiness.
+      // Tester feedback: clusters obscure individual pharmacies; bias toward
+      // showing real pins as soon as we're at neighborhood zoom. The Algorithm
+      // maxZoom=10 means "stop clustering once user zooms past 10" — so by
+      // default zoom 11 (city) and tighter, every pharmacy gets its own pin.
+      if (window.markerClusterer && markers.length > 0) {
+        new window.markerClusterer.MarkerClusterer({
+          map: map,
+          markers: markers,
+          algorithmOptions: { maxZoom: 10, radius: 60 },
+          renderer: {
+            render: function(cluster) {
+              var count = cluster.count;
+              var size = count >= 100 ? 56 : count >= 25 ? 48 : count >= 10 ? 42 : 36;
+              var svg = window.btoa(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="' + size + '" height="' + size + '">' +
+                  '<circle cx="' + (size/2) + '" cy="' + (size/2) + '" r="' + (size/2 - 2) + '" fill="#008F82" fill-opacity="0.85" stroke="#fff" stroke-width="2"/>' +
+                '</svg>'
+              );
+              return new google.maps.Marker({
+                position: cluster.position,
+                icon: { url: 'data:image/svg+xml;base64,' + svg, scaledSize: new google.maps.Size(size, size) },
+                label: { text: String(count), color: 'white', fontSize: '12px', fontWeight: '700' },
+                zIndex: 1000 + count,
+              });
+            }
+          }
+        });
+      } else {
+        // Fallback if cluster lib hasn't loaded — just attach markers directly.
+        for (var j = 0; j < markers.length; j++) markers[j].setMap(map);
+      }
+
+      // Skip fitBounds when we already centered on the user's location —
+      // otherwise the user's "near me" view gets snapped back to a US-wide
+      // view of all 4400 markers.
+      if (userLat == null && markers.length > 1) map.fitBounds(bounds, 50);
+      else if (markers.length === 1) map.setZoom(13);
+
+      // Re-center button: list the pharmacies currently in the map viewport.
+      document.getElementById('map-list-recenter').addEventListener('click', function() {
+        var b = map.getBounds();
+        if (!b) return;
+        var visible = pharmacies.filter(function(p) {
+          var lat = parseFloat(p.latitude), lng = parseFloat(p.longitude);
+          return lat && lng && b.contains(new google.maps.LatLng(lat, lng));
+        });
+        document.getElementById('map-list-total').textContent = visible.length;
+        renderPharmacyList(visible, 60);
+      });
+    }
+    </script>
+
+    {% if google_places_key %}
+    <!-- MarkerClusterer (Google Maps utility) — load before Maps callback fires. -->
+    <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_places_key }}&callback=initPharmacyMap"></script>
+    {% endif %}
+
+  </div>
+</div>
+{% include "pharmacypulse/partials/footer.html" %}
+{% include "pharmacypulse/partials/bottom-nav.html" %}
+{% endblock %}

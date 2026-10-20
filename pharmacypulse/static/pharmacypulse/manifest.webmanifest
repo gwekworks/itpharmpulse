@@ -1,0 +1,12 @@
+{
+  "name": "PharmacyPulse",
+  "short_name": "PharmacyPulse",
+  "description": "Find, review, and compare pharmacies.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#008F82",
+  "icons": [
+    {"src": "/static/pharmacypulse/icon-512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}

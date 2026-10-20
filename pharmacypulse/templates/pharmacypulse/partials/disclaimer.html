@@ -1,0 +1,9 @@
+{% comment %}
+  Reusable inline disclaimer note.
+  Usage: {% include "pharmacypulse/partials/disclaimer.html" with text="..." only %}
+  The `text` string must also be added to PP_EN_ES in topbar.html so it localizes to ES.
+{% endcomment %}
+<div role="note" class="pp-disclaimer">
+  <svg translate="no" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+  <span>{{ text }}</span>
+</div>

@@ -1,0 +1,86 @@
+{% extends "pharmacypulse/layouts/app.html" %}
+{% load pharmacypulse %}
+{% block title %}Drug Shortages — Current FDA Medication Shortages{% endblock %}
+{% block meta_description %}Track current and resolved drug shortages. Search by medication name or manufacturer to see shortage status, reasons, and estimated resolution dates.{% endblock %}
+{% block content %}
+{% include "pharmacypulse/partials/topbar.html" %}
+<div style="background: #fafbfc; min-height: 100vh; padding-bottom: 0">
+  <div style="max-width: 72rem; margin: 0 auto; padding: 1.5rem 1.5rem">
+
+    <div style="margin-bottom: 1.5rem">
+      <h1 style="font-family: 'DM Serif Display', serif; font-size: 1.75rem; color: #0f172a; margin-bottom: 0.25rem">Drug Shortages</h1>
+      <p style="font-size: 0.875rem; color: #64748b">Current medication shortage information from the FDA.</p>
+    </div>
+
+    <!-- Inline stats -->
+    <div style="display: flex; gap: 0.75rem; font-size: 0.75rem; color: #64748b; margin-bottom: 1rem; flex-wrap: wrap">
+      <span><strong style="color: #0f172a">{{s_total.0.n}}</strong> tracked</span>
+      <span><strong style="color: #dc2626">{{s_current.0.n}}</strong> current</span>
+      <span><strong style="color: #16a34a">{{s_resolved.0.n}}</strong> resolved</span>
+      <span style="color: #94a3b8">Source: FDA openFDA</span>
+    </div>
+
+    {% include "pharmacypulse/partials/disclaimer.html" with text="Shortage data is sourced from the FDA openFDA database for informational purposes only and may not reflect real-time availability at any specific pharmacy. Always confirm with your pharmacy or prescriber." only %}
+
+    <!-- Search -->
+    <form action="/shortages" method="GET" style="display: flex; background: white; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; overflow: hidden; margin-bottom: 0.5rem">
+      <div style="display: flex; align-items: center; padding-left: 0.75rem; color: #94a3b8; font-size: 1rem">
+        🔍
+      </div>
+      <input type="text" name="q" placeholder="Search medications" value="{{param_q}}" style="flex: 1; padding: 0.625rem 0.5rem; border: none; outline: none; font-size: 0.8125rem; background: transparent; color: #0f172a">
+      <input type="hidden" name="status" value="{{param_status}}">
+      <button type="submit" style="padding: 0.5rem 0.75rem; background: #008F82; color: white; border: none; border-radius: 9999px; font-weight: 600; font-size: 0.75rem; cursor: pointer; flex-shrink: 0">Search</button>
+    </form>
+
+    <!-- Filter -->
+    <select onchange="window.location='/shortages?q={{param_q}}&status='+this.value" style="padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; font-weight: 500; color: #0f172a; background: white; outline: none; cursor: pointer; width: 100%; margin-bottom: 1rem; appearance: auto">
+      <option value="" {% if not param_status %}selected{% endif %}>All Status</option>
+      <option value="current" {% if param_status == "current" %}selected{% endif %}>Current</option>
+      <option value="resolved" {% if param_status == "resolved" %}selected{% endif %}>Resolved</option>
+      <option value="discontinued" {% if param_status == "discontinued" %}selected{% endif %}>Discontinued</option>
+    </select>
+
+    <!-- Shortage list -->
+    
+    <div style="display: grid; gap: 0.5rem">
+      {% for item in shortages %}
+      <details style="background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden">
+        <summary style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; cursor: pointer; list-style: none">
+          <div>
+            <p style="font-weight: 600; color: #0f172a; font-size: 0.875rem">{{ item.drug_name }}</p>
+            {% if item.generic_name and item.generic_name|lower != item.drug_name|lower %}
+            <p style="font-size: 0.75rem; color: #475569; font-style: italic">Generic: {{ item.generic_name }}</p>
+            {% endif %}
+            {% if item.manufacturer %}<p style="font-size: 0.6875rem; color: #94a3b8">{{ item.manufacturer }}</p>{% endif %}
+          </div>
+          <span class="badge-{{ item.status }}">{{ item.status }}</span>
+        </summary>
+        <div style="padding: 0 1rem 1rem; border-top: 1px solid #f1f5f9">
+          {% if item.reason %}<p style="font-size: 0.8125rem; color: #64748b; line-height: 1.6; margin-top: 0.75rem">{{ item.reason }}</p>{% endif %}
+          {% if item.estimated_resolution %}
+          <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem">📅 FDA last updated: {{ item.estimated_resolution }}</p>
+          {% endif %}
+          {% if item.alternatives %}
+          <div style="margin-top: 0.75rem; padding: 0.75rem; background: #E6F7F5; border-radius: 0.75rem">
+            <p style="font-size: 0.6875rem; font-weight: 600; color: #006B62; margin-bottom: 0.25rem">Availability</p>
+            <p style="font-size: 0.75rem; color: #006B62">{{ item.alternatives }}</p>
+          </div>
+          {% endif %}
+        </div>
+      </details>
+      {% endfor %}
+    </div>
+    {% if not shortages %}
+    <div style="text-align: center; padding: 3rem 1rem">
+      <p style="font-size: 1.5rem; margin-bottom: 0.5rem">✅</p>
+      <p style="font-weight: 600; color: #0f172a">No shortages found</p>
+      <p style="font-size: 0.8125rem; color: #64748b">No matching medication shortages at this time.</p>
+    </div>
+    {% endif %}
+    
+
+  </div>
+</div>
+{% include "pharmacypulse/partials/footer.html" %}
+{% include "pharmacypulse/partials/bottom-nav.html" %}
+{% endblock %}
