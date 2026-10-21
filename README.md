@@ -26,6 +26,7 @@ as needed:
 | `DJANGO_DEBUG`                                           | Django                                                          | dev=1     |
 | `DJANGO_ALLOWED_HOSTS`                                   | Django                                                          | prod      |
 | `DATABASE_URL`                                           | Postgres                                                        | prod      |
+| `ADMIN_PHARMACIES_PER_PAGE`                              | Admin pharmacies list (default: `200`, positive integer)        | optional  |
 | `GOOGLE_PLACES_KEY`                                      | `ingest_pharmacies_by_zip`, `fetch_pharmacy_details`, map tiles | optional  |
 | `GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET`  | social login                                                    | optional  |
 | `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`                   | `create_checkout`                                               | optional  |
@@ -105,6 +106,10 @@ Open http://127.0.0.1:8765
 
 - email: admin@demo.pharmacypulse.com
 - password: AdminPass123!
+
+To add a pharmacy manually, open **Pharmacy Data** in the admin dashboard and
+use **Add pharmacy** in the **All Pharmacies** section. New records are saved
+as unpublished; review them using the Unpublished filter before publishing.
 
 ## To import postgres database:
 

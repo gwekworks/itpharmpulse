@@ -4,6 +4,7 @@ from __future__ import annotations
 import functools
 from datetime import timedelta
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Avg, Case, Count, F, Q, Sum, Value, When
 from django.utils import timezone as djtz
@@ -431,11 +432,38 @@ def page_admin_moderation(request):
 
 
 def page_admin_pharmacies(request):
+    from django.core.paginator import Paginator
+    from urllib.parse import urlencode
+
     q = (request.GET.get("q") or "").strip()
+    pharmacy_kind = request.GET.get("kind", "all")
+    if pharmacy_kind not in ("all", "digital", "other"):
+        pharmacy_kind = "all"
+    publish_status = request.GET.get("publish_status", "")
+    if publish_status not in ("", "published", "unpublished"):
+        publish_status = ""
+
     pub = PharmacyPublishable.objects
     qs = pub.all().order_by("name")
     if q:
         qs = qs.filter(Q(name__icontains=q) | Q(address__icontains=q) | Q(zip=q))
+    if pharmacy_kind == "digital":
+        qs = qs.filter(is_digital=1)
+    elif pharmacy_kind == "other":
+        qs = qs.filter(is_digital=0)
+    if publish_status:
+        qs = qs.filter(publish_status=publish_status)
+    pharmacy_paginator = Paginator(qs, settings.ADMIN_PHARMACIES_PER_PAGE)
+    pharmacy_page_obj = pharmacy_paginator.get_page(
+        request.GET.get("pharmacy_page"))
+    pharmacy_page_query = urlencode({
+        key: value for key, value in {
+            "q": q,
+            "kind": pharmacy_kind,
+            "publish_status": publish_status,
+        }.items() if value
+    })
+
     active = pub.filter(status="active")
     chain_rows = []
     for key, label, qexp in BRAND_PATTERNS:
@@ -460,7 +488,6 @@ def page_admin_pharmacies(request):
 
     # Pending pharmacies: source pharmacies that don't have a publishable row yet.
     # Ordered newest first so admins see the latest imports at the top.
-    from django.core.paginator import Paginator
     pending_page = int(request.GET.get("pending_page") or 1)
     pending_qs = Pharmacy.objects.filter(
         status="active", deleted_at__isnull=True
@@ -497,8 +524,14 @@ def page_admin_pharmacies(request):
         })
 
     return {
-        "pharmacies": [_pub_dict(p) for p in qs[:500]],
-        "total_count": Row({"total": qs.count()}),
+        "pharmacies": [_pub_dict(p) for p in pharmacy_page_obj],
+        "pharmacy_paginator": pharmacy_paginator,
+        "pharmacy_page_obj": pharmacy_page_obj,
+        "pharmacy_page_query": pharmacy_page_query,
+        "pharmacy_page": pharmacy_page_obj.number,
+        "pharmacy_kind": pharmacy_kind,
+        "publish_status": publish_status,
+        "total_count": Row({"total": pharmacy_paginator.count}),
         "success": request.GET.get("success"),
         "error": request.GET.get("error"),
         "q": q,

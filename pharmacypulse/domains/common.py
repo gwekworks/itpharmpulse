@@ -7,11 +7,18 @@ from __future__ import annotations
 
 import functools
 
+from django.core.cache import cache
 from django.db.models import F, Q
 from django.db.models.functions import ASin, Cos, Power, Radians, Sin, Sqrt
 
 from ..models import DrugShortage, Pharmacy, Review
 from ..text_utils import pharmacy_slug, strip_chain_suffix
+
+ONLINE_PHARMACIES_CACHE_KEY = "pp:online:list:v2"
+
+
+def invalidate_online_pharmacies_cache():
+    cache.delete(ONLINE_PHARMACIES_CACHE_KEY)
 
 
 def _safe_int(v):

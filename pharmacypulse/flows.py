@@ -26,7 +26,8 @@ from .domains.flows.reviews import (
     pharmacist_moderate_review,
 )
 from .domains.flows.pharmacies import (
-    bulk_delete_pharmacies, bulk_delete_chain, report_pharmacy_data,
+    bulk_delete_pharmacies, bulk_update_pharmacy_publish_status,
+    bulk_delete_chain, report_pharmacy_data,
     flag_as_closed, dismiss_closed_flag, delete_flagged_pharmacy,
     pharmacy_services_add, pharmacy_services_remove,
     coverage_plan_add, coverage_plan_remove,
@@ -34,7 +35,7 @@ from .domains.flows.pharmacies import (
     pharmacy_hours_save,
     add_to_compare, remove_from_compare, clear_compare,
     edit_pharmacy_publishable, bulk_publish_pharmacies,
-    pharmacist_update_pharmacy,
+    pharmacist_update_pharmacy, add_pharmacy_manually,
 )
 from .domains.flows.users import (
     suspend_user, unsuspend_user, change_user_role, ccpa_export,

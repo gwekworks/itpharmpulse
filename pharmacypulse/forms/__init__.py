@@ -7,5 +7,9 @@ from .auth import LoginForm, SignupForm
 from .reviews import WriteReviewForm
 from .claims import ClaimPharmacyForm
 from .transfers import PrescriptionTransferForm
+from .admin_pharmacies import ManualPharmacyForm
 
-__all__ = ["LoginForm", "SignupForm", "WriteReviewForm", "ClaimPharmacyForm", "PrescriptionTransferForm"]
+__all__ = [
+    "LoginForm", "SignupForm", "WriteReviewForm", "ClaimPharmacyForm",
+    "PrescriptionTransferForm", "ManualPharmacyForm",
+]

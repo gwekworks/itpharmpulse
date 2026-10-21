@@ -12,8 +12,8 @@ from django.utils import timezone as djtz
 from ..models import (
     ActivityLog, DataRequest, DrugShortage, ModerationKeyword,
     NewsletterSubscriber, Notification, Pharmacy, PharmacyClaim, PharmacyHours,
-    PharmacyOrg, PharmacyTeamMember, ResponseCount, Review, ReviewResponse,
-    SavedComparison, User, UserConsent,
+    PharmacyOrg, PharmacyPublishable, PharmacyTeamMember, ResponseCount,
+    Review, ReviewResponse, SavedComparison, User, UserConsent,
 )
 
 from .common import (
@@ -21,7 +21,7 @@ from .common import (
     _shortage_dict, _compare_winners, _normalize_validation_error,
     _distance_mi_expr, _zip_city_state, _state_code, _TAXONOMY_BADGE, _TAXONOMY_LABEL, _STATE_NAMES,
     BRAND_PATTERNS, BRAND_PATTERNS_BY_KEY, DEFUNCT_CHAIN_KEYS,
-    published_pharmacies, get_search_radius_mi,
+    published_pharmacies, get_search_radius_mi, ONLINE_PHARMACIES_CACHE_KEY,
 )
 
 
@@ -401,7 +401,7 @@ def page_online(request):
     # The online-pharmacy list is user-independent and large-ish (~1k rows);
     # cache the fully-rendered rows for an hour to keep slugify + ORM work
     # off the hot path.
-    cache_key = "pp:online:list:v1"
+    cache_key = ONLINE_PHARMACIES_CACHE_KEY
     if not q:
         cached = cache.get(cache_key)
         if cached is not None:
@@ -454,6 +454,13 @@ def page_pharmacy_detail(request, pharmacy_id=None):
     # etc. This way every page renders the same NPPES badges (verified,
     # established, services, chain). Add detail-page-only fields on top.
     pharmacy_row = _pharmacy_dict(p)
+    published_contact = PharmacyPublishable.objects.filter(
+        pharmacy_id=pid,
+    ).values("website", "is_digital").first()
+    if published_contact:
+        pharmacy_row["website"] = published_contact["website"] or ""
+        pharmacy_row["is_digital"] = published_contact["is_digital"]
+
     from ..geo import resolve as resolve_loc
     auto_loc = resolve_loc(request)
     distance_mi = None

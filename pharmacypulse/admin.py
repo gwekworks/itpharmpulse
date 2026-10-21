@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
+from .domains.common import invalidate_online_pharmacies_cache
 from .models import (
     ActivityLog, DataRequest, DrugShortage, ModerationKeyword,
     NewsletterSubscriber, Notification, Pharmacy, PharmacyClaim, PharmacyHours,
@@ -40,6 +41,7 @@ class PharmacyPublishableAdmin(admin.ModelAdmin):
         # sync leaves it alone from now on.
         obj.admin_edited = True
         super().save_model(request, obj, form, change)
+        invalidate_online_pharmacies_cache()
 
 
 @admin.register(Review)

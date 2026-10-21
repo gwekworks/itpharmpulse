@@ -218,6 +218,13 @@
         </div>
         {% endif %}
 
+        {% if item.website and item.is_digital %}
+        <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.8125rem;color:#6B7280;margin-bottom:0.3rem;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <a href="{% if 'http' not in item.website|lower %}https://{% endif %}{{ item.website }}" target="_blank" rel="noopener noreferrer" style="color:#008F82;font-weight:600;">{{ item.website }}</a>
+        </div>
+        {% endif %}
+
         {% if item.fax_number %}
         <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.8125rem;color:#6B7280;margin-bottom:0.3rem;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
@@ -225,7 +232,7 @@
         </div>
         {% endif %}
 
-        {% if item.website %}
+        {% if item.website and not item.is_digital %}
         <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.8125rem;color:#6B7280;margin-bottom:0.3rem;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           <a href="{% if 'http' not in item.website|lower %}https://{% endif %}{{ item.website }}" target="_blank" rel="noopener noreferrer" style="color:#008F82;font-weight:600;">{{ item.website }}</a>

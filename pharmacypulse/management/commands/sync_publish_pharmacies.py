@@ -24,6 +24,7 @@ from __future__ import annotations
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
+from pharmacypulse.domains.common import invalidate_online_pharmacies_cache
 from pharmacypulse.models import Pharmacy, PharmacyPublishable
 
 # Columns copied across from the source pharmacy.
@@ -93,6 +94,8 @@ class Command(BaseCommand):
             if to_refresh:
                 PharmacyPublishable.objects.bulk_update(
                     to_refresh, fields=_COPY_FIELDS + ["status"], batch_size=1000)
+        if to_create or to_refresh:
+            invalidate_online_pharmacies_cache()
 
         self.stdout.write(self.style.SUCCESS(
             f"Created {len(to_create)} new, refreshed {len(to_refresh)}, "

@@ -185,6 +185,12 @@ class ApplicationSmokeTests(TestCase):
         ]:
             self.assert_ok(path)
 
+    def test_online_page_uses_digital_platform_title(self):
+        response = self.client.get("/online")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Digital Prescription Access Platforms")
+        self.assertNotContains(response, "Online Pharmacies")
+
     def test_list_location_banner_and_distance_sort(self):
         """/list asks the visitor to enable location when none is available,
         and switches to closest-first once a browser location (pp_loc cookie)
@@ -403,6 +409,256 @@ class ApplicationSmokeTests(TestCase):
         ]:
             self.assert_ok(path)
 
+    def test_admin_pharmacy_list_filters_and_paginates(self):
+        self.client.force_login(self.admin)
+        digital = PharmacyPublishable.objects.get(pharmacy_id=self.online.id)
+        digital.publish_status = "unpublished"
+        digital.save(update_fields=["publish_status"])
+
+        response = self.client.get("/admin-pharmacies", {
+            "kind": "digital",
+            "publish_status": "unpublished",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [item["id"] for item in response.context["pharmacies"]],
+            [self.online.id],
+        )
+
+        response = self.client.get("/admin-pharmacies", {
+            "kind": "other",
+            "publish_status": "published",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [item["id"] for item in response.context["pharmacies"]],
+            [self.pharmacy.id],
+        )
+
+        for number in range(25):
+            pharmacy = Pharmacy.objects.create(
+                name=f"Pagination Pharmacy {number:02}",
+                address="100 Test St",
+                city="Philadelphia",
+                state="PA",
+                zip="19103",
+                status="active",
+            )
+            self._publish(pharmacy)
+
+        with override_settings(ADMIN_PHARMACIES_PER_PAGE=25):
+            first_page = self.client.get("/admin-pharmacies")
+            self.assertEqual(len(first_page.context["pharmacies"]), 25)
+            self.assertEqual(first_page.context["pharmacy_paginator"].count, 27)
+
+            second_page = self.client.get(
+                "/admin-pharmacies", {"pharmacy_page": "2"})
+            self.assertEqual(len(second_page.context["pharmacies"]), 2)
+            first_page_ids = {
+                item["id"] for item in first_page.context["pharmacies"]}
+            second_page_ids = {
+                item["id"] for item in second_page.context["pharmacies"]}
+            self.assertFalse(first_page_ids & second_page_ids)
+
+            with override_settings(ADMIN_PHARMACIES_PER_PAGE=10):
+                configured_page = self.client.get("/admin-pharmacies")
+                self.assertEqual(
+                    configured_page.context["pharmacy_paginator"].per_page, 10)
+                self.assertEqual(
+                    len(configured_page.context["pharmacies"]), 10)
+
+            filtered_page_2 = self.client.get("/admin-pharmacies", {
+                "kind": "other",
+                "publish_status": "published",
+                "pharmacy_page": "2",
+            })
+            self.assertEqual(
+                filtered_page_2.context["pharmacy_paginator"].count, 26)
+            self.assertEqual(
+                filtered_page_2.context["pharmacy_page_query"],
+                "kind=other&publish_status=published",
+            )
+            self.assertContains(filtered_page_2, "pharmacy_page=1")
+
+    def test_admin_can_add_unpublished_pharmacy_from_all_pharmacies(self):
+        payload = {
+            "name": "Manual Digital Pharmacy",
+            "address": "55 Main St",
+            "address_2": "Suite 4",
+            "city": "Philadelphia",
+            "state": "pa",
+            "zip": "19103",
+            "phone": "555-0101",
+            "fax_number": "555-0102",
+            "website": "https://manual.example.test",
+            "npi_number": "1234567890",
+            "is_digital": "1",
+        }
+
+        self.client.force_login(self.user)
+        response = self.client.post(
+            "/api/flow/add-pharmacy-manually", payload)
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(
+            Pharmacy.objects.filter(name="Manual Digital Pharmacy").exists())
+
+        self.client.force_login(self.admin)
+        response = self.client.post(
+            "/api/flow/add-pharmacy-manually", payload)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("#all-pharmacies", response["Location"])
+        self.assertIn("publish_status=unpublished", response["Location"])
+        self.assertIn("q=Manual+Digital+Pharmacy", response["Location"])
+
+        pharmacy = Pharmacy.objects.get(name="Manual Digital Pharmacy")
+        self.assertEqual(pharmacy.state, "PA")
+        self.assertEqual(pharmacy.status, "deleted")
+        self.assertEqual(pharmacy.website, "https://manual.example.test")
+        self.assertEqual(pharmacy.is_digital, 1)
+
+        listing = PharmacyPublishable.objects.get(pharmacy_id=pharmacy.id)
+        self.assertEqual(listing.publish_status, "unpublished")
+        self.assertEqual(listing.status, "deleted")
+        self.assertTrue(listing.admin_edited)
+        self.assertEqual(listing.website, pharmacy.website)
+        self.assertEqual(listing.is_digital, 1)
+
+        response = self.client.get("/admin-pharmacies", {
+            "publish_status": "unpublished",
+            "q": "Manual Digital Pharmacy",
+        })
+        self.assertContains(response, "Manual Digital Pharmacy")
+        self.assertContains(response, "Unpublished")
+        self.assertContains(response, "Add pharmacy")
+
+        duplicate_response = self.client.post(
+            "/api/flow/add-pharmacy-manually", payload)
+        self.assertEqual(duplicate_response.status_code, 302)
+        self.assertIn("error=", duplicate_response["Location"])
+        self.assertEqual(
+            Pharmacy.objects.filter(name="Manual Digital Pharmacy").count(), 1)
+
+        self.client.post(
+            "/api/flow/bulk-update-pharmacy-publish-status",
+            {
+                "pharmacy_id": [pharmacy.id],
+                "publish_status": "published",
+            },
+        )
+        listing.refresh_from_db()
+        pharmacy.refresh_from_db()
+        self.assertEqual(listing.publish_status, "published")
+        self.assertEqual(listing.status, "active")
+        self.assertEqual(pharmacy.status, "active")
+
+    def test_admin_bulk_publish_and_unpublish_existing_pharmacies(self):
+        self.client.force_login(self.admin)
+        row = PharmacyPublishable.objects.get(pharmacy_id=self.pharmacy.id)
+
+        response = self.client.post(
+            "/api/flow/bulk-update-pharmacy-publish-status",
+            {
+                "pharmacy_id": [self.pharmacy.id],
+                "publish_status": "unpublished",
+                "return_q": "Smoke Pharmacy",
+                "return_kind": "other",
+                "return_publish_status": "published",
+                "return_pharmacy_page": "2",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response["Location"],
+            "/admin-pharmacies?q=Smoke+Pharmacy&kind=other"
+            "&publish_status=published&pharmacy_page=2"
+            "&success=Unpublished+1+pharmacies",
+        )
+        row.refresh_from_db()
+        self.pharmacy.refresh_from_db()
+        self.assertEqual(row.publish_status, "unpublished")
+        self.assertTrue(row.admin_edited)
+        self.assertEqual(self.pharmacy.status, "deleted")
+
+        response = self.client.post(
+            "/api/flow/bulk-update-pharmacy-publish-status",
+            {
+                "pharmacy_id": [self.pharmacy.id],
+                "publish_status": "published",
+                "return_q": "Smoke Pharmacy",
+                "return_kind": "other",
+                "return_publish_status": "unpublished",
+                "return_pharmacy_page": "2",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response["Location"],
+            "/admin-pharmacies?q=Smoke+Pharmacy&kind=other"
+            "&publish_status=unpublished&pharmacy_page=2"
+            "&success=Published+1+pharmacies",
+        )
+        row.refresh_from_db()
+        self.pharmacy.refresh_from_db()
+        self.assertEqual(row.publish_status, "published")
+        self.assertEqual(self.pharmacy.status, "active")
+
+    def test_online_cache_is_invalidated_when_pharmacy_is_published(self):
+        from django.core.cache import cache
+
+        self.client.force_login(self.admin)
+        cache.delete("pp:online:list:v2")
+        row = PharmacyPublishable.objects.get(pharmacy_id=self.online.id)
+        row.publish_status = "unpublished"
+        row.status = "deleted"
+        row.save(update_fields=["publish_status", "status"])
+
+        hidden_response = self.client.get("/online")
+        self.assertNotContains(hidden_response, "Smoke Online Pharmacy")
+
+        self.client.post(
+            "/api/flow/bulk-update-pharmacy-publish-status",
+            {
+                "pharmacy_id": [self.online.id],
+                "publish_status": "published",
+            },
+        )
+
+        published_response = self.client.get("/online")
+        self.assertContains(published_response, "Smoke Online Pharmacy")
+        row.refresh_from_db()
+        self.assertEqual(row.status, "active")
+
+    def test_admin_bulk_delete_preserves_pharmacy_list_filters(self):
+        self.client.force_login(self.admin)
+        pharmacy = Pharmacy.objects.create(
+            name="Delete Target Pharmacy",
+            address="100 Test St",
+            city="Philadelphia",
+            state="PA",
+            zip="19103",
+            status="active",
+        )
+        self._publish(pharmacy)
+
+        response = self.client.post(
+            "/api/flow/bulk-delete-pharmacies",
+            {
+                "pharmacy_id": [pharmacy.id],
+                "return_q": "Delete Target",
+                "return_kind": "digital",
+                "return_publish_status": "unpublished",
+                "return_pharmacy_page": "3",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response["Location"],
+            "/admin-pharmacies?q=Delete+Target&kind=digital"
+            "&publish_status=unpublished&pharmacy_page=3"
+            "&success=Deleted+1+pharmacies",
+        )
+        self.assertFalse(Pharmacy.objects.filter(pk=pharmacy.id).exists())
+
     def test_pharmacy_slug_url_renders(self):
         """SEO slug URLs (/pharmacy/<id>/<slug>/) render the same pharmacy as
         the legacy /pharmacy?id= query form, and are 301-consistent canonical
@@ -417,6 +673,16 @@ class ApplicationSmokeTests(TestCase):
         legacy = self.client.get(f"/pharmacy?id={self.pharmacy.id}")
         self.assertEqual(legacy.status_code, 200)
         self.assertContains(legacy, "google.com/maps")
+
+    def test_digital_pharmacy_website_is_shown_with_contact_details(self):
+        PharmacyPublishable.objects.filter(pharmacy_id=self.online.id).update(
+            website="online.example.test")
+
+        response = self.client.get(f"/pharmacy?id={self.online.id}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'href="https://online.example.test"')
+        self.assertContains(response, "online.example.test")
 
     def test_pharmacy_detail_map_falls_back_to_address(self):
         """A pharmacy without coordinates still renders a working map using its

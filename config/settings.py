@@ -233,6 +233,19 @@ RESEND_API_KEY      = os.environ.get("RESEND_API_KEY", "")
 RESEND_AUDIENCE_ID  = os.environ.get("RESEND_AUDIENCE_ID", "")
 
 # --------- PharmacyPulse-specific settings (Benmore app.yaml) ---------
+try:
+    ADMIN_PHARMACIES_PER_PAGE = int(
+        os.environ.get("ADMIN_PHARMACIES_PER_PAGE", "200")
+    )
+except ValueError as exc:
+    raise ImproperlyConfigured(
+        "ADMIN_PHARMACIES_PER_PAGE must be a positive integer."
+    ) from exc
+if ADMIN_PHARMACIES_PER_PAGE < 1:
+    raise ImproperlyConfigured(
+        "ADMIN_PHARMACIES_PER_PAGE must be a positive integer."
+    )
+
 BRAND = {
     "primary": "#008F82",
     "site_name": "PharmacyPulse",

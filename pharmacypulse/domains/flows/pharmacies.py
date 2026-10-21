@@ -26,6 +26,8 @@ from ...models import (
     Review, ReviewResponse, SavedComparison, User, UserConsent,
 )
 
+from ..common import invalidate_online_pharmacies_cache
+from ...forms import ManualPharmacyForm
 from .common import admin_required, _activity
 
 # Columns copied from Pharmacy → PharmacyPublishable (mirrors sync_publish_pharmacies)
@@ -44,6 +46,74 @@ _PUBLISH_COPY_FIELDS = [
     "phone_wait_time", "delivery_wait_time", "delivery_rating",
     "customer_service_hours", "listing_completed_at",
 ]
+
+
+@admin_required
+@require_POST
+def add_pharmacy_manually(request):
+    form = ManualPharmacyForm(request.POST)
+    if not form.is_valid():
+        error = next(iter(form.errors.values()))[0]
+        return redirect(
+            "/admin-pharmacies?error="
+            f"{urllib.parse.quote(str(error))}#all-pharmacies")
+
+    data = form.cleaned_data
+    if data["npi_number"] and Pharmacy.objects.filter(
+        npi_number=data["npi_number"],
+    ).exists():
+        return redirect(
+            "/admin-pharmacies?error="
+            f"{urllib.parse.quote('A pharmacy with that NPI already exists.')}#all-pharmacies")
+    if Pharmacy.objects.filter(
+        name__iexact=data["name"],
+        address__iexact=data["address"],
+        zip=data["zip"],
+        deleted_at__isnull=True,
+    ).exists():
+        return redirect(
+            "/admin-pharmacies?error="
+            f"{urllib.parse.quote('A pharmacy with that name, address, and ZIP already exists.')}#all-pharmacies")
+
+    from ...models import PharmacyPublishable
+
+    with transaction.atomic():
+        pharmacy = Pharmacy.objects.create(
+            name=data["name"].strip(),
+            address=data["address"].strip(),
+            address_2=data["address_2"].strip(),
+            city=data["city"].strip(),
+            state=data["state"],
+            zip=data["zip"],
+            phone=data["phone"].strip() or None,
+            fax_number=data["fax_number"].strip() or None,
+            website=data["website"] or None,
+            npi_number=data["npi_number"] or None,
+            is_digital=1 if data["is_digital"] else 0,
+            status="deleted",
+        )
+        publishable_data = {
+            field: getattr(pharmacy, field) for field in _PUBLISH_COPY_FIELDS
+        }
+        PharmacyPublishable.objects.create(
+            pharmacy_id=pharmacy.id,
+            **publishable_data,
+            status="deleted",
+            publish_status="unpublished",
+            admin_edited=True,
+        )
+
+    _activity(
+        request,
+        "pharmacy_manual_create",
+        f"{request.user.email} added pharmacy #{pharmacy.id} ({pharmacy.name})",
+    )
+    query = urllib.parse.urlencode({
+        "publish_status": "unpublished",
+        "q": pharmacy.name,
+        "success": "Pharmacy added to Unpublished for review.",
+    })
+    return redirect(f"/admin-pharmacies?{query}#all-pharmacies")
 
 
 def _user_controls_pharmacy(user, pharmacy: Pharmacy) -> bool:
@@ -106,6 +176,7 @@ def pharmacist_update_pharmacy(request, pharmacy_id: int):
         for f, v in updates.items():
             setattr(pub, f, v)
         pub.save(update_fields=list(updates.keys()))
+        invalidate_online_pharmacies_cache()
 
     _activity(request, "pharmacy_owner_edit",
               f"{request.user.email} updated pharmacy #{pharmacy.id} "
@@ -159,6 +230,8 @@ def bulk_publish_pharmacies(request):
             PharmacyPublishable.objects.bulk_update(
                 to_update, fields=_PUBLISH_COPY_FIELDS + ["status", "publish_status"], batch_size=1000
             )
+    if to_create or to_update:
+        invalidate_online_pharmacies_cache()
 
     created = len(to_create)
     updated = len(to_update)
@@ -171,13 +244,32 @@ def bulk_publish_pharmacies(request):
     return redirect(f"/admin-pharmacies?success={msg}")
 
 
+def _admin_pharmacy_action_redirect(request, message_type, message):
+    params = {}
+    query = (request.POST.get("return_q") or "").strip()
+    kind = request.POST.get("return_kind", "")
+    publish_status = request.POST.get("return_publish_status", "")
+    page = request.POST.get("return_pharmacy_page", "")
+    if query:
+        params["q"] = query
+    if kind in ("all", "digital", "other"):
+        params["kind"] = kind
+    if publish_status in ("published", "unpublished"):
+        params["publish_status"] = publish_status
+    if page.isdigit() and int(page) > 0:
+        params["pharmacy_page"] = page
+    params[message_type] = message
+    return redirect(f"/admin-pharmacies?{urllib.parse.urlencode(params)}")
+
+
 @admin_required
 def bulk_delete_pharmacies(request):
     from ...models import PharmacyPublishable
     ids = request.POST.getlist("pharmacy_id")
     ids = [int(x) for x in ids if x.isdigit()][:500]  # hard cap
     if not ids:
-        return redirect("/admin-pharmacies?error=No+pharmacies+selected")
+        return _admin_pharmacy_action_redirect(
+            request, "error", "No pharmacies selected")
     n = Pharmacy.objects.filter(id__in=ids).count()
     with transaction.atomic():
         # Permanently remove the row from BOTH tables: first the searchable
@@ -186,10 +278,61 @@ def bulk_delete_pharmacies(request):
         # claims survive (their FK is SET_NULL → pharmacy_id becomes NULL).
         PharmacyPublishable.objects.filter(pharmacy_id__in=ids).delete()
         Pharmacy.objects.filter(id__in=ids).delete()
+    invalidate_online_pharmacies_cache()
     _activity(request, "pharmacy_bulk_delete",
               f"{request.user.email} permanently deleted {n} pharmacies "
               f"(id {min(ids)}–{max(ids)})")
-    return redirect(f"/admin-pharmacies?success=Deleted+{n}+pharmacies")
+    return _admin_pharmacy_action_redirect(
+        request, "success", f"Deleted {n} pharmacies")
+
+
+@admin_required
+@require_POST
+def bulk_update_pharmacy_publish_status(request):
+    """Publish or unpublish selected existing pharmacy listings."""
+    from ...models import PharmacyPublishable
+
+    publish_status = request.POST.get("publish_status")
+    if publish_status not in ("published", "unpublished"):
+        return _admin_pharmacy_action_redirect(
+            request, "error", "Invalid publish status")
+
+    ids = [int(value) for value in request.POST.getlist("pharmacy_id")
+           if value.isdigit()][:500]
+    if not ids:
+        return _admin_pharmacy_action_redirect(
+            request, "error", "No pharmacies selected")
+
+    rows = list(
+        PharmacyPublishable.objects.filter(pharmacy_id__in=ids)
+        .select_related("pharmacy")
+    )
+    pharmacy_status = "active" if publish_status == "published" else "deleted"
+    for row in rows:
+        row.publish_status = publish_status
+        row.status = pharmacy_status
+        row.admin_edited = True
+        row.pharmacy.status = pharmacy_status
+
+    with transaction.atomic():
+        if rows:
+            PharmacyPublishable.objects.bulk_update(
+                rows, fields=["publish_status", "status", "admin_edited"], batch_size=500,
+            )
+            Pharmacy.objects.bulk_update(
+                [row.pharmacy for row in rows], fields=["status"], batch_size=500,
+            )
+    if rows:
+        invalidate_online_pharmacies_cache()
+
+    label = "Published" if publish_status == "published" else "Unpublished"
+    _activity(
+        request,
+        f"pharmacy_bulk_{publish_status}",
+        f"{request.user.email} {label.lower()} {len(rows)} pharmacies",
+    )
+    return _admin_pharmacy_action_redirect(
+        request, "success", f"{label} {len(rows)} pharmacies")
 
 
 @admin_required
@@ -370,6 +513,7 @@ def delete_flagged_pharmacy(request, pharmacy_id: int):
         )
         PharmacyPublishable.objects.filter(pharmacy_id=pharmacy_id).delete()
         Pharmacy.objects.filter(id=pharmacy_id).delete()
+    invalidate_online_pharmacies_cache()
 
     _activity(request, "pharmacy_flagged_delete", f"{request.user.email} deleted flagged pharmacy #{pharmacy_id} ({pharm_name})")
     return redirect("/admin-pharmacies?tab=flags&success=Pharmacy+permanently+deleted")
@@ -659,13 +803,16 @@ def edit_pharmacy_publishable(request, pharmacy_id: int):
     publish_status = (request.POST.get("publish_status") or "published").strip()
     row.publish_status = publish_status if publish_status in (
         "published", "unpublished") else "published"
+    row.status = "active" if row.publish_status == "published" else "deleted"
     row.admin_edited = True
-    row.save(update_fields=_EDITABLE_PUB_FIELDS + ("publish_status", "admin_edited"))
+    row.save(update_fields=_EDITABLE_PUB_FIELDS + (
+        "publish_status", "status", "admin_edited"))
+    invalidate_online_pharmacies_cache()
 
     # Reflect the soft status change on the source pharmacy too, so the
     # canonical table stays in sync with what the public sees.
     if row.pharmacy:
-        row.pharmacy.status = "active" if publish_status == "published" else "deleted"
+        row.pharmacy.status = row.status
         row.pharmacy.save(update_fields=["status"])
 
     _activity(request, "pharmacy_publishable_edit",
