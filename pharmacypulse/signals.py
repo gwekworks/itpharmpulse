@@ -22,7 +22,7 @@ from django.utils import timezone as djtz
 
 from .models import (
     ActivityLog, ModerationKeyword, Pharmacy, PharmacyClaim,
-    ResponseCount, Review, User, UserConsent,
+    PrescriptionTransfer, ResponseCount, Review, User, UserConsent,
 )
 
 # ---------------- Review: rate limit + moderation (pre_save) ----------------
@@ -138,7 +138,6 @@ def review_post_delete(sender, instance: Review, **kwargs):
 
 
 # ------------------ PharmacyClaim: activity log on insert / update ---------
-
 @receiver(post_save, sender=PharmacyClaim)
 def claim_post_save(sender, instance: PharmacyClaim, created: bool, **kwargs):
     if created:
@@ -153,6 +152,26 @@ def claim_post_save(sender, instance: PharmacyClaim, created: bool, **kwargs):
             message=(
                 f"Claim for {instance.pharmacy_name or ''} updated to {instance.status}"
             ).strip(),
+            user_id=instance.user_id,
+        )
+
+
+@receiver(post_save, sender=PrescriptionTransfer)
+def transfer_post_save(sender, instance: PrescriptionTransfer, created: bool, **kwargs):
+    if created:
+        ActivityLog.objects.create(
+            type="transfer_submitted",
+            message=(
+                f"Transfer #{instance.id} {instance.medication_name or ''} "
+                f"{instance.from_pharmacy_name or ''} -> "
+                f"{instance.to_pharmacy_name or ''}".strip()
+            ),
+            user_id=instance.user_id,
+        )
+    elif instance.status != "pending":
+        ActivityLog.objects.create(
+            type="transfer_updated",
+            message=f"Transfer #{instance.id} updated to {instance.status}",
             user_id=instance.user_id,
         )
 

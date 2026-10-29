@@ -124,9 +124,9 @@
 
       <!-- 6 -->
       <h2 id="s6" class="font-serif text-lg mt-8 mb-2" style="color: hsl(220 50% 10%)">6. Cookie Notice</h2>
-      <p class="text-sm mb-3">This Cookie Notice explains how PharmacyPulse uses cookies, local storage, and similar tracking technologies (collectively, "cookies") when you visit the Service, and the choices available to you.</p>
+      <p class="text-sm mb-3">This Cookie Notice explains the cookies and similar technologies used by PharmacyPulse and how you can control optional functional and analytics storage. We store your consent choice in a first-party cookie.</p>
       <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.1 What Cookies Are</h3>
-      <p class="text-sm mb-3">Cookies are small text files placed on your device that let a website recognize your browser, remember information about your visit, and, in some cases, track your activity across sites. We also use comparable technologies such as local storage and pixel tags, which this Notice refers to collectively as "cookies."</p>
+      <p class="text-sm mb-3">Cookies are small text files placed on your device. This notice also covers similar technologies that store information on or access information from your device.</p>
       <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.2 Categories of Cookies We Use</h3>
       <div style="overflow-x:auto; margin-bottom:1rem;">
         <table style="width:100%; border-collapse:collapse; font-size:0.8125rem; color:hsl(215 20% 30%);">
@@ -140,31 +140,62 @@
           <tbody>
             <tr style="border-bottom:1px solid #E5E7EB;">
               <td style="padding:0.5rem 0.75rem; vertical-align:top; font-weight:500;">Essential</td>
-              <td style="padding:0.5rem 0.75rem; vertical-align:top;">Session ID, authentication token, load-balancing cookie</td>
-              <td style="padding:0.5rem 0.75rem; vertical-align:top;">Required to sign in, submit a review, and keep the Service secure and functional. Cannot be disabled without losing core functionality.</td>
+              <td style="padding:0.5rem 0.75rem; vertical-align:top;">pp_session, csrftoken, pp_cookie_consent</td>
+              <td style="padding:0.5rem 0.75rem; vertical-align:top;">Support sign-in and sessions, protect forms against cross-site requests, and remember your cookie choice for 180 days.</td>
             </tr>
             <tr style="border-bottom:1px solid #E5E7EB;">
               <td style="padding:0.5rem 0.75rem; vertical-align:top; font-weight:500;">Functional</td>
-              <td style="padding:0.5rem 0.75rem; vertical-align:top;">Language preference (English/Spanish), zip code/location entered by you</td>
-              <td style="padding:0.5rem 0.75rem; vertical-align:top;">Remembers your preferences so you don't have to re-enter them on each visit.</td>
+              <td style="padding:0.5rem 0.75rem; vertical-align:top;">lang, pp_loc, pp_text_size, pp_review_draft, translation cache</td>
+              <td style="padding:0.5rem 0.75rem; vertical-align:top;">When enabled, remembers your selected language, location, text size, and unfinished review draft. These preferences are stored only when you enable Functional cookies; language and location selected while disabled are kept only for the current browser session.</td>
             </tr>
             <tr>
               <td style="padding:0.5rem 0.75rem; vertical-align:top; font-weight:500;">Analytics</td>
-              <td style="padding:0.5rem 0.75rem; vertical-align:top;">First-party usage-analytics identifier</td>
+              <td style="padding:0.5rem 0.75rem; vertical-align:top;">_ga and _ga_* (Google Analytics)</td>
               <td style="padding:0.5rem 0.75rem; vertical-align:top;">Helps us understand aggregate usage patterns (e.g., which searches or listings are viewed) so we can improve the Service.</td>
+            </tr>
+            <tr>
+              <td style="padding:0.5rem 0.75rem; vertical-align:top; font-weight:500;">Advertising</td>
+              <td style="padding:0.5rem 0.75rem; vertical-align:top;">No advertising cookies; the saved preference is part of pp_cookie_consent.</td>
+              <td style="padding:0.5rem 0.75rem; vertical-align:top;">No advertising technology is active. The saved advertising checkbox is only a preference indicator; it does not enable ads or grant consent for future advertising. We will request fresh consent before introducing advertising cookies.</td>
             </tr>
           </tbody>
         </table>
       </div>
       <p class="text-sm mb-3">We do not use advertising or cross-context behavioral-advertising cookies, and we do not permit third parties to place such cookies through the Service.</p>
       <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.3 Third-Party Cookies</h3>
-      <p class="text-sm mb-3">Certain service providers who support hosting, analytics, and error monitoring may set their own cookies when you use the Service, subject to their own privacy practices and our contractual confidentiality and data-protection requirements. We do not authorize these providers to use Service data for their own advertising purposes.</p>
+      <p class="text-sm mb-3">Google Analytics is loaded only after you opt in to analytics cookies. Google may set analytics cookies and receive usage data when it is enabled. Google Maps and Google Fonts are also requested from Google on pages that use those services; these requests are separate from the analytics choice and may send technical information such as your IP address to Google. We do not use advertising cookies.</p>
       <h3 class="text-sm font-semibold mt-4 mb-2" style="color: hsl(220 50% 10%)">6.4 Managing Your Cookie Preferences</h3>
       <ul class="text-sm space-y-1 mb-3 list-disc pl-5">
         <li><strong>Browser controls:</strong> most browsers let you block or delete cookies through their settings menu; blocking essential cookies may prevent you from signing in or submitting a review.</li>
-        <li><strong>Cookie banner:</strong> on your first visit, you can accept or decline non-essential (functional and analytics) cookies through our cookie banner; you may change your choice at any time through the "Cookie Preferences" link in the Service footer.</li>
+        <li><strong>Cookie preferences:</strong> essential cookies are always on. You can separately choose Functional cookies (saved preferences), Analytics (Google Analytics), and an Advertising preference. Advertising technology is not currently active; the saved preference does not authorize future advertising, and we will request fresh consent before introducing it. You can review or withdraw your choices using the preference controls below.</li>
         <li><strong>Mobile device settings:</strong> mobile operating systems provide controls to limit ad tracking and reset device identifiers, though these primarily affect third-party advertising, which we do not use.</li>
       </ul>
+      {% if cookie_consent_set %}
+      <form id="pp-cookie-preferences-page" method="post" action="{% url 'cookie_consent' %}" class="rounded-lg border border-slate-200 bg-slate-50 p-4 mb-4">
+        {% csrf_token %}
+        <input type="hidden" name="choice" value="save">
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <h3 class="font-semibold mb-3">Cookie preferences</h3>
+        <label class="flex items-start gap-2 mb-3">
+          <input type="checkbox" checked disabled>
+          <span><strong>Essential</strong> — required for security and site functionality.</span>
+        </label>
+        <label class="flex items-start gap-2 mb-3">
+          <input type="checkbox" name="functional" value="1" {% if functional_consent %}checked{% endif %}>
+          <span><strong>Functional</strong> — remembers language, text size, saved locations, and unfinished review drafts.</span>
+        </label>
+        <label class="flex items-start gap-2 mb-3">
+          <input type="checkbox" name="analytics" value="1" {% if analytics_consent %}checked{% endif %}>
+          <span><strong>Analytics</strong> — allows Google Analytics to measure site usage.</span>
+        </label>
+        <label class="flex items-start gap-2 mb-3">
+          <input type="checkbox" name="advertising" value="1" {% if advertising_preference %}checked{% endif %}>
+          <span><strong>Advertising preference</strong> — saves your choice only; no advertising technology is active.</span>
+        </label>
+        <button type="submit" class="rounded-md bg-teal-700 px-4 py-2 font-semibold text-white">Save cookie preferences</button>
+        <p hidden data-cookie-status role="status" aria-live="polite"></p>
+      </form>
+      {% endif %}
       <p class="text-sm mb-3">We do not currently respond to browser "Do Not Track" signals because no common industry standard for such signals has been adopted.</p>
 
       <!-- 7 -->
@@ -319,30 +350,42 @@
 
     // Section 6
     "6. Cookie Notice": "6. Aviso de Cookies",
-    "This Cookie Notice explains how PharmacyPulse uses cookies, local storage, and similar tracking technologies (collectively, \"cookies\") when you visit the Service, and the choices available to you.": "Este Aviso de Cookies explica cómo PharmacyPulse utiliza cookies, almacenamiento local y tecnologías de seguimiento similares (colectivamente, \"cookies\") cuando usted visita el Servicio, y las opciones disponibles para usted.",
+    "This Cookie Notice explains the cookies and similar technologies used by PharmacyPulse and how you can control optional functional and analytics storage. We store your consent choice in a first-party cookie.": "Este Aviso de Cookies explica las cookies y tecnologías similares que utiliza PharmacyPulse y cómo puede controlar el almacenamiento funcional y analítico opcional. Guardamos su elección de consentimiento en una cookie propia.",
     "6.1 What Cookies Are": "6.1 Qué son las Cookies",
-    "Cookies are small text files placed on your device that let a website recognize your browser, remember information about your visit, and, in some cases, track your activity across sites. We also use comparable technologies such as local storage and pixel tags, which this Notice refers to collectively as \"cookies.\"": "Las cookies son pequeños archivos de texto colocados en su dispositivo que permiten que un sitio web reconozca su navegador, recuerde información sobre su visita y, en algunos casos, rastree su actividad en distintos sitios. También utilizamos tecnologías comparables, como el almacenamiento local y las etiquetas de píxel, a las que este Aviso se refiere colectivamente como \"cookies\".",
+    "Cookies are small text files placed on your device. This notice also covers similar technologies that store information on or access information from your device.": "Las cookies son pequeños archivos de texto colocados en su dispositivo. Este aviso también cubre tecnologías similares que almacenan información en su dispositivo o acceden a ella.",
     "6.2 Categories of Cookies We Use": "6.2 Categorías de Cookies que Utilizamos",
     "Category": "Categoría",
     "Examples": "Ejemplos",
     "Purpose": "Finalidad",
     "Essential": "Esenciales",
-    "Session ID, authentication token, load-balancing cookie": "ID de sesión, token de autenticación, cookie de balanceo de carga",
-    "Required to sign in, submit a review, and keep the Service secure and functional. Cannot be disabled without losing core functionality.": "Necesarias para iniciar sesión, enviar una reseña y mantener el Servicio seguro y funcional. No se pueden desactivar sin perder funciones esenciales.",
+    "pp_session, csrftoken, pp_cookie_consent": "pp_session, csrftoken, pp_cookie_consent",
+    "Support sign-in and sessions, protect forms against cross-site requests, and remember your cookie choice for 180 days.": "Permiten iniciar sesión y mantener sesiones, proteger formularios contra solicitudes entre sitios y recordar su elección de cookies durante 180 días.",
     "Functional": "Funcionales",
-    "Language preference (English/Spanish), zip code/location entered by you": "Preferencia de idioma (inglés/español), código postal/ubicación ingresados por usted",
-    "Remembers your preferences so you don't have to re-enter them on each visit.": "Recuerdan sus preferencias para que no tenga que volver a ingresarlas en cada visita.",
+    "lang, pp_loc, pp_text_size, pp_review_draft, translation cache": "lang, pp_loc, pp_text_size, pp_review_draft, caché de traducción",
+    "When enabled, remembers your selected language, location, text size, and unfinished review draft. These preferences are stored only when you enable Functional cookies; language and location selected while disabled are kept only for the current browser session.": "Cuando se habilitan, recuerdan el idioma, la ubicación, el tamaño del texto y los borradores de reseñas sin terminar que haya seleccionado. Estas preferencias solo se guardan cuando habilita las cookies funcionales; el idioma y la ubicación seleccionados mientras están desactivadas se conservan solo durante la sesión actual del navegador.",
     "Analytics": "Analíticas",
-    "First-party usage-analytics identifier": "Identificador analítico de uso de origen propio",
+    "_ga and _ga_* (Google Analytics)": "_ga y _ga_* (Google Analytics)",
     "Helps us understand aggregate usage patterns (e.g., which searches or listings are viewed) so we can improve the Service.": "Nos ayudan a comprender patrones de uso agregados (por ejemplo, qué búsquedas o listados se visualizan) para poder mejorar el Servicio.",
     "We do not use advertising or cross-context behavioral-advertising cookies, and we do not permit third parties to place such cookies through the Service.": "No utilizamos cookies publicitarias ni de publicidad conductual entre contextos, y no permitimos que terceros coloquen dichas cookies a través del Servicio.",
+    "Advertising": "Publicidad",
+    "No advertising cookies; the saved preference is part of pp_cookie_consent.": "No hay cookies publicitarias; la preferencia guardada forma parte de pp_cookie_consent.",
+    "No advertising technology is active. The saved advertising checkbox is only a preference indicator; it does not enable ads or grant consent for future advertising. We will request fresh consent before introducing advertising cookies.": "No hay tecnología publicitaria activa. La casilla publicitaria guardada solo indica una preferencia; no activa anuncios ni otorga consentimiento para publicidad futura. Solicitaremos un nuevo consentimiento antes de introducir cookies publicitarias.",
     "6.3 Third-Party Cookies": "6.3 Cookies de Terceros",
-    "Certain service providers who support hosting, analytics, and error monitoring may set their own cookies when you use the Service, subject to their own privacy practices and our contractual confidentiality and data-protection requirements. We do not authorize these providers to use Service data for their own advertising purposes.": "Ciertos proveedores de servicios que respaldan el alojamiento, el análisis y el monitoreo de errores pueden colocar sus propias cookies cuando usted utiliza el Servicio, sujeto a sus propias prácticas de privacidad y a nuestros requisitos contractuales de confidencialidad y protección de datos. No autorizamos a estos proveedores a usar los datos del Servicio para sus propios fines publicitarios.",
+    "Google Analytics is loaded only after you opt in to analytics cookies. Google may set analytics cookies and receive usage data when it is enabled. Google Maps and Google Fonts are also requested from Google on pages that use those services; these requests are separate from the analytics choice and may send technical information such as your IP address to Google. We do not use advertising cookies.": "Google Analytics solo se carga si acepta las cookies analíticas. Google puede instalar cookies analíticas y recibir datos de uso cuando está habilitado. Google Maps y Google Fonts también se solicitan a Google en las páginas que utilizan esos servicios; estas solicitudes son independientes de la elección analítica y pueden enviar a Google información técnica, como su dirección IP. No utilizamos cookies publicitarias.",
     "6.4 Managing Your Cookie Preferences": "6.4 Cómo Administrar sus Preferencias de Cookies",
     "Browser controls:": "Controles del navegador:",
     "most browsers let you block or delete cookies through their settings menu; blocking essential cookies may prevent you from signing in or submitting a review.": "la mayoría de los navegadores le permiten bloquear o eliminar cookies a través de su menú de configuración; bloquear las cookies esenciales puede impedirle iniciar sesión o enviar una reseña.",
-    "Cookie banner:": "Banner de cookies:",
-    "on your first visit, you can accept or decline non-essential (functional and analytics) cookies through our cookie banner; you may change your choice at any time through the \"Cookie Preferences\" link in the Service footer.": "en su primera visita, puede aceptar o rechazar las cookies no esenciales (funcionales y analíticas) a través de nuestro banner de cookies; puede cambiar su elección en cualquier momento a través del enlace \"Preferencias de Cookies\" en el pie de página del Servicio.",
+    "Cookie preferences:": "Preferencias de cookies:",
+    "essential cookies are always on. You can separately choose Functional cookies (saved preferences), Analytics (Google Analytics), and an Advertising preference. Advertising technology is not currently active; the saved preference does not authorize future advertising, and we will request fresh consent before introducing it. You can review or withdraw your choices using the preference controls below.": "las cookies esenciales siempre están activadas. Puede elegir por separado las cookies funcionales (preferencias guardadas), las analíticas (Google Analytics) y una preferencia de publicidad. Actualmente no hay tecnología publicitaria activa; la preferencia guardada no autoriza publicidad futura y solicitaremos un nuevo consentimiento antes de introducirla. Puede revisar o retirar sus elecciones mediante los controles de preferencias que aparecen a continuación.",
+    "Cookie preferences": "Preferencias de cookies",
+    "Essential": "Esenciales",
+    "Functional": "Funcionales",
+    "remembers language, text size, saved locations, and unfinished review drafts.": "recuerda el idioma, el tamaño del texto, las ubicaciones guardadas y los borradores de reseñas sin terminar.",
+    "Analytics": "Analíticas",
+    "allows Google Analytics to measure site usage.": "permite que Google Analytics mida el uso del sitio.",
+    "Advertising preference": "Preferencia de publicidad",
+    "saves your choice only; no advertising technology is active.": "solo guarda su elección; no hay tecnología publicitaria activa.",
+    "Save cookie preferences": "Guardar preferencias de cookies",
     "Mobile device settings:": "Configuración del dispositivo móvil:",
     "mobile operating systems provide controls to limit ad tracking and reset device identifiers, though these primarily affect third-party advertising, which we do not use.": "los sistemas operativos móviles ofrecen controles para limitar el seguimiento publicitario y restablecer los identificadores del dispositivo, aunque estos afectan principalmente a la publicidad de terceros, la cual no utilizamos.",
     "We do not currently respond to browser \"Do Not Track\" signals because no common industry standard for such signals has been adopted.": "Actualmente no respondemos a las señales de \"No Rastrear\" del navegador porque no existe un estándar común de la industria adoptado para dichas señales.",

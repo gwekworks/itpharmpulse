@@ -306,7 +306,7 @@ def page_home(request):
     nearby = [_pharmacy_dict(p) for p in nearby.order_by("-avg_service_rating")[:8]]
     my_reviews = [_review_dict(r) for r in Review.objects.filter(
         user=user, deleted_at__isnull=True,
-    ).order_by("-created_at")[:5]]
+    ).select_related("pharmacy").order_by("-created_at")[:5]]
     shortages = [_shortage_dict(s) for s in DrugShortage.objects.filter(
         status="current").order_by("-updated_at")[:5]]
     return {

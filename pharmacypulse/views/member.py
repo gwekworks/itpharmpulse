@@ -28,5 +28,18 @@ def claim(request):
 
 
 @login_required
+def transfer(request):
+    # Patient-only page: owners/admins are redirected with an error by the
+    # flow, but still allow rendering so the message displays.
+    return render_page(request, "transfer.html", page_data.page_transfer)
+
+
+@login_required
+def transfers(request):
+    # Standalone tracking page for the patient's transfer requests.
+    return render_page(request, "transfers.html", page_data.page_transfers)
+
+
+@login_required
 def pharmacist_dashboard(request):
     return render_page(request, "pharmacist-dashboard.html", page_data.page_pharmacist_dashboard)

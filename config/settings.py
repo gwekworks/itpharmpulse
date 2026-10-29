@@ -233,6 +233,19 @@ RESEND_API_KEY      = os.environ.get("RESEND_API_KEY", "")
 RESEND_AUDIENCE_ID  = os.environ.get("RESEND_AUDIENCE_ID", "")
 
 # --------- PharmacyPulse-specific settings (Benmore app.yaml) ---------
+try:
+    ADMIN_PHARMACIES_PER_PAGE = int(
+        os.environ.get("ADMIN_PHARMACIES_PER_PAGE", "200")
+    )
+except ValueError as exc:
+    raise ImproperlyConfigured(
+        "ADMIN_PHARMACIES_PER_PAGE must be a positive integer."
+    ) from exc
+if ADMIN_PHARMACIES_PER_PAGE < 1:
+    raise ImproperlyConfigured(
+        "ADMIN_PHARMACIES_PER_PAGE must be a positive integer."
+    )
+
 BRAND = {
     "primary": "#008F82",
     "site_name": "PharmacyPulse",
@@ -284,6 +297,11 @@ SITE_URL = os.environ.get("SITE_URL", "http://localhost:8765")
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")
 TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "")
 TWILIO_FROM = os.environ.get("TWILIO_FROM", "")
+# EffyMobile fax API (prescription transfer legs). EFFYMOBILE is the legacy
+# single-key form holding just the base URL — EFFYMOBILE_BASE_URL wins.
+EFFYMOBILE_BASE_URL = os.environ.get("EFFYMOBILE_BASE_URL", "")
+EFFYMOBILE_EMAIL = os.environ.get("EFFYMOBILE_EMAIL", "")
+EFFYMOBILE_PASSWORD = os.environ.get("EFFYMOBILE_PASSWORD", "")
 
 # Geo-block: if enabled, non-US IPs see a 451 page. Crawlers + private IPs +
 # stripe-webhook + admin are whitelisted. Toggle via env var so dev/staging

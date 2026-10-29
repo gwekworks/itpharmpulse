@@ -26,6 +26,7 @@ as needed:
 | `DJANGO_DEBUG`                                           | Django                                                          | dev=1     |
 | `DJANGO_ALLOWED_HOSTS`                                   | Django                                                          | prod      |
 | `DATABASE_URL`                                           | Postgres                                                        | prod      |
+| `ADMIN_PHARMACIES_PER_PAGE`                              | Admin pharmacies list (default: `200`, positive integer)        | optional  |
 | `GOOGLE_PLACES_KEY`                                      | `ingest_pharmacies_by_zip`, `fetch_pharmacy_details`, map tiles | optional  |
 | `GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET`  | social login                                                    | optional  |
 | `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`                   | `create_checkout`                                               | optional  |
@@ -68,7 +69,6 @@ cd "/mnt/d/Program Files/xamp/htdocs/Niishcloud PharmacyPulse"
 
 python -m venv .venv ; .\.venv\Scripts\Activate.ps1
 
-
 python3 -m venv .venv
 source .venv/bin/activate # Windows (Git Bash): source .venv/Scripts/activate # Windows (cmd): .venv\Scripts\activate
 
@@ -103,6 +103,10 @@ Open http://127.0.0.1:8765
 - email: admin@demo.pharmacypulse.com
 - password: AdminPass123!
 
+To add a pharmacy manually, open **Pharmacy Data** in the admin dashboard and
+use **Add pharmacy** in the **All Pharmacies** section. New records are saved
+as unpublished; review them using the Unpublished filter before publishing.
+
 ## To import postgres database:
 
 - Open the terminal in the project directory
@@ -110,13 +114,44 @@ Open http://127.0.0.1:8765
 
 -
 
-
 ### Add Dummy Users
+
 1. Run it with:
 
 python manage.py seed_dummy_users
 
 2. Role - Email - Password
-   admin		admin@test.com		AdminPass123!
-   pharmacist	pharmacist@test.com	PharmPass123!
-   user		user@test.com		UserPass123!
+   admin admin@test.com AdminPass123!
+   pharmacist pharmacist@test.com PharmPass123!
+   user user@test.com UserPass123!
+
+#### Ops you can run on Heruko CLI
+
+heroku pg:copy pharmacypulse-byondrx::DATABASE_URL DATABASE_URL -a pharmacypulse-staging
+
+heroku run python manage.py migrate -a pharmacypulse-staging
+
+heroku run python manage.py seed_dummy_users -a pharmacypulse-staging
+
+4. Dabase to delete user
+   heroku run python manage.py shell -a pharmacypulse-byondrx
+
+from django.contrib.auth import get_user_model
+
+# 4.1. Fetch the active user model dynamically
+
+User = get_user_model()
+
+# 4.22. Delete the user
+
+User.objects.filter(email='user@test.com').delete()
+
+heroku run python manage.py sync_publish_pharmacies -a pharmacypulse-staging
+
+heroku run python manage.py migrate -a pharmacypulse-staging
+
+heroku run python manage.py migrate -a pharmacypulse-byondrx
+
+heroku pg:copy pharmacypulse-staging::DATABASE_URL DATABASE_URL -a pharmacypulse-byondrx
+
+.wp-block-tenup-modal\_\_dialog:not([aria-hidden=true]) .wp-block-tenup-modal.has-slideout-enabled

@@ -19,6 +19,7 @@ class Review(models.Model):
     comment = models.TextField(blank=True, null=True)
     visit_purpose = models.TextField(blank=True, null=True)    # e.g. "refill,new_rx"
     visit_timeframe = models.TextField(blank=True, null=True)  # e.g. "yesterday"
+    phone_responsiveness = models.IntegerField(blank=True, null=True)
     delivery_timeliness = models.IntegerField(blank=True, null=True)
     is_caregiver = models.IntegerField(default=0)
     response_text = models.TextField(blank=True, null=True)

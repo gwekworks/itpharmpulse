@@ -66,7 +66,7 @@
   function rememberCoords(lat, lng) {
     input.dataset.lat = lat;
     input.dataset.lng = lng;
-    document.cookie = 'pp_loc=' + lat + ',' + lng + '; path=/; max-age=2592000; SameSite=Lax';
+    window.ppSetPreferenceCookie('pp_loc', lat + ',' + lng, 2592000);
   }
 
   function getPpLocCoords() {

@@ -11,8 +11,8 @@ from django.utils import timezone as djtz
 from ..models import (
     ActivityLog, DataRequest, DrugShortage, ModerationKeyword,
     NewsletterSubscriber, Notification, Pharmacy, PharmacyClaim, PharmacyHours,
-    PharmacyOrg, PharmacyTeamMember, ResponseCount, Review, ReviewResponse,
-    SavedComparison, User, UserConsent,
+    PharmacyOrg, PharmacyTeamMember, PrescriptionTransfer, ResponseCount,
+    Review, ReviewResponse, SavedComparison, User, UserConsent,
 )
 
 from .common import (
@@ -35,6 +35,16 @@ def page_account(request):
         })
     nl_status = list(NewsletterSubscriber.objects.filter(user=u)
                      .values("subscribed"))
+    my_transfers = [{
+        "id": t.id,
+        "medication_name": t.medication_name,
+        "medication_strength": t.medication_strength,
+        "from_pharmacy_name": t.from_pharmacy_name,
+        "to_pharmacy_name": t.to_pharmacy_name,
+        "status": t.status,
+        "created_at": t.created_at,
+    } for t in PrescriptionTransfer.objects.filter(user=u)
+        .order_by("-created_at")[:10]]
     return {
         "me": Row({"id": u.id, "email": u.email, "first_name": u.first_name,
                    "last_name": u.last_name, "role": u.role, "phone": u.phone,
@@ -43,6 +53,7 @@ def page_account(request):
                       "granted_at": c.granted_at, "revoked_at": c.revoked_at}
                      for c in consents],
         "my_reviews": my_reviews,
+        "my_transfers": my_transfers,
         "nl_status": nl_status,
         "notifications": [{"id": n.id, "title": n.title, "body": n.body,
                            "read_at": n.read_at, "created_at": n.created_at}

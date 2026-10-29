@@ -129,6 +129,9 @@ def page_for_pharmacies(request):
             "comment": r.comment or "",
             "pharmacy_name": (r.pharmacy.name if r.pharmacy_id else (r.pharmacy_name or "")),
             "wait_time_rating": r.wait_time_rating,
+            "phone_responsiveness": r.phone_responsiveness,
+            "delivery_timeliness": r.delivery_timeliness,
+            "is_digital": bool(r.pharmacy.is_digital) if r.pharmacy_id and r.pharmacy else False,
             "created_at": r.created_at,
         })
     return {

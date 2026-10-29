@@ -214,6 +214,7 @@ def search_pharmacies(request):
     results = [{
         "id": p.id, "name": p.name, "address": p.address, "city": p.city,
         "state": p.state, "zip": p.zip, "phone": p.phone,
+        "fax": getattr(p, "fax_number", None),
         "avg_service_rating": p.avg_service_rating,
         "total_reviews": p.total_reviews, "is_digital": p.is_digital,
         "distance_mi": round(getattr(p, "distance_mi"), 1) if getattr(p, "distance_mi", None) is not None else None,

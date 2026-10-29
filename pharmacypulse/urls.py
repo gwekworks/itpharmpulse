@@ -1,12 +1,13 @@
 from django.urls import path
 
-from . import auth_views, flows, views, views_extra
+from . import auth_views, cookie_consent, flows, views, views_extra
 
 urlpatterns = [
     # ===== SEO + ops =====
     path("robots.txt", views.robots_txt, name="robots_txt"),
     path("sitemap.xml", views.sitemap_xml, name="sitemap_xml"),
     path("healthcheck", views_extra.healthcheck, name="healthcheck"),
+    path("cookie-consent", cookie_consent.save_cookie_consent, name="cookie_consent"),
 
     # ===== auth =====
     path("login", auth_views.login_view, name="login"),
@@ -40,9 +41,12 @@ urlpatterns = [
     path("api/flow/dismiss-closed-flag/<int:flag_id>", flows.dismiss_closed_flag, name="flow_dismiss_closed_flag"),
     path("api/flow/delete-flagged-pharmacy/<int:pharmacy_id>", flows.delete_flagged_pharmacy, name="flow_delete_flagged_pharmacy"),
     path("api/flow/bulk-delete-pharmacies", flows.bulk_delete_pharmacies, name="flow_bulk_delete_pharmacies"),
+    path("api/flow/bulk-update-pharmacy-publish-status", flows.bulk_update_pharmacy_publish_status, name="flow_bulk_update_pharmacy_publish_status"),
     path("api/flow/bulk-publish-pharmacies", flows.bulk_publish_pharmacies, name="flow_bulk_publish_pharmacies"),
+    path("api/flow/add-pharmacy-manually", flows.add_pharmacy_manually, name="flow_add_pharmacy_manually"),
     path("api/flow/bulk-delete-chain", flows.bulk_delete_chain, name="flow_bulk_delete_chain"),
     path("api/flow/edit-pharmacy/<int:pharmacy_id>", flows.edit_pharmacy_publishable, name="flow_edit_pharmacy"),
+    path("api/flow/pharmacist-update-pharmacy/<int:pharmacy_id>", flows.pharmacist_update_pharmacy, name="flow_pharmacist_update_pharmacy"),
     path("newsletter/unsubscribe", flows.newsletter_unsubscribe_public, name="newsletter_unsubscribe_public"),
     path("api/flow/verify-claim/<int:pharmacy_id>", flows.verify_and_submit_claim, name="flow_verify_claim"),
     path("api/flow/approve-claim/<int:claim_id>", flows.approve_claim, name="flow_approve_claim"),
@@ -50,9 +54,13 @@ urlpatterns = [
     path("api/flow/suspend-user/<int:target_user_id>", flows.suspend_user, name="flow_suspend_user"),
     path("api/flow/unsuspend-user/<int:target_user_id>", flows.unsuspend_user, name="flow_unsuspend_user"),
     path("api/flow/change-user-role/<int:target_user_id>", flows.change_user_role, name="flow_change_user_role"),
-    path("api/flow/compare/add", flows.add_to_compare, name="flow_compare_add"),
-    path("api/flow/compare/remove", flows.remove_from_compare, name="flow_compare_remove"),
+    path("api/flow/compare/add", flows.add_to_compare, name="flow_compare_add"),    path("api/flow/compare/remove", flows.remove_from_compare, name="flow_compare_remove"),
     path("api/flow/compare/clear", flows.clear_compare, name="flow_compare_clear"),
+    path("api/flow/transfer/submit", flows.submit_transfer, name="flow_transfer_submit"),
+    path("api/flow/transfer/cancel/<int:transfer_id>", flows.cancel_transfer, name="flow_transfer_cancel"),
+    path("api/flow/transfer/fax/<int:fax_id>/refresh", flows.refresh_transfer_fax, name="flow_transfer_fax_refresh"),
+    path("api/flow/transfer/fax/<int:fax_id>/cancel", flows.cancel_transfer_fax, name="flow_transfer_fax_cancel"),
+    path("transfer/doc/<int:transfer_id>.pdf", views_extra.transfer_doc, name="transfer_doc"),
     path("api/flow/team/invite", flows.invite_team_member, name="flow_team_invite"),
     path("api/flow/team/accept", flows.accept_team_invite, name="flow_team_accept"),
     path("api/flow/team/role/<int:member_id>", flows.update_team_role, name="flow_team_role"),
@@ -91,6 +99,8 @@ urlpatterns = [
     path("reviews", views.reviews, name="reviews"),
     path("compare", views.compare, name="compare"),
     path("claim", views.claim, name="claim"),
+    path("transfer", views.transfer, name="transfer"),
+    path("transfers", views.transfers, name="transfers"),
     # path("shortages", views.shortages, name="shortages"),
     path("insights", views.insights, name="insights"),
     path("for-pharmacies", views.for_pharmacies, name="for_pharmacies"),

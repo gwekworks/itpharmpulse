@@ -21,7 +21,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from ...models import (
     ActivityLog, DataRequest, DrugShortage, NewsletterSubscriber, Notification,
-    Pharmacy, PharmacyClaim, PharmacyHours, PharmacyOrg, PharmacyTeamMember,
+    Pharmacy, PharmacyClaim, PharmacyHours, PharmacyOrg, PharmacyPublishable, PharmacyTeamMember,
     ResponseCount, Review, ReviewResponse, SavedComparison, User, UserConsent,
 )
 
@@ -70,6 +70,33 @@ def submit_review(request):
             return _json(False, error="pharmacy_id required", status=400)
         return HttpResponseBadRequest("pharmacy_id required")
     pharmacy_name = request.POST.get("pharmacy_name") or ""
+    pharmacy = Pharmacy.objects.filter(id=pharmacy_id).only("is_digital").first()
+    if not pharmacy:
+        if is_ajax:
+            return _json(False, error="Pharmacy not found.", status=404)
+        return _redirect_back("Pharmacy not found.")
+    published_is_digital = PharmacyPublishable.objects.filter(
+        pharmacy_id=pharmacy_id,
+    ).values_list("is_digital", flat=True).first()
+    is_digital = bool(
+        pharmacy.is_digital if published_is_digital is None else published_is_digital
+    )
+
+    phone_responsiveness = None
+    delivery_timeliness = None
+    if is_digital:
+        try:
+            phone_responsiveness = int(request.POST.get("phone_responsiveness") or "")
+            delivery_timeliness = int(request.POST.get("delivery_timeliness") or "")
+        except (TypeError, ValueError):
+            phone_responsiveness = delivery_timeliness = None
+        if (phone_responsiveness is None or not 1 <= phone_responsiveness <= 5
+                or delivery_timeliness is None or not 1 <= delivery_timeliness <= 5):
+            error = "Rate phone responsiveness and on-time delivery from 1 to 5."
+            if is_ajax:
+                return _json(False, error=error, status=400)
+            return _redirect_back(error)
+
     # One review per user per pharmacy (authenticated users only)
     if user:
         existing = Review.objects.filter(
@@ -94,18 +121,32 @@ def submit_review(request):
     initial_status = "pending" if mod_enabled else "approved"
 
     try:
-        review = Review.objects.create(
-            pharmacy_id=pharmacy_id, pharmacy_name=pharmacy_name,
-            user=user, user_name=user_name,
-            stock_available=int(request.POST.get("stock_available") or 1),
-            wait_time_rating=int(request.POST.get("wait_time_rating") or 3),
-            service_rating=int(request.POST.get("service_rating") or 3),
-            comment=request.POST.get("comment") or "",
-            visit_purpose=(request.POST.get("visit_purpose") or "").strip()[:100] or None,
-            visit_timeframe=(request.POST.get("visit_timeframe") or "").strip()[:50] or None,
-            is_caregiver=int(request.POST.get("is_caregiver") or 0),
-            moderation_status=initial_status,
-        )
+        review_fields = {
+            "pharmacy_id": pharmacy_id,
+            "pharmacy_name": pharmacy_name,
+            "user": user,
+            "user_name": user_name,
+            "stock_available": int(request.POST.get("stock_available") or 1),
+            "service_rating": int(request.POST.get("service_rating") or 3),
+            "comment": request.POST.get("comment") or "",
+            "is_caregiver": int(request.POST.get("is_caregiver") or 0),
+            "moderation_status": initial_status,
+        }
+        if is_digital:
+            review_fields.update(
+                wait_time_rating=3,
+                visit_purpose=None,
+                visit_timeframe=None,
+                phone_responsiveness=phone_responsiveness,
+                delivery_timeliness=delivery_timeliness,
+            )
+        else:
+            review_fields.update(
+                wait_time_rating=int(request.POST.get("wait_time_rating") or 3),
+                visit_purpose=(request.POST.get("visit_purpose") or "").strip()[:100] or None,
+                visit_timeframe=(request.POST.get("visit_timeframe") or "").strip()[:50] or None,
+            )
+        review = Review.objects.create(**review_fields)
     except ValidationError as exc:
         msg = (exc.messages[0] if getattr(exc, "messages", None)
                else "Could not submit review")

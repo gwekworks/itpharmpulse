@@ -1,18 +1,31 @@
-{% load pharmacypulse %}
+{% load pharmacypulse i18n %}
 
 <footer class="pp-footer">
   <div class="pp-footer-inner">
-
     <div class="pp-footer-grid">
-
       <div>
         <a href="/" class="pp-footer-brand">
           <span class="pp-footer-brand-text">PharmacyPulse</span>
         </a>
-        <p class="pp-footer-blurb">Built for patients. Trusted by pharmacies. Community-powered reviews that help your neighbors find care they can count on.</p>
+        <p class="pp-footer-blurb">
+          Built for patients. Trusted by pharmacies. Community-powered reviews
+          that help your neighbors find care they can count on.
+        </p>
         <div class="pp-footer-lang-row">
-          <button type="button" onclick="ppSetLang('en')" class="pp-footer-lang-btn">EN</button>
-          <button type="button" onclick="ppSetLang('es')" class="pp-footer-lang-btn">ES</button>
+          <button
+            type="button"
+            onclick="ppSetLang('en')"
+            class="pp-footer-lang-btn"
+          >
+            EN
+          </button>
+          <button
+            type="button"
+            onclick="ppSetLang('es')"
+            class="pp-footer-lang-btn"
+          >
+            ES
+          </button>
         </div>
       </div>
 
@@ -20,12 +33,27 @@
         <div class="pp-footer-heading">For Patients</div>
         <ul class="pp-footer-list">
           <li><a href="/list">Find a Pharmacy</a></li>
-          {% comment %}<li><a href="/map">Map View</a></li>{% endcomment %}
+          {% comment %}
+          <li><a href="/map">Map View</a></li>
+          {% endcomment %}
           <li><a href="/compare">Compare Pharmacies</a></li>
-          <li><a href="/online">Online Pharmacies</a></li>
+          <li><a href="/online">Digital Prescription Access Platforms</a></li>
           <li><a href="/reviews">Read Reviews</a></li>
-          <li><a href="#" onclick="openReviewModalSelect();return false">Write a Review</a></li>
-          {% comment %}<li><a href="/shortages">Drug Shortages</a></li>{% endcomment %}
+          <li>
+            <a
+              href="#"
+              onclick="
+                openReviewModalSelect();
+                return false;
+              "
+              >Write a Review</a
+            >
+          </li>
+          {% if user.is_authenticated %}
+          <li><a href="/transfer">Request Prescription Transfer</a></li>
+          {% endif %} {% comment %}
+          <li><a href="/shortages">Drug Shortages</a></li>
+          {% endcomment %}
         </ul>
       </div>
 
@@ -42,8 +70,11 @@
             <a href="/for-pharmacies">Review Widget</a>
             {% endif %}
           </li>
-          {% comment %}<li><a href="/for-pharmacies#pricing">Pricing</a></li>{% endcomment %}
-          {% comment %}<li><a href="/for-pharmacies#pricing">Pricing</a></li>{% endcomment %}
+          {% comment %}
+          <li><a href="/for-pharmacies#pricing">Pricing</a></li>
+          {% endcomment %} {% comment %}
+          <li><a href="/for-pharmacies#pricing">Pricing</a></li>
+          {% endcomment %}
           <li><a href="/for-pharmacies#how-it-works">How It Works</a></li>
         </ul>
       </div>
@@ -55,9 +86,14 @@
           <li><a href="/account">My Account</a></li>
           <li><a href="/saved">My Saved Pharmacies</a></li>
           <li>
-            <form method="POST" action="/logout" style="margin:0;padding:0">
+            <form method="POST" action="/logout" style="margin: 0; padding: 0">
               {% csrf_token %}
-              <button type="submit" style="font-weight: 400;font-size: 0.8125rem;">Log Out</button>
+              <button
+                type="submit"
+                style="font-weight: 400; font-size: 0.8125rem"
+              >
+                {% trans "Log out" %}
+              </button>
             </form>
           </li>
           {% else %}
@@ -74,25 +110,39 @@
           <li><a href="/about">About PharmacyPulse</a></li>
           <li><a href="/privacy">Privacy Policy</a></li>
           <li><a href="/terms">Terms of Service</a></li>
-          <li><a href="mailto:security@pharmacypulse.co">Security Contact</a></li>
+          <li>
+            <a href="mailto:security@pharmacypulse.co">Security Contact</a>
+          </li>
         </ul>
       </div>
-
     </div>
 
     <div class="pp-footer-legal">
-      <p>PharmacyPulse provides pharmacy listings, community reviews, and drug-availability information for general informational purposes only. It is not medical advice and is not a substitute for guidance from a licensed pharmacist or healthcare provider. Pharmacy and shortage data is sourced from the NPPES/NPI registry, the FDA, and community contributions, and may be incomplete, outdated, or inaccurate. PharmacyPulse is not affiliated with, and does not endorse, the pharmacies listed. Always confirm hours, services, and medication availability directly with the pharmacy before relying on this information.</p>
+      <p>
+        PharmacyPulse provides pharmacy listings, community reviews, and
+        drug-availability information for general informational purposes only.
+        It is not medical advice and is not a substitute for guidance from a
+        licensed pharmacist or healthcare provider. Pharmacy and shortage data
+        is sourced from the NPPES/NPI registry, the FDA, and community
+        contributions, and may be incomplete, outdated, or inaccurate.
+        PharmacyPulse is not affiliated with, and does not endorse, the
+        pharmacies listed. Always confirm hours, services, and medication
+        availability directly with the pharmacy before relying on this
+        information.
+      </p>
     </div>
 
     <div class="pp-footer-bottom">
-      <span class="pp-footer-copyright">&copy; 2026 PharmacyPulse &middot; Built with &hearts; for health equity</span>
+      <span class="pp-footer-copyright"
+        >&copy; 2026 PharmacyPulse &middot; Built with &hearts; for health
+        equity</span
+      >
       <div class="pp-footer-mini-links">
         <a href="/privacy">Privacy</a>
         <a href="/terms">Terms</a>
         <a href="mailto:security@pharmacypulse.co">Security</a>
       </div>
     </div>
-
   </div>
 </footer>
 {% include "pharmacypulse/partials/lang-extras.html" %}

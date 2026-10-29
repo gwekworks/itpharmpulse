@@ -7,11 +7,18 @@ from __future__ import annotations
 
 import functools
 
+from django.core.cache import cache
 from django.db.models import F, Q
 from django.db.models.functions import ASin, Cos, Power, Radians, Sin, Sqrt
 
 from ..models import DrugShortage, Pharmacy, Review
 from ..text_utils import pharmacy_slug, strip_chain_suffix
+
+ONLINE_PHARMACIES_CACHE_KEY = "pp:online:list:v2"
+
+
+def invalidate_online_pharmacies_cache():
+    cache.delete(ONLINE_PHARMACIES_CACHE_KEY)
 
 
 def _safe_int(v):
@@ -198,8 +205,11 @@ def _pharmacy_dict(p: Pharmacy) -> dict:
     detail_url = f"/pharmacy/{p.id}/{slug}/"
 
     return {
-        "id": p.id, "name": display_name, "address": p.address, "city": p.city,
+        "id": p.id, "name": display_name, "address": p.address,
+        "address_2": getattr(p, "address_2", "") or "",
+        "city": p.city,
         "state": p.state, "zip": p.zip, "phone": p.phone or "",
+        "fax_number": p.fax_number or "",
         "slug": slug, "url": detail_url,
         "latitude": p.latitude, "longitude": p.longitude,
         "stock_confidence": p.stock_confidence,
@@ -240,6 +250,9 @@ def _review_dict(r: Review) -> dict:
         "user_id": r.user_id, "user_name": r.user_name,
         "stock_available": r.stock_available,
         "wait_time_rating": r.wait_time_rating,
+        "phone_responsiveness": r.phone_responsiveness,
+        "delivery_timeliness": r.delivery_timeliness,
+        "is_digital": bool(r.pharmacy.is_digital) if r.pharmacy_id and r.pharmacy else False,
         "service_rating": r.service_rating,
         "comment": r.comment or "",
         "visit_purpose": r.visit_purpose or "",

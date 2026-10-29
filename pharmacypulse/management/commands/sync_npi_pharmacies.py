@@ -36,6 +36,7 @@ Usage:
 """
 from __future__ import annotations
 
+import json as _json
 import re as _re
 import time
 from typing import Iterable
@@ -461,6 +462,75 @@ class Command(BaseCommand):
         except ValueError:
             return None
 
+    def _get_taxonomy_license_info(self, provider: dict, primary_code: str) -> tuple[str, str, str]:
+        """(license, state, licenses_json) for a provider.
+
+        license/state come from the PRIMARY pharmacy taxonomy row so claim
+        verification (license_number input) has something to check against.
+        licenses_json keeps every pharmacy taxonomy on the row, e.g.
+        secondary compounding license 27321/TX on a retail row.
+        """
+        entries = []
+        lic, lic_state = "", ""
+        for t in provider.get("taxonomies") or []:
+            code = (t.get("code") or "").strip()
+            if code not in PHARMACY_TAXONOMIES:
+                continue
+            entry = {
+                "code": code,
+                "license": (t.get("license") or "").strip() or "",
+                "state": (t.get("state") or "").strip() or "",
+                "primary": bool(t.get("primary")),
+            }
+            entries.append(entry)
+            if code == primary_code and not lic:
+                lic = entry["license"]
+                lic_state = entry["state"]
+        # Fallback: primary flag row when primary_code lookup missed.
+        if not lic:
+            for e in entries:
+                if e["primary"] and e["license"]:
+                    lic, lic_state = e["license"], e["state"]
+                    break
+        try:
+            blob = _json.dumps(entries)[:2000] if entries else ""
+        except (TypeError, ValueError):
+            blob = ""
+        return lic, lic_state, blob
+
+    @staticmethod
+    def _get_identifiers_blob(provider: dict) -> str:
+        try:
+            ids = provider.get("identifiers") or []
+            slim = [
+                {"identifier": (i.get("identifier") or "").strip(),
+                 "issuer": (i.get("issuer") or "").strip(),
+                 "state": (i.get("state") or "").strip() or "",
+                 "desc": (i.get("desc") or "").strip() or ""}
+                for i in ids if (i.get("identifier") or "").strip()
+            ]
+            return _json.dumps(slim)[:2000] if slim else ""
+        except (TypeError, ValueError):
+            return ""
+
+    @staticmethod
+    def _get_other_names_blob(provider: dict) -> str:
+        """Non-DBA other names (former names, etc.). DBA already lives in name."""
+        try:
+            out = []
+            for o in provider.get("other_names") or []:
+                otype = (o.get("type") or "").strip()
+                if otype.lower().startswith("doing business as"):
+                    continue
+                nm = (o.get("organization_name") or "").strip() or " ".join(
+                    p for p in ((o.get("first_name") or "").strip(),
+                               (o.get("last_name") or "").strip()) if p).strip()
+                if nm:
+                    out.append({"type": otype, "name": nm})
+            return _json.dumps(out)[:2000] if out else ""
+        except (TypeError, ValueError):
+            return ""
+
     # --------------------------------------------------------------
     def _fetch_all(self, *, sleep: float, enumeration_type: str, **filters) -> Iterable[dict]:
         """Paginate through up to 1200 results matching `filters`. Yields raw
@@ -541,13 +611,24 @@ class Command(BaseCommand):
             return (False, False)
 
         # Leading 5 digits of the postal code — pharmacies store ZIP-5 only.
-        zip5 = (loc_addr.get("postal_code") or "")[:5]
-        # NPPES returns phone numbers as-is; use them unchanged.
+        raw_postal = (loc_addr.get("postal_code") or "").strip()
+        zip5 = raw_postal[:5]
+        zip_full = raw_postal[:10]
+        # NPPES returns phone/fax numbers as-is; use them unchanged.
         phone = (loc_addr.get("telephone_number") or "").strip()
+        fax_number = (loc_addr.get("fax_number") or "").strip()
+        address_2 = (loc_addr.get("address_2") or "").strip()[:255]
         website = self._get_website(provider)
         secondary = self._get_secondary_taxonomies(provider, taxonomy_code)
         enumeration_date = self._parse_enumeration_date(basic.get("enumeration_date"))
         ao_name, ao_title = self._get_authorized_official(basic, provider_type)
+        ao_phone = (basic.get("authorized_official_telephone_number") or "").strip()
+        org_subpart = (basic.get("organizational_subpart") or "").strip()[:8]
+        nppes_updated = self._parse_enumeration_date(basic.get("last_updated"))
+        cert_date = self._parse_enumeration_date(basic.get("certification_date"))
+        tax_license, tax_state, tax_blob = self._get_taxonomy_license_info(provider, taxonomy_code)
+        ids_blob = self._get_identifiers_blob(provider)
+        names_blob = self._get_other_names_blob(provider)
 
         # Skip if missing core fields.
         new_address = (loc_addr.get("address_1") or "")[:255]
@@ -568,18 +649,31 @@ class Command(BaseCommand):
                 Pharmacy.objects.create(
                     npi_number=npi,
                     name=display_name[:255],
+                    legal_name=(legal_name or "")[:255],
                     address=new_address,
+                    address_2=address_2,
                     city=new_city,
                     state=new_state,
                     zip=zip5,
+                    zip_full=zip_full,
                     phone=phone,
+                    fax_number=fax_number or None,
                     website=website,
                     is_digital=is_digital,
                     status="active",
                     taxonomy_code=taxonomy_code,
+                    taxonomy_license=tax_license,
+                    taxonomy_state=tax_state,
+                    taxonomy_licenses=tax_blob,
                     enumeration_date=enumeration_date,
+                    nppes_last_updated=nppes_updated,
+                    certification_date=cert_date,
+                    organizational_subpart=org_subpart,
                     authorized_official_name=ao_name,
                     authorized_official_title=ao_title,
+                    authorized_official_phone=ao_phone,
+                    identifiers_json=ids_blob,
+                    other_names_json=names_blob,
                     secondary_taxonomies=",".join(sorted(set(secondary))),
                 )
                 self.metrics["successful_inserts"] += 1
@@ -592,14 +686,31 @@ class Command(BaseCommand):
             # change, taxonomy update).
             updates = {
                 "name": display_name[:255],
+                "legal_name": (legal_name or "")[:255],
                 "is_digital": is_digital,
                 "status": "active",
                 "taxonomy_code": taxonomy_code,
+                "taxonomy_license": tax_license,
+                "taxonomy_state": tax_state,
+                "taxonomy_licenses": tax_blob,
                 "enumeration_date": enumeration_date,
+                "nppes_last_updated": nppes_updated,
+                "certification_date": cert_date,
+                "organizational_subpart": org_subpart,
                 "authorized_official_name": ao_name,
                 "authorized_official_title": ao_title,
+                "authorized_official_phone": ao_phone,
+                "identifiers_json": ids_blob,
+                "other_names_json": names_blob,
                 "secondary_taxonomies": ",".join(sorted(set(secondary))),
+                "address_2": address_2,
+                "zip_full": zip_full,
             }
+            # Fax: NPPES is authoritative (Google never supplies fax).
+            # Always refresh when NPPES has a value; never blank a good
+            # pharmacist-corrected fax with an empty NPPES value.
+            if fax_number:
+                updates["fax_number"] = fax_number
 
             # Address change → invalidate Google enrichment.
             # If the pharmacy moved (zip changed materially, or street address
@@ -608,6 +719,7 @@ class Command(BaseCommand):
             # triggers a fresh Google lookup. Hours and PharmacyHours rows
             # are likewise stale — but we don't delete them here; the next
             # enrichment will overwrite via update_or_create.
+            # Note: address_2 (suite) change alone does NOT invalidate geo.
             address_changed = (
                 existing.zip != zip5
                 or existing.address != new_address

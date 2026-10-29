@@ -1,35 +1,152 @@
-{% comment %}
-Cookie acknowledgement banner. Not a true GDPR-style consent gate (we don't
-serve EU users) — just a transparency notice that meets CCPA/VA/CO disclosure
-requirements when shown alongside the privacy policy. One button dismisses
-forever (cookie set with 1-year max-age).
-{% endcomment %}
-<div id="pp-cookie-banner" class="pp-cookie-banner">
-  <div class="pp-cookie-row">
-    <div class="pp-cookie-body">
-      <p class="pp-cookie-title">We use cookies</p>
-      <p class="pp-cookie-text">
-        We use cookies for sessions, language preferences, saved comparisons, and basic analytics (Google Analytics) to understand how the site is used. We do not use cookies for ads or sell your data.
-        <a href="/privacy">Privacy Policy</a>
-      </p>
-    </div>
-    <div class="pp-cookie-actions">
-      <button type="button" id="pp-cookie-accept" class="pp-cookie-accept">Got it</button>
-    </div>
-  </div>
+<style>
+  .pp-cookie-consent {
+    position: fixed;
+    z-index: 9998;
+    left: 50vw;
+    bottom: 1.25rem;
+    transform: translateX(-50%);
+    width: min(calc(100vw - 2.5rem), 42rem);
+    color: #172033;
+    font: 400 .9375rem/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .pp-cookie-card {
+    width: 100%;
+    max-height: calc(100vh - 2.5rem);
+    max-height: calc(100dvh - 2.5rem);
+    overflow-x: hidden;
+    overflow-y: auto;
+    border: 1px solid #d8dee8;
+    border-radius: .875rem;
+    background: #fff;
+    box-shadow: 0 12px 40px rgb(15 23 42 / 20%);
+  }
+  .pp-cookie-banner {
+    display: block;
+    position: relative;
+    inset: auto;
+    width: auto;
+    max-width: none;
+    transform: none;
+    padding: 1.25rem 1.375rem 1.125rem;
+  }
+  .pp-cookie-heading { margin: 0 0 .4rem; color: #101828; font-size: 1.125rem; font-weight: 700; line-height: 1.3; }
+  .pp-cookie-copy { margin: 0; color: #475467; }
+  .pp-cookie-copy a { color: #087c72; font-weight: 600; text-underline-offset: 2px; }
+  .pp-cookie-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .625rem; margin-top: 1rem; }
+  .pp-cookie-button, .pp-cookie-settings summary {
+    display: inline-flex;
+    min-height: 2.625rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #cbd5e1;
+    border-radius: .5rem;
+    background: #fff;
+    color: #243047;
+    cursor: pointer;
+    font: inherit;
+    font-size: .875rem;
+    font-weight: 600;
+    padding: .5rem .875rem;
+    text-align: center;
+    text-decoration: none;
+  }
+  .pp-cookie-button:hover, .pp-cookie-settings summary:hover { background: #f8fafc; }
+  .pp-cookie-button-primary { border-color: #087c72; background: #087c72; color: #fff; }
+  .pp-cookie-button-primary:hover { border-color: #06665e; background: #06665e; }
+  .pp-cookie-settings { border-top: 1px solid #e5eaf1; }
+  .pp-cookie-settings summary {
+    min-height: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #087c72;
+    padding: .375rem .25rem;
+  }
+  .pp-cookie-settings summary:hover { background: transparent; text-decoration: underline; }
+  .pp-cookie-settings summary::-webkit-details-marker { display: none; }
+  .pp-cookie-settings[open] { background: #f8fafc; }
+  .pp-cookie-preferences { padding: 1rem 1.375rem 1.25rem; }
+  .pp-cookie-preferences-title { margin: 0 0 .625rem; color: #101828; font-size: 1rem; font-weight: 700; }
+  .pp-cookie-preferences label { display: flex; align-items: flex-start; gap: .625rem; margin: .75rem 0; color: #344054; }
+  .pp-cookie-preferences input[type="checkbox"] { width: 1rem; height: 1rem; flex: 0 0 auto; margin: .2rem 0 0; accent-color: #087c72; }
+  .pp-cookie-preferences p { margin: .5rem 0 .875rem; color: #667085; font-size: .8125rem; }
+  @media (max-width: 600px) {
+    .pp-cookie-consent {
+      bottom: .75rem;
+      width: calc(100vw - 1.5rem);
+    }
+    .pp-cookie-banner, .pp-cookie-preferences { padding-right: 1rem; padding-left: 1rem; }
+    .pp-cookie-actions { display: grid; grid-template-columns: 1fr 1fr; }
+    .pp-cookie-actions .pp-cookie-button { width: 100%; }
+    .pp-cookie-settings summary { grid-column: 1 / -1; justify-content: flex-start; }
+  }
+</style>
+<div class="pp-cookie-consent">
+  <form class="pp-cookie-card" method="post" action="{% url 'cookie_consent' %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <p hidden data-cookie-status role="status" aria-live="polite"></p>
+    {% if not cookie_consent_set %}
+      <section class="pp-cookie-banner" aria-labelledby="pp-cookie-title">
+        <h2 id="pp-cookie-title" class="pp-cookie-heading">
+          {% if LANGUAGE_CODE == "es" %}Tu privacidad importa{% else %}Your privacy matters{% endif %}
+        </h2>
+        <p class="pp-cookie-copy">
+          {% if LANGUAGE_CODE == "es" %}
+            Usamos cookies esenciales para que el sitio funcione. Las preferencias opcionales y Google Analytics se pueden controlar aquí. <a href="/privacy#s6">Más información</a>.
+          {% else %}
+            We use essential cookies to make the site work. You can control optional preferences and Google Analytics here. <a href="/privacy#s6">Learn more</a>.
+          {% endif %}
+        </p>
+        <div class="pp-cookie-actions">
+          <button class="pp-cookie-button pp-cookie-button-primary" type="submit" name="choice" value="accept">
+            {% if LANGUAGE_CODE == "es" %}Aceptar todas{% else %}Accept all{% endif %}
+          </button>
+          <button class="pp-cookie-button" type="submit" name="choice" value="reject">
+            {% if LANGUAGE_CODE == "es" %}Rechazar opcionales{% else %}Reject optional{% endif %}
+          </button>
+          <details class="pp-cookie-settings">
+            <summary>{% if LANGUAGE_CODE == "es" %}Personalizar{% else %}Customize{% endif %}</summary>
+            <div class="pp-cookie-preferences">
+              <h3 class="pp-cookie-preferences-title">
+                {% if LANGUAGE_CODE == "es" %}Preferencias de cookies{% else %}Cookie preferences{% endif %}
+              </h3>
+              <label>
+                <input type="checkbox" disabled checked>
+                <span>
+                  <strong>{% if LANGUAGE_CODE == "es" %}Esenciales{% else %}Essential{% endif %}</strong>
+                  {% if LANGUAGE_CODE == "es" %} — necesarias para la seguridad y el funcionamiento del sitio.{% else %} — required for security and site functionality.{% endif %}
+                </span>
+              </label>
+              <label>
+                <input type="checkbox" name="functional" value="1">
+                <span>
+                  <strong>{% if LANGUAGE_CODE == "es" %}Preferencias{% else %}Functional{% endif %}</strong>
+                  {% if LANGUAGE_CODE == "es" %} — recuerda el tamaño del texto, borradores y ubicaciones guardadas.{% else %} — remembers text size, drafts, and saved locations.{% endif %}
+                </span>
+              </label>
+              <label>
+                <input type="checkbox" name="analytics" value="1">
+                <span>
+                  <strong>{% if LANGUAGE_CODE == "es" %}Analíticas{% else %}Analytics{% endif %}</strong>
+                  {% if LANGUAGE_CODE == "es" %} — Google Analytics nos ayuda a comprender cómo se utiliza el sitio.{% else %} — Google Analytics helps us understand how the site is used.{% endif %}
+                </span>
+              </label>
+              <label>
+                <input type="checkbox" name="advertising" value="1">
+                <span>
+                  <strong>{% if LANGUAGE_CODE == "es" %}Publicidad{% else %}Advertising{% endif %}</strong>
+                  {% if LANGUAGE_CODE == "es" %} — guarda su preferencia para publicidad. Actualmente no hay tecnología publicitaria activa; volveremos a solicitar su consentimiento antes de activarla.{% else %} — saves your advertising preference. No advertising technology is active now; we will ask for consent again before enabling it.{% endif %}
+                </span>
+              </label>
+              <p>{% if LANGUAGE_CODE == "es" %}Puedes volver a elegir tus preferencias en cualquier momento en el Aviso de privacidad.{% else %}You can review and update your choices at any time in the Privacy Notice.{% endif %}</p>
+              <button class="pp-cookie-button pp-cookie-button-primary" type="submit" name="choice" value="save">
+                {% if LANGUAGE_CODE == "es" %}Guardar preferencias{% else %}Save my choices{% endif %}
+              </button>
+            </div>
+          </details>
+        </div>
+      </section>
+    {% endif %}
+  </form>
 </div>
-<script>
-(function(){
-  // Only show on the first visit (or after a year). Cookie name: pp_cookie_ack.
-  var has = document.cookie.indexOf('pp_cookie_ack=') !== -1;
-  if (has) return;
-  var banner = document.getElementById('pp-cookie-banner');
-  if (!banner) return;
-  // Defer paint by one frame so the banner doesn't flash before page CSS loads.
-  requestAnimationFrame(function(){ banner.style.display = 'block'; });
-  document.getElementById('pp-cookie-accept').addEventListener('click', function(){
-    document.cookie = 'pp_cookie_ack=1; path=/; max-age=31536000; SameSite=Lax';
-    banner.style.display = 'none';
-  });
-})();
-</script>

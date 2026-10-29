@@ -319,24 +319,130 @@ heroku run python manage.py sync_pharmacies --state TX --app pharmacypulse-byond
         {% endif %}
 
         <!-- Pharmacies table -->
-        <div class="glass-card admin-table-wrap">
+        <div id="all-pharmacies" class="glass-card admin-table-wrap">
           <div class="p-5 pb-4 flex items-center justify-between gap-3 flex-wrap">
             <h2 class="admin-card-heading" style="margin-bottom: 0">All Pharmacies</h2>
             <form method="GET" action="/admin-pharmacies" style="display: flex; gap: 0.5rem; align-items: center">
               <input type="text" name="q" value="{{ q }}" placeholder="Search name / address / ZIP"
                 class="input-field text-sm" style="width: 18rem">
-              <button type="submit" class="btn-outline text-xs py-2 px-3">Search</button>
-              {% if q %}<a href="/admin-pharmacies" class="text-xs no-underline" style="color: #64748b">Clear</a>{% endif %}
+              <input type="hidden" name="kind" value="{{ pharmacy_kind }}">
+              <select name="publish_status" class="input-field text-sm" aria-label="Filter by publish status">
+                <option value="" {% if not publish_status %}selected{% endif %}>All publish statuses</option>
+                <option value="published" {% if publish_status == "published" %}selected{% endif %}>Published</option>
+                <option value="unpublished" {% if publish_status == "unpublished" %}selected{% endif %}>Unpublished</option>
+              </select>
+              <button type="submit" class="btn-outline text-xs py-2 px-3">Apply</button>
+              {% if q or pharmacy_kind != "all" or publish_status %}
+              <a href="/admin-pharmacies" class="text-xs no-underline" style="color: #64748b">Clear</a>
+              {% endif %}
             </form>
           </div>
-          <form method="POST" action="/api/flow/bulk-delete-pharmacies" id="bulk-pharmacy-form"
-            onsubmit="return confirm('Permanently delete the selected pharmacies from the pharmacy tables? This cannot be undone.')">
+          {% if success or error %}
+          <div style="padding: 0 1.25rem 1rem">
+            {% if success %}
+            <p class="text-sm font-medium" role="status" style="color: #15803d">{{ success }}</p>
+            {% endif %}
+            {% if error %}
+            <p class="text-sm font-medium" role="alert" style="color: #dc2626">{{ error }}</p>
+            {% endif %}
+          </div>
+          {% endif %}
+          <details style="padding: 0 1.25rem 1rem">
+            <summary class="btn-primary text-xs py-2 px-3"
+              style="display: inline-flex; align-items: center; cursor: pointer">Add pharmacy</summary>
+            <div class="mt-3 p-4 rounded-xl" style="background: #f8fafc; border: 1px solid #e2e8f0">
+              <p class="text-xs mb-3" style="color: #64748b">
+                New pharmacies are saved as unpublished. Review them in the Unpublished filter before publishing.
+              </p>
+              <form method="POST" action="/api/flow/add-pharmacy-manually">
+                {% csrf_token %}
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem">
+                  <div>
+                    <label class="block text-xs font-semibold mb-1.5" for="manual-pharmacy-name" style="color: #374151">Name *</label>
+                    <input id="manual-pharmacy-name" class="input-field text-sm" type="text" name="name" maxlength="255" required>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold mb-1.5" for="manual-pharmacy-address" style="color: #374151">Address *</label>
+                    <input id="manual-pharmacy-address" class="input-field text-sm" type="text" name="address" maxlength="255" required>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold mb-1.5" for="manual-pharmacy-address-2" style="color: #374151">Address line 2</label>
+                    <input id="manual-pharmacy-address-2" class="input-field text-sm" type="text" name="address_2" maxlength="255">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold mb-1.5" for="manual-pharmacy-city" style="color: #374151">City *</label>
+                    <input id="manual-pharmacy-city" class="input-field text-sm" type="text" name="city" maxlength="100" required>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold mb-1.5" for="manual-pharmacy-state" style="color: #374151">State *</label>
+                    <input id="manual-pharmacy-state" class="input-field text-sm" type="text" name="state" maxlength="2" pattern="[A-Za-z]{2}" placeholder="PA" required>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold mb-1.5" for="manual-pharmacy-zip" style="color: #374151">ZIP *</label>
+                    <input id="manual-pharmacy-zip" class="input-field text-sm" type="text" name="zip" pattern="[0-9]{5}(-[0-9]{4})?" placeholder="19103" required>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold mb-1.5" for="manual-pharmacy-phone" style="color: #374151">Phone</label>
+                    <input id="manual-pharmacy-phone" class="input-field text-sm" type="tel" name="phone" maxlength="40">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold mb-1.5" for="manual-pharmacy-fax" style="color: #374151">Fax</label>
+                    <input id="manual-pharmacy-fax" class="input-field text-sm" type="tel" name="fax_number" maxlength="40">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold mb-1.5" for="manual-pharmacy-website" style="color: #374151">Website</label>
+                    <input id="manual-pharmacy-website" class="input-field text-sm" type="url" name="website" placeholder="https://example.com">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold mb-1.5" for="manual-pharmacy-npi" style="color: #374151">NPI</label>
+                    <input id="manual-pharmacy-npi" class="input-field text-sm" type="text" name="npi_number" inputmode="numeric" pattern="[0-9]{10}" maxlength="10">
+                  </div>
+                  <label class="flex items-center gap-2 text-sm" style="color: #374151; align-self: end; padding-bottom: 0.5rem">
+                    <input type="checkbox" name="is_digital" value="1" style="accent-color: #7c3aed">
+                    Digital pharmacy
+                  </label>
+                </div>
+                <div class="flex justify-end mt-4">
+                  <button type="submit" class="btn-primary text-sm py-2 px-4">Save as unpublished</button>
+                </div>
+              </form>
+            </div>
+          </details>
+          <nav aria-label="Pharmacy type" role="tablist"
+            style="display: flex; gap: 0.5rem; padding: 0 1.25rem 1rem; border-bottom: 1px solid #e5e7eb">
+            <a role="tab" aria-selected="{% if pharmacy_kind == 'all' %}true{% else %}false{% endif %}"
+              href="/admin-pharmacies?kind=all{% if q %}&q={{ q|urlencode }}{% endif %}{% if publish_status %}&publish_status={{ publish_status|urlencode }}{% endif %}"
+              class="btn-ghost text-xs py-1.5 px-3 no-underline"
+              style="{% if pharmacy_kind == 'all' %}background: #e6f4f2; color: #008F82; font-weight: 700{% else %}color: #64748b{% endif %}">All</a>
+            <a role="tab" aria-selected="{% if pharmacy_kind == 'digital' %}true{% else %}false{% endif %}"
+              href="/admin-pharmacies?kind=digital{% if q %}&q={{ q|urlencode }}{% endif %}{% if publish_status %}&publish_status={{ publish_status|urlencode }}{% endif %}"
+              class="btn-ghost text-xs py-1.5 px-3 no-underline"
+              style="{% if pharmacy_kind == 'digital' %}background: #e6f4f2; color: #008F82; font-weight: 700{% else %}color: #64748b{% endif %}">Digital</a>
+            <a role="tab" aria-selected="{% if pharmacy_kind == 'other' %}true{% else %}false{% endif %}"
+              href="/admin-pharmacies?kind=other{% if q %}&q={{ q|urlencode }}{% endif %}{% if publish_status %}&publish_status={{ publish_status|urlencode }}{% endif %}"
+              class="btn-ghost text-xs py-1.5 px-3 no-underline"
+              style="{% if pharmacy_kind == 'other' %}background: #e6f4f2; color: #008F82; font-weight: 700{% else %}color: #64748b{% endif %}">Other</a>
+          </nav>
+          <form method="POST" action="/api/flow/bulk-delete-pharmacies" id="bulk-pharmacy-form">
             {% csrf_token %}
+            <input type="hidden" name="return_q" value="{{ q }}">
+            <input type="hidden" name="return_kind" value="{{ pharmacy_kind }}">
+            <input type="hidden" name="return_publish_status" value="{{ publish_status }}">
+            <input type="hidden" name="return_pharmacy_page" value="{{ pharmacy_page }}">
             <div
-              style="padding: 0 1.25rem 0.75rem; display: flex; align-items: center; gap: 0.75rem; font-size: 0.75rem; color: #64748b">
+              style="padding: 0 1.25rem 0.75rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; font-size: 0.75rem; color: #64748b">
               <span id="bulk-count">0 selected</span>
-              <button type="submit" name="action" value="soft_delete" class="btn-destructive text-xs py-1 px-3" disabled
-                id="bulk-delete-btn">Delete selected</button>
+              <button type="submit" name="publish_status" value="published"
+                formaction="/api/flow/bulk-update-pharmacy-publish-status"
+                class="btn-primary text-xs py-1 px-3" disabled id="bulk-publish-btn"
+                onclick="return confirm('Publish the selected pharmacies? They will become visible in public search.')">Publish selected</button>
+              <button type="submit" name="publish_status" value="unpublished"
+                formaction="/api/flow/bulk-update-pharmacy-publish-status"
+                class="btn-outline text-xs py-1 px-3" disabled id="bulk-unpublish-btn"
+                onclick="return confirm('Unpublish the selected pharmacies? They will be hidden from public search.')">Unpublish selected</button>
+              <button type="submit" name="action" value="soft_delete"
+                class="btn-destructive text-xs py-1 px-3" disabled id="bulk-delete-btn"
+                onclick="return confirm('Permanently delete the selected pharmacies from the pharmacy tables? This cannot be undone.')">Delete selected</button>
             </div>
             <table class="admin-table">
               <thead>
@@ -386,6 +492,32 @@ heroku run python manage.py sync_pharmacies --state TX --app pharmacypulse-byond
               </tbody>
             </table>
           </form>
+          {% if pharmacy_paginator.num_pages > 1 %}
+          <div class="p-4 flex items-center justify-between gap-2 flex-wrap border-t" style="border-color: #e5e7eb">
+            <span class="text-xs" style="color: #64748b">
+              Page {{ pharmacy_page_obj.number }} of {{ pharmacy_paginator.num_pages }}
+              ({{ pharmacy_paginator.count }} total)
+            </span>
+            <nav class="flex items-center gap-1" aria-label="Pharmacy pages">
+              {% if pharmacy_page_obj.has_previous %}
+              <a href="?{% if pharmacy_page_query %}{{ pharmacy_page_query }}&{% endif %}pharmacy_page={{ pharmacy_page_obj.previous_page_number }}"
+                class="btn-ghost text-xs py-1 px-2">Previous</a>
+              {% endif %}
+              {% for p in pharmacy_paginator.page_range %}
+                {% if p == pharmacy_page_obj.number %}
+                <span class="px-2 py-1 text-xs font-semibold" style="color: #008F82" aria-current="page">{{ p }}</span>
+                {% elif p > pharmacy_page_obj.number|add:"-3" and p < pharmacy_page_obj.number|add:"3" %}
+                <a href="?{% if pharmacy_page_query %}{{ pharmacy_page_query }}&{% endif %}pharmacy_page={{ p }}"
+                  class="btn-ghost text-xs py-1 px-2">{{ p }}</a>
+                {% endif %}
+              {% endfor %}
+              {% if pharmacy_page_obj.has_next %}
+              <a href="?{% if pharmacy_page_query %}{{ pharmacy_page_query }}&{% endif %}pharmacy_page={{ pharmacy_page_obj.next_page_number }}"
+                class="btn-ghost text-xs py-1 px-2">Next</a>
+              {% endif %}
+            </nav>
+          </div>
+          {% endif %}
           {% if not pharmacies %}
           <div class="text-center py-14">
             <p class="font-semibold mb-1" style="color: #0f172a">No pharmacies found</p>
@@ -398,7 +530,10 @@ heroku run python manage.py sync_pharmacies --state TX --app pharmacypulse-byond
           function ppBulkUpdate() {
             var rows = document.querySelectorAll('.bulk-row:checked');
             document.getElementById('bulk-count').textContent = rows.length + ' selected';
-            document.getElementById('bulk-delete-btn').disabled = rows.length === 0;
+            var disabled = rows.length === 0;
+            document.getElementById('bulk-publish-btn').disabled = disabled;
+            document.getElementById('bulk-unpublish-btn').disabled = disabled;
+            document.getElementById('bulk-delete-btn').disabled = disabled;
           }
           function ppBulkToggleAll(checked) {
             document.querySelectorAll('.bulk-row').forEach(function (c) { c.checked = checked; });

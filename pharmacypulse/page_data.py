@@ -38,6 +38,7 @@ from .domains.insights import page_insights
 from .domains.account import (
     page_account, page_privacy, page_terms, page_forgot_password, page_about,
 )
+from .domains.transfers import page_transfer, page_transfers
 from .domains.dashboard import (
     page_pharmacist_dashboard, page_admin_dashboard, page_admin_analytics,
     page_admin_claims, page_admin_moderation, page_admin_pharmacies,

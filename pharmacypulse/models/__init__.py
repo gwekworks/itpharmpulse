@@ -33,6 +33,10 @@ from .reviews import (
 from .claims import (
     PharmacyClaim,
 )
+from .transfers import (
+    PrescriptionTransfer,
+    TransferFax,
+)
 from .shortages import (
     DrugShortage,
     PinnedShortage,
@@ -65,6 +69,8 @@ __all__ = [
     "ReviewResponse",
     "ResponseCount",
     "PharmacyClaim",
+    "PrescriptionTransfer",
+    "TransferFax",
     "DrugShortage",
     "PinnedShortage",
     "ModerationKeyword",

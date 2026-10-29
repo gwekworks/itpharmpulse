@@ -24,15 +24,21 @@ from __future__ import annotations
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
+from pharmacypulse.domains.common import invalidate_online_pharmacies_cache
 from pharmacypulse.models import Pharmacy, PharmacyPublishable
 
 # Columns copied across from the source pharmacy.
 _COPY_FIELDS = [
-    "name", "address", "city", "state", "zip", "phone",
+    "name", "address", "address_2", "city", "state", "zip", "zip_full",
+    "phone", "fax_number",
     "latitude", "longitude", "stock_confidence", "avg_wait_time",
     "avg_service_rating", "total_reviews", "is_digital", "website",
-    "npi_number", "place_id", "taxonomy_code", "enumeration_date",
+    "npi_number", "place_id", "taxonomy_code", "taxonomy_license",
+    "taxonomy_state", "taxonomy_licenses", "enumeration_date",
+    "nppes_last_updated", "certification_date",
     "authorized_official_name", "authorized_official_title",
+    "authorized_official_phone", "legal_name", "organizational_subpart",
+    "identifiers_json", "other_names_json",
     "secondary_taxonomies", "chain_size", "claimed_by", "org_id",
     "phone_wait_time", "delivery_wait_time", "delivery_rating",
     "customer_service_hours", "listing_completed_at",
@@ -88,6 +94,8 @@ class Command(BaseCommand):
             if to_refresh:
                 PharmacyPublishable.objects.bulk_update(
                     to_refresh, fields=_COPY_FIELDS + ["status"], batch_size=1000)
+        if to_create or to_refresh:
+            invalidate_online_pharmacies_cache()
 
         self.stdout.write(self.style.SUCCESS(
             f"Created {len(to_create)} new, refreshed {len(to_refresh)}, "

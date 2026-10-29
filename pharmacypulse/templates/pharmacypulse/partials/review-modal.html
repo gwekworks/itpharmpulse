@@ -233,22 +233,48 @@
         <div class="rv-progress-bar"></div>
       </div>
 
-      <div class="rv-section-label"><span class="rv-num">1.</span> PURPOSE OF VISIT <span class="rv-label-hint">Select all that apply</span></div>
-      <div class="rv-chips" id="rv-purpose">
-        <label class="rv-chip selected" data-val="refill"><input type="checkbox" name="visit_purpose" value="refill" checked>🔄 Refill pickup</label>
-        <label class="rv-chip" data-val="new_rx"><input type="checkbox" name="visit_purpose" value="new_rx">📋 New prescription</label>
-        <label class="rv-chip" data-val="transfer"><input type="checkbox" name="visit_purpose" value="transfer">🔁 Transfer</label>
-        <label class="rv-chip" data-val="vaccine"><input type="checkbox" name="visit_purpose" value="vaccine">💉 Vaccine</label>
-        <label class="rv-chip" data-val="consultation"><input type="checkbox" name="visit_purpose" value="consultation">💬 Consultation</label>
-        <label class="rv-chip" data-val="other"><input type="checkbox" name="visit_purpose" value="other">••• Other / OTC</label>
+      <div id="rv-physical-purpose">
+        <div class="rv-section-label"><span class="rv-num">1.</span> PURPOSE OF VISIT <span class="rv-label-hint">Select all that apply</span></div>
+        <div class="rv-chips" id="rv-purpose">
+          <label class="rv-chip selected" data-val="refill"><input type="checkbox" name="visit_purpose" value="refill" checked>🔄 Refill pickup</label>
+          <label class="rv-chip" data-val="new_rx"><input type="checkbox" name="visit_purpose" value="new_rx">📋 New prescription</label>
+          <label class="rv-chip" data-val="transfer"><input type="checkbox" name="visit_purpose" value="transfer">🔁 Transfer</label>
+          <label class="rv-chip" data-val="vaccine"><input type="checkbox" name="visit_purpose" value="vaccine">💉 Vaccine</label>
+          <label class="rv-chip" data-val="consultation"><input type="checkbox" name="visit_purpose" value="consultation">💬 Consultation</label>
+          <label class="rv-chip" data-val="other"><input type="checkbox" name="visit_purpose" value="other">••• Other / OTC</label>
+        </div>
       </div>
 
-      <div class="rv-section-label"><span class="rv-num">2.</span> ESTIMATED WAIT TIME</div>
-      <div class="rv-chips" id="rv-wait">
-        <label class="rv-chip" data-val="1"><input type="radio" name="wait_time" value="1">&lt;5 mins</label>
-        <label class="rv-chip selected" data-val="2"><input type="radio" name="wait_time" value="2" checked>5-10 mins</label>
-        <label class="rv-chip" data-val="3"><input type="radio" name="wait_time" value="3">10-20 mins</label>
-        <label class="rv-chip" data-val="4"><input type="radio" name="wait_time" value="4">20+ mins</label>
+      <div id="rv-phone-section" style="display:none">
+        <div class="rv-section-label"><span class="rv-num">1.</span> 📞 PHONE RESPONSIVENESS</div>
+        <div class="rv-chips" id="rv-phone">
+          <label class="rv-chip" data-val="1"><input type="radio" name="phone_responsiveness" value="1">1 · Hard to reach</label>
+          <label class="rv-chip" data-val="2"><input type="radio" name="phone_responsiveness" value="2">2 · Slow</label>
+          <label class="rv-chip selected" data-val="3"><input type="radio" name="phone_responsiveness" value="3" checked>3 · Okay</label>
+          <label class="rv-chip" data-val="4"><input type="radio" name="phone_responsiveness" value="4">4 · Responsive</label>
+          <label class="rv-chip" data-val="5"><input type="radio" name="phone_responsiveness" value="5">5 · Very responsive</label>
+        </div>
+      </div>
+
+      <div id="rv-physical-wait">
+        <div class="rv-section-label"><span class="rv-num">2.</span> ESTIMATED WAIT TIME</div>
+        <div class="rv-chips" id="rv-wait">
+          <label class="rv-chip" data-val="1"><input type="radio" name="wait_time" value="1">&lt;5 mins</label>
+          <label class="rv-chip selected" data-val="2"><input type="radio" name="wait_time" value="2" checked>5-10 mins</label>
+          <label class="rv-chip" data-val="3"><input type="radio" name="wait_time" value="3">10-20 mins</label>
+          <label class="rv-chip" data-val="4"><input type="radio" name="wait_time" value="4">20+ mins</label>
+        </div>
+      </div>
+
+      <div id="rv-delivery-section" style="display:none">
+        <div class="rv-section-label"><span class="rv-num">2.</span> 📦 ON-TIME DELIVERY</div>
+        <div class="rv-chips" id="rv-delivery">
+          <label class="rv-chip" data-val="1"><input type="radio" name="delivery_timeliness" value="1">1 · Much later</label>
+          <label class="rv-chip" data-val="2"><input type="radio" name="delivery_timeliness" value="2">2 · Later</label>
+          <label class="rv-chip selected" data-val="3"><input type="radio" name="delivery_timeliness" value="3" checked>3 · As expected</label>
+          <label class="rv-chip" data-val="4"><input type="radio" name="delivery_timeliness" value="4">4 · Earlier</label>
+          <label class="rv-chip" data-val="5"><input type="radio" name="delivery_timeliness" value="5">5 · Much earlier</label>
+        </div>
       </div>
 
       <div class="rv-section-label"><span class="rv-num">3.</span> STOCK CONFIDENCE <span class="rv-label-hint" style="margin-left:auto">Did they have your medication in stock?</span></div>
@@ -270,7 +296,7 @@
         <label class="rv-heart selected" data-val="5"><input type="radio" name="care_rating" value="5" checked><span class="rv-heart-icon">❤️</span><span class="rv-heart-label">Excellent</span></label>
       </div>
 
-      <button class="rv-btn-primary" onclick="rvGoStep(2)">Next: Select Pharmacy &amp; Timeframe →</button>
+      <button id="rv-step1-next" class="rv-btn-primary" onclick="rvGoStep(2)">Next: Select Pharmacy &amp; Timeframe →</button>
       <a class="rv-back-link" href="#" id="rv-step1-back" onclick="rvChangePharmacy();return false" hidden style="margin-top:0.5rem">← Change Pharmacy</a>
       <div class="rv-footer">PharmacyPulse Community Network · Free &amp; Privacy Protected</div>
     </div>
@@ -282,7 +308,7 @@
         STEP 2 OF 3
       </div>
       <p class="rv-subtitle">Fast Check-In</p>
-      <h2 class="rv-title">Select Visit Time &amp; Optional Notes</h2>
+      <h2 class="rv-title" id="rv-step2-title">Select Visit Time &amp; Optional Notes</h2>
       <div class="rv-progress">
         <div class="rv-progress-bar done"></div>
         <div class="rv-progress-bar active"></div>
@@ -298,12 +324,14 @@
         <a class="rv-pharmacy-card-change" href="#" onclick="rvChangePharmacy();return false">Change</a>
       </div>
 
-      <div class="rv-section-label"><span class="rv-num">1.</span> VISIT TIMEFRAME</div>
-      <div class="rv-chips" id="rv-timeframe">
-        <label class="rv-chip selected" data-val="today"><input type="radio" name="visit_timeframe" value="today" checked><div><strong>Today</strong><span style="display:block;font-size:0.6875rem;color:#94a3b8">Within last few hours</span></div></label>
-        <label class="rv-chip" data-val="yesterday"><input type="radio" name="visit_timeframe" value="yesterday"><div><strong>Yesterday</strong><span style="display:block;font-size:0.6875rem;color:#94a3b8">Visited 1 day ago</span></div></label>
-        <label class="rv-chip" data-val="2-3_days"><input type="radio" name="visit_timeframe" value="2-3_days"><div><strong>2–3 days ago</strong><span style="display:block;font-size:0.6875rem;color:#94a3b8">Earlier this week</span></div></label>
-        <label class="rv-chip" data-val="this_week"><input type="radio" name="visit_timeframe" value="this_week"><div><strong>Earlier this week</strong><span style="display:block;font-size:0.6875rem;color:#94a3b8">4–7 days ago</span></div></label>
+      <div id="rv-timeframe-section">
+        <div class="rv-section-label"><span class="rv-num">1.</span> VISIT TIMEFRAME</div>
+        <div class="rv-chips" id="rv-timeframe">
+          <label class="rv-chip selected" data-val="today"><input type="radio" name="visit_timeframe" value="today" checked><div><strong>Today</strong><span style="display:block;font-size:0.6875rem;color:#94a3b8">Within last few hours</span></div></label>
+          <label class="rv-chip" data-val="yesterday"><input type="radio" name="visit_timeframe" value="yesterday"><div><strong>Yesterday</strong><span style="display:block;font-size:0.6875rem;color:#94a3b8">Visited 1 day ago</span></div></label>
+          <label class="rv-chip" data-val="2-3_days"><input type="radio" name="visit_timeframe" value="2-3_days"><div><strong>2–3 days ago</strong><span style="display:block;font-size:0.6875rem;color:#94a3b8">Earlier this week</span></div></label>
+          <label class="rv-chip" data-val="this_week"><input type="radio" name="visit_timeframe" value="this_week"><div><strong>Earlier this week</strong><span style="display:block;font-size:0.6875rem;color:#94a3b8">4–7 days ago</span></div></label>
+        </div>
       </div>
 
       <div class="rv-section-label"><span class="rv-num">2.</span> YOUR DISPLAY NAME / INITIAL</div>
@@ -340,8 +368,6 @@
       </div>
 
       {% if user.is_authenticated %}
-      <button class="rv-btn-primary" onclick="rvSubmit()" style="margin-bottom:0.75rem">Submit Review ✓</button>
-      {% else %}
       <button class="rv-btn-primary" onclick="rvSubmit()" style="margin-bottom:0.75rem">Submit Review ✓</button>
       {% endif %}
 
@@ -439,18 +465,21 @@
 
   /* --- Draft preservation across sign-up/sign-in redirects --- */
   window.rvSaveDraft = function() {
+    if (!window.PP_COOKIE_CONSENT.functional) return;
     try {
       var modal = document.getElementById('rv-modal');
       localStorage.setItem('pp_review_draft', JSON.stringify({
         pharm_id: modal.getAttribute('data-pharm-id'),
         pharm_name: modal.getAttribute('data-pharm-name'),
         pharm_addr: modal.getAttribute('data-pharm-addr'),
+        pharm_is_digital: modal.getAttribute('data-is-digital'),
         display_name: document.getElementById('rv-display-name').value,
         comment: document.getElementById('rv-comment').value,
       }));
     } catch (e) {}
   };
   function restoreDraft() {
+    if (!window.PP_COOKIE_CONSENT.functional) return;
     var raw = null;
     try { raw = localStorage.getItem('pp_review_draft'); } catch (e) {}
     if (!raw) return;
@@ -458,7 +487,9 @@
     var draft = null;
     try { draft = JSON.parse(raw); } catch (e) {}
     if (!draft) return;
-    if (draft.pharm_id) setPharmacy(draft.pharm_id, draft.pharm_name, draft.pharm_addr);
+    if (draft.pharm_id) {
+      setPharmacy(draft.pharm_id, draft.pharm_name, draft.pharm_addr, draft.pharm_is_digital === 'true');
+    }
     var dn = document.getElementById('rv-display-name');
     if (dn && draft.display_name) dn.value = draft.display_name;
     var cm = document.getElementById('rv-comment');
@@ -569,6 +600,8 @@
   }
   wireChipsMulti('rv-purpose');
   wireChips('rv-wait');
+  wireChips('rv-phone');
+  wireChips('rv-delivery');
   wireChips('rv-stock');
   wireChips('rv-timeframe');
 
@@ -626,8 +659,9 @@
     return s || 'pharmacy';
   }
 
-  function setPharmacy(id, name, addr) {
+  function setPharmacy(id, name, addr, isDigital) {
     var modal = document.getElementById('rv-modal');
+    isDigital = isDigital === true || isDigital === 1 || isDigital === '1' || isDigital === 'true';
     document.getElementById('rv-pharm-name').textContent = name || '';
     document.getElementById('rv-pharm-addr-text').textContent = addr || '';
     document.getElementById('rv-badge-pharm-name').textContent = name || '';
@@ -636,6 +670,18 @@
     modal.setAttribute('data-pharm-id', id || '');
     modal.setAttribute('data-pharm-name', name || '');
     modal.setAttribute('data-pharm-addr', addr || '');
+    modal.setAttribute('data-is-digital', isDigital ? 'true' : 'false');
+    document.getElementById('rv-physical-purpose').style.display = isDigital ? 'none' : '';
+    document.getElementById('rv-phone-section').style.display = isDigital ? '' : 'none';
+    document.getElementById('rv-physical-wait').style.display = isDigital ? 'none' : '';
+    document.getElementById('rv-delivery-section').style.display = isDigital ? '' : 'none';
+    document.getElementById('rv-timeframe-section').style.display = isDigital ? 'none' : '';
+    document.getElementById('rv-step2-title').textContent = isDigital
+      ? 'Add Optional Notes'
+      : 'Select Visit Time & Optional Notes';
+    document.getElementById('rv-step1-next').textContent = isDigital
+      ? 'Next: Add Optional Notes →'
+      : 'Next: Select Pharmacy & Timeframe →';
   }
 
   function openModalShell() {
@@ -654,14 +700,14 @@
   }
 
   /* Direct mode: pharmacy known from the page context. */
-  window.openReviewModal = function(pharmId, pharmName, pharmAddr) {
+  window.openReviewModal = function(pharmId, pharmName, pharmAddr, isDigital) {
     if (!pharmId) {
       openReviewModalSelect();
       return;
     }
     selectMode = false;
     document.getElementById('rv-step1-back').hidden = true;
-    setPharmacy(pharmId, pharmName, pharmAddr);
+    setPharmacy(pharmId, pharmName, pharmAddr, isDigital);
     dirty = false; submitted = false;
     openModalShell();
     restoreDraft();
@@ -686,9 +732,9 @@
   };
 
   /* User picked a pharmacy from the picker list. */
-  window.rvPickPharmacy = function(id, name, addr) {
+  window.rvPickPharmacy = function(id, name, addr, isDigital) {
     if (!id) return;
-    setPharmacy(id, name, addr);
+    setPharmacy(id, name, addr, isDigital);
     dirty = true;
     rvGoStep(1);
   };
@@ -707,12 +753,13 @@
       if (!addr) addr = (p.city || '') + ', ' + (p.state || '');
       var nameSafe = (p.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
       var addrSafe = addr.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      var isDigital = p.is_digital ? 'true' : 'false';
       var meta = '';
       if (p.distance_mi != null) meta += '~' + p.distance_mi + ' mi';
       if (p.total_reviews) meta += (meta ? ' · ' : '') + p.total_reviews + ' reviews';
       if (p.total_reviews && p.avg_service_rating) meta += ' · ★ ' + p.avg_service_rating;
       html += '<button type="button" class="rv-picker-item" role="option" '
-        + 'onclick="rvPickPharmacy(' + p.id + ',\'' + nameSafe + '\',\'' + addrSafe + '\')">'
+        + 'onclick="rvPickPharmacy(' + p.id + ',\'' + nameSafe + '\',\'' + addrSafe + '\',' + isDigital + ')">'
         + '<span class="rv-picker-item-name">' + p.name + '</span>'
         + '<span class="rv-picker-item-meta">📍 ' + addr
         + (meta ? ' · <span style="color:#008F82;font-weight:600">' + meta + '</span>' : '')
@@ -765,7 +812,7 @@
     navigator.geolocation.getCurrentPosition(function(pos) {
       var lat = pos.coords.latitude.toFixed(4);
       var lng = pos.coords.longitude.toFixed(4);
-      document.cookie = 'pp_loc=' + lat + ',' + lng + '; path=/; max-age=2592000; SameSite=Lax';
+      window.ppSetPreferenceCookie('pp_loc', lat + ',' + lng, 2592000);
       if (txt) txt.textContent = '📍 Location Set';
       loadPickerList();
     }, function() {
@@ -820,14 +867,9 @@
     var pharmId = modal.getAttribute('data-pharm-id');
     var pharmName = modal.getAttribute('data-pharm-name');
 
-    var purposeBoxes = document.querySelectorAll('#rv-purpose input[name="visit_purpose"]:checked');
-    var purposes = Array.prototype.map.call(purposeBoxes, function(i){ return i.value; });
-    if (!purposes.length) purposes = ['refill'];
-    var purpose = purposes.join(',');
-    var waitTime = selectedValue(document.getElementById('rv-wait'), 'wait_time') || '3';
+    var isDigital = modal.getAttribute('data-is-digital') === 'true';
     var stock = selectedValue(document.getElementById('rv-stock'), 'stock_status') || 'yes_all';
     var care = selectedValue(document.getElementById('rv-care'), 'care_rating') || '5';
-    var timeframe = selectedValue(document.getElementById('rv-timeframe'), 'visit_timeframe') || 'today';
     var displayName = (document.getElementById('rv-display-name').value || '').trim() || 'Anonymous';
     var comment = (document.getElementById('rv-comment').value || '').trim();
 
@@ -842,14 +884,22 @@
     var body = new FormData();
     body.append('pharmacy_id', pharmId);
     body.append('pharmacy_name', pharmName || '');
-    body.append('stock_available', stockMap[stock] || 1);
-    body.append('wait_time_rating', waitTime);
+    body.append('stock_available', stockMap[stock]);
     body.append('service_rating', care);
     body.append('comment', comment);
-    body.append('visit_purpose', purpose);
-    body.append('visit_timeframe', timeframe);
     body.append('user_name', displayName);
     body.append('is_caregiver', '0');
+    if (isDigital) {
+      body.append('phone_responsiveness', selectedValue(document.getElementById('rv-phone'), 'phone_responsiveness'));
+      body.append('delivery_timeliness', selectedValue(document.getElementById('rv-delivery'), 'delivery_timeliness'));
+    } else {
+      var purposeBoxes = document.querySelectorAll('#rv-purpose input[name="visit_purpose"]:checked');
+      var purposes = Array.prototype.map.call(purposeBoxes, function(i){ return i.value; });
+      if (!purposes.length) purposes = ['refill'];
+      body.append('wait_time_rating', selectedValue(document.getElementById('rv-wait'), 'wait_time') || '3');
+      body.append('visit_purpose', purposes.join(','));
+      body.append('visit_timeframe', selectedValue(document.getElementById('rv-timeframe'), 'visit_timeframe') || 'today');
+    }
     body.append('csrfmiddlewaretoken', csrfToken());
 
     hideError();

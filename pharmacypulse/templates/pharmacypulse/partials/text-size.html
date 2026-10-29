@@ -23,7 +23,7 @@
 (function(){
   var sizes = ['sm','md','lg','xl'];
   var pcts  = ['75%','100%','112%','125%'];
-  var s = localStorage.getItem('pp_text_size');
+  var s = window.PP_COOKIE_CONSENT.functional ? localStorage.getItem('pp_text_size') : null;
   if (s && sizes.indexOf(s) !== -1) {
     document.documentElement.classList.add('pp-text-' + s);
     document.getElementById('pp-text-size-pct').textContent = pcts[sizes.indexOf(s)];
@@ -49,7 +49,7 @@ function ppChangeTextSize(dir){
   var next = sizes[idx];
   for(var i=0;i<sizes.length;i++) el.classList.remove('pp-text-'+sizes[i]);
   el.classList.add('pp-text-'+next);
-  localStorage.setItem('pp_text_size', next);
+  if (window.PP_COOKIE_CONSENT.functional) localStorage.setItem('pp_text_size', next);
   document.getElementById('pp-text-size-pct').textContent = pcts[idx];
 }
 </script>
