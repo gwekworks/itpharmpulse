@@ -1,16 +1,38 @@
 {% extends "pharmacypulse/layouts/app.html" %}
 {% load pharmacypulse %}
-{% block title %}Transfer Prescription{% endblock %}
+{% block title %}Transfer Prescription {% endblock %}
 {% block content %}
 {% include "pharmacypulse/partials/topbar.html" %}
 <div style="background: #fafbfc; min-height: 100vh; padding-bottom: 0">
   <div style="max-width: 40rem; margin: 0 auto; padding: 1.5rem">
-
-    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem">
+    <div
+      style="
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      "
+    >
       <div
-        style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #e6f7f5; border-radius: 0.75rem">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#008F82"
-          stroke-width="2">
+        style="
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #e6f7f5;
+          border-radius: 0.75rem;
+        "
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#008F82"
+          stroke-width="2"
+        >
           <path d="M17 3l4 4-4 4" />
           <path d="M21 7H8a5 5 0 0 0-5 5" />
           <path d="M7 21l-4-4 4-4" />
@@ -18,192 +40,796 @@
         </svg>
       </div>
       <div>
-        <h1 style="font-family: 'DM Serif Display', serif; font-size: 1.25rem; color: #0f172a">Transfer Prescription
+        <h1
+          style="
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.25rem;
+            color: #0f172a;
+          "
+        >
+          Request Prescription Transfer
         </h1>
-        <p style="font-size: 0.75rem; color: #64748b">Patient request — pharmacists complete the transfer per USA rules.
+        <p style="font-size: 0.75rem; color: #64748b">
+          Patient request — pharmacists complete the transfer per USA rules.
         </p>
       </div>
     </div>
 
     {% if param_error %}
     <div
-      style="padding: 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.75rem; margin-bottom: 1rem; font-size: 0.8125rem; color: #dc2626">
+      style="
+        padding: 1rem;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+        font-size: 0.8125rem;
+        color: #dc2626;
+      "
+    >
       {{param_error}}
     </div>
-    {% endif %}
-    {% if param_msg %}
+    {% endif %} {% if param_msg %}
     <div
-      style="padding: 1rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.75rem; margin-bottom: 1rem; font-size: 0.8125rem; color: #166534">
+      style="
+        padding: 1rem;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+        font-size: 0.8125rem;
+        color: #166534;
+      "
+    >
       {{param_msg}}
     </div>
     {% endif %}
 
     <!-- USA standard explainer -->
     <div
-      style="padding: 0.875rem 1rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 1rem; font-size: 0.75rem; color: #1e40af; margin-bottom: 1rem">
-      <strong style="display:block; margin-bottom: 0.25rem">How the transfers work</strong>
-      <span>1) You authorize the move. 2) The two pharmacies transfer <strong>pharmacist-to-pharmacist</strong> — the
-        original is voided so it can't be filled twice.</span>
+      style="
+        padding: 0.875rem 1rem;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        color: #1e40af;
+        margin-bottom: 1rem;
+      "
+    >
+      <strong style="display: block; margin-bottom: 0.25rem"
+        >How the transfers work</strong
+      >
+      <span
+        >1) You authorize the move. 2) The two pharmacies transfer
+        <strong>pharmacist-to-pharmacist</strong> — the original is voided so it
+        can't be filled twice.</span
+      >
     </div>
 
     <!-- Transfer form -->
     <div
-      style="padding: 1.5rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 1rem">
+      style="
+        padding: 1.5rem;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        margin-bottom: 1rem;
+      "
+    >
       <form method="POST" action="/api/flow/transfer/submit" id="transfer-form">
         {% csrf_token %}
 
         <label
-          style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Current
-          pharmacy (sending)</label>
+          style="
+            display: block;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 0.375rem;
+          "
+          >Current pharmacy (sending)</label
+        >
         <div style="position: relative; margin-bottom: 0.75rem">
-          <input type="hidden" name="from_pharmacy_id" id="transfer-from-id" value="{{from_id}}" required>
-          <input type="text" id="transfer-from-search" placeholder="Search current pharmacy..." value="{{from_name}}"
+          <input
+            type="hidden"
+            name="from_pharmacy_id"
+            id="transfer-from-id"
+            value="{{from_id}}"
+            required
+          />
+          <input
+            type="text"
+            id="transfer-from-search"
+            placeholder="Search current pharmacy..."
+            value="{{from_name}}"
             autocomplete="off"
-            style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; outline: none; box-sizing: border-box; color: #0f172a">
-          <div id="transfer-from-dropdown"
-            style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 100; background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; box-shadow: 0 8px 24px rgba(0,0,0,0.12); max-height: 250px; overflow-y: auto">
-          </div>
+            style="
+              width: 100%;
+              padding: 0.625rem 0.875rem;
+              border: 1.5px solid #e5e7eb;
+              border-radius: 0.75rem;
+              font-size: 0.875rem;
+              outline: none;
+              box-sizing: border-box;
+              color: #0f172a;
+            "
+          />
+          <div
+            id="transfer-from-dropdown"
+            style="
+              display: none;
+              position: absolute;
+              top: 100%;
+              left: 0;
+              right: 0;
+              z-index: 100;
+              background: white;
+              border: 1px solid #e5e7eb;
+              border-radius: 0.75rem;
+              box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+              max-height: 250px;
+              overflow-y: auto;
+            "
+          ></div>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem; margin-bottom: 1rem">
-          <input type="text" id="transfer-from-address" placeholder="Street address" value="{{from_address}}" readonly
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+          "
+        >
+          <input
+            type="text"
+            id="transfer-from-address"
+            placeholder="Street address"
+            value="{{from_address}}"
+            readonly
             tabindex="-1"
-            style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; box-sizing: border-box; color: #334155; background: #f8fafc">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem">
-            <input type="tel" id="transfer-from-phone" name="from_phone" placeholder="Phone Number"
+            style="
+              width: 100%;
+              padding: 0.625rem 0.875rem;
+              border: 1.5px solid #e5e7eb;
+              border-radius: 0.75rem;
+              font-size: 0.8125rem;
+              box-sizing: border-box;
+              color: #334155;
+              background: #f8fafc;
+            "
+          />
+          <div
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem"
+          >
+            <input
+              type="tel"
+              id="transfer-from-phone"
+              name="from_phone"
+              placeholder="Phone Number"
               value="{{from_phone}}"
-              style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; box-sizing: border-box; color: #0f172a; background: #fff">
-            <input type="tel" id="transfer-from-fax" name="from_fax" placeholder="Fax Number" value="{{from_fax}}"
-              style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.8125rem; box-sizing: border-box; color: #0f172a; background: #fff">
+              style="
+                width: 100%;
+                padding: 0.625rem 0.875rem;
+                border: 1.5px solid #e5e7eb;
+                border-radius: 0.75rem;
+                font-size: 0.8125rem;
+                box-sizing: border-box;
+                color: #0f172a;
+                background: #fff;
+              "
+            />
+            <input
+              type="tel"
+              id="transfer-from-fax"
+              name="from_fax"
+              placeholder="Fax Number"
+              value="{{from_fax}}"
+              style="
+                width: 100%;
+                padding: 0.625rem 0.875rem;
+                border: 1.5px solid #e5e7eb;
+                border-radius: 0.75rem;
+                font-size: 0.8125rem;
+                box-sizing: border-box;
+                color: #0f172a;
+                background: #fff;
+              "
+            />
           </div>
-          <p style="font-size: 0.6875rem; color: #64748b; margin: 0">Auto-filled from our directory — correct it here if
-            the pharmacy gave you a better number. Your edit applies to this request only.</p>
+          <p style="font-size: 0.6875rem; color: #64748b; margin: 0">
+            Auto-filled from our directory — correct it here if the pharmacy
+            gave you a better number. Your edit applies to this request only.
+          </p>
         </div>
 
         <label
-          style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">New
-          pharmacy (receiving)</label>
+          style="
+            display: block;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 0.375rem;
+          "
+          >New pharmacy (receiving)</label
+        >
         <div style="position: relative; margin-bottom: 1rem">
-          <input type="hidden" name="to_pharmacy_id" id="transfer-to-id" value="{{to_id}}" required>
-          <input type="text" id="transfer-to-search" placeholder="Search new pharmacy..." value="{{to_name}}"
+          <input
+            type="hidden"
+            name="to_pharmacy_id"
+            id="transfer-to-id"
+            value="{{to_id}}"
+            required
+          />
+          <input
+            type="text"
+            id="transfer-to-search"
+            placeholder="Search new pharmacy..."
+            value="{{to_name}}"
             autocomplete="off"
-            style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; outline: none; box-sizing: border-box; color: #0f172a">
-          <div id="transfer-to-dropdown"
-            style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 100; background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; box-shadow: 0 8px 24px rgba(0,0,0,0.12); max-height: 250px; overflow-y: auto">
-          </div>
+            style="
+              width: 100%;
+              padding: 0.625rem 0.875rem;
+              border: 1.5px solid #e5e7eb;
+              border-radius: 0.75rem;
+              font-size: 0.875rem;
+              outline: none;
+              box-sizing: border-box;
+              color: #0f172a;
+            "
+          />
+          <div
+            id="transfer-to-dropdown"
+            style="
+              display: none;
+              position: absolute;
+              top: 100%;
+              left: 0;
+              right: 0;
+              z-index: 100;
+              background: white;
+              border: 1px solid #e5e7eb;
+              border-radius: 0.75rem;
+              box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+              max-height: 250px;
+              overflow-y: auto;
+            "
+          ></div>
         </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem">
-          <div>
-            <label
-              style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Patient
-              full name</label>
-            <input type="text" name="patient_full_name" required value="{{prefill_name}}" placeholder="Patient's full legal name"
-              style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 0.375rem; box-sizing: border-box; color: #0f172a">
-            <p style="font-size: 0.6875rem; color: #64748b; margin: 0 0 1rem 0; line-height: 1.4">Caregiver? Enter the <strong>patient's</strong> name here — not your own.</p>
-          </div>
-          <div>
-            <label
-              style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Birth
-              date</label>
-            <input type="date" name="patient_dob" required value="{{prefill_dob}}"
-              style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; box-sizing: border-box; color: #0f172a">
-          </div>
-        </div>
-
-        <label
-          style="display: block; font-size: 0.8125rem; font-weight: 600; color: #0f172a; margin-bottom: 0.375rem">Patient
-          phone</label>
-        <input type="tel" name="patient_phone" required value="{{prefill_phone}}" placeholder="(555) 123-4567"
-          style="width: 100%; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; box-sizing: border-box; color: #0f172a">
 
         <div
-          style="padding: 0.875rem 1rem; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 0.75rem; font-size: 0.75rem; color: #334155; margin-bottom: 1.25rem; line-height: 1.5">
-          <strong style="display:block; margin-bottom: 0.375rem; color: #0f172a">IMPORTANT NOTICE</strong>
-          <span>Not a prescription. This form is a patient-initiated request only. It is not a prescription, a
-            prescription transfer, or an order to dispense, and it does not authorize any pharmacy to fill or release
-            any medication.</span>
-          <span style="display:block; margin-top: 0.5rem;">PharmacyPulse is not a pharmacy. PharmacyPulse (operated by
-            BeyondRx) does not dispense, store, transfer, or verify prescriptions or prescription records, and does not
-            provide medical or pharmacy advice.</span>
-          <span style="display:block; margin-top: 0.5rem;">All information on this form was entered by the patient or
-            their representative. PharmacyPulse has not verified the identity of the patient, the accuracy of the
-            information, or the existence, validity, or transferability of any prescription.</span>
-          <span style="display:block; margin-top: 0.5rem;">The receiving pharmacist must verify patient identity and
-            complete any transfer in accordance with applicable federal and state laws, board of pharmacy rules, and
-            pharmacy policy. Controlled substance prescriptions are subject to additional federal and state restrictions
-            and may not be eligible for transfer. Each pharmacy retains sole professional discretion to accept or
-            decline the request.</span>
-          <span style="display:block; margin-top: 0.5rem;">By generating this form, the patient directed PharmacyPulse
-            to deliver it to the receiving pharmacy and consented to being contacted by that pharmacy at the phone
-            number listed.</span>
-          <span style="display:block; margin-top: 0.5rem;">This form is provided “as is” without warranty of any kind.
-            To the fullest extent permitted by law, PharmacyPulse and BeyondRx are not liable for any delay, error,
-            missed dose, denial of transfer, or other outcome arising from the use of this form or any action taken or
-            not taken by a pharmacy.</span>
-          <span style="display:block; margin-top: 0.5rem;">If you received this form in error, please destroy it and
-            notify PharmacyPulse.</span>
+          style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem"
+        >
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 0.8125rem;
+                font-weight: 600;
+                color: #0f172a;
+                margin-bottom: 0.375rem;
+              "
+              >Patient full name</label
+            >
+            <input
+              type="text"
+              name="patient_full_name"
+              required
+              value="{{prefill_name}}"
+              placeholder="Patient's full legal name"
+              style="
+                width: 100%;
+                padding: 0.625rem 0.875rem;
+                border: 1.5px solid #e5e7eb;
+                border-radius: 0.75rem;
+                font-size: 0.875rem;
+                margin-bottom: 0.375rem;
+                box-sizing: border-box;
+                color: #0f172a;
+              "
+            />
+            <p
+              style="
+                font-size: 0.6875rem;
+                color: #64748b;
+                margin: 0 0 1rem 0;
+                line-height: 1.4;
+              "
+            >
+              Caregiver? Enter the <strong>patient's</strong> name here — not
+              your own.
+            </p>
+          </div>
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 0.8125rem;
+                font-weight: 600;
+                color: #0f172a;
+                margin-bottom: 0.375rem;
+              "
+              >Birth date</label
+            >
+            <input
+              type="date"
+              name="patient_dob"
+              required
+              value="{{prefill_dob}}"
+              style="
+                width: 100%;
+                padding: 0.625rem 0.875rem;
+                border: 1.5px solid #e5e7eb;
+                border-radius: 0.75rem;
+                font-size: 0.875rem;
+                margin-bottom: 1rem;
+                box-sizing: border-box;
+                color: #0f172a;
+              "
+            />
+          </div>
         </div>
 
-        <button type="submit"
-          style="width: 100%; padding: 0.75rem; background: #008F82; color: white; border: none; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; cursor: pointer">Send
-          transfer request</button>
+        <label
+          style="
+            display: block;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 0.375rem;
+          "
+          >Patient phone</label
+        >
+        <input
+          type="tel"
+          name="patient_phone"
+          required
+          value="{{prefill_phone}}"
+          placeholder="(555) 123-4567"
+          style="
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+            color: #0f172a;
+          "
+        />
+
+        <div
+          style="
+            padding: 0.875rem 1rem;
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            font-size: 0.75rem;
+            color: #334155;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+          "
+        >
+          <strong
+            style="display: block; margin-bottom: 0.375rem; color: #0f172a"
+            >CONFIDENTIALITY NOTICE</strong
+          >
+          This fax and any attachments may contain confidential health
+          information intended only for the named recipient. If you are not the
+          intended recipient, please do not review, copy, disclose, or
+          distribute this information. Notify the sender immediately at
+          <a href="tel:8183810231">818-381-0231</a> and securely destroy all
+          copies. Thank you for protecting patient privacy.
+        </div>
+
+        <div style="margin-bottom: 1.25rem">
+          <label
+            for="transfer-consent-given"
+            style="
+              display: flex;
+              align-items: flex-start;
+              gap: 0.625rem;
+              font-size: 0.8125rem;
+              line-height: 1.5;
+              color: #334155;
+              cursor: pointer;
+            "
+          >
+            <input
+              type="checkbox"
+              id="transfer-consent-given"
+              name="consent_given"
+              value="1"
+              required
+              style="
+                width: 1rem;
+                height: 1rem;
+                flex: 0 0 auto;
+                margin: 0.125rem 0 0;
+                accent-color: #008f82;
+              "
+            />
+            <span
+              >I have reviewed and agree to the transfer notices and authorize
+              this request.</span
+            >
+          </label>
+          <button
+            type="button"
+            id="transfer-review-notices"
+            style="
+              margin: 0.5rem 0 0 1.625rem;
+              padding: 0;
+              border: 0;
+              background: none;
+              color: #00796f;
+              font: inherit;
+              font-size: 0.75rem;
+              font-weight: 600;
+              text-decoration: underline;
+              cursor: pointer;
+            "
+          >
+            Review the transfer notices
+          </button>
+        </div>
+
+        <button
+          type="submit"
+          style="
+            width: 100%;
+            padding: 0.75rem;
+            background: #008f82;
+            color: white;
+            border: none;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+          "
+        >
+          Send transfer request
+        </button>
       </form>
     </div>
 
-    <!-- Missing-contact blocking modal (fix numbers first) -->
-    <div id="transfer-contact-modal"
-      style="display:none; position:fixed; inset:0; z-index:9998; align-items:center; justify-content:center; padding:1rem;">
-      <div onclick="closeTransferContactModal()" style="position:absolute; inset:0; background:rgba(15,23,42,0.55);">
+    <!-- Transfer notices and agreement -->
+    <div
+      id="transfer-notices-modal"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 10001;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      "
+    >
+      <div
+        onclick="closeTransferNoticesModal()"
+        style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.6)"
+      ></div>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="transfer-notices-title"
+        style="
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          max-height: min(85vh, 42rem);
+          max-width: 38rem;
+          width: 100%;
+          padding: 1.5rem;
+          background: #fff;
+          border-radius: 1rem;
+          box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
+        "
+      >
+        <h2
+          id="transfer-notices-title"
+          style="
+            margin: 0 0 1rem;
+            color: #0f172a;
+            font-size: 1.125rem;
+            font-weight: 800;
+          "
+        >
+          Important transfer notices
+        </h2>
+        <div
+          style="
+            overflow-y: auto;
+            padding-right: 0.25rem;
+            color: #334155;
+            font-size: 0.8125rem;
+            line-height: 1.6;
+          "
+        >
+          <p>
+            <strong>Not a prescription.</strong> This form is a
+            patient-initiated request only. It is not a prescription, a
+            prescription transfer, or an order to dispense, and it does not
+            authorize any pharmacy to fill or release any medication.
+          </p>
+          <p>
+            <strong>PharmacyPulse is not a pharmacy.</strong> PharmacyPulse
+            (operated by BeyondRx) does not dispense, store, transfer, or verify
+            prescriptions or prescription records, and does not provide medical
+            or pharmacy advice.
+          </p>
+          <p>
+            <strong>Patient-supplied information.</strong> All information on
+            this form was entered by the patient or their representative.
+            PharmacyPulse has not verified the identity of the patient, the
+            accuracy of the information, or the existence, validity, or
+            transferability of any prescription.
+          </p>
+          <p>
+            <strong>Pharmacist responsibility.</strong> The receiving pharmacist
+            must verify patient identity and complete any transfer in accordance
+            with applicable federal and state laws, board of pharmacy rules, and
+            pharmacy policy. Controlled substance prescriptions are subject to
+            additional federal and state restrictions and may not be eligible
+            for transfer. Each pharmacy retains sole professional discretion to
+            accept or decline the request.
+          </p>
+          <p>
+            <strong>Patient authorization.</strong> By generating this form, the
+            patient directs PharmacyPulse to deliver it to the receiving
+            pharmacy and consents to being contacted by that pharmacy at the
+            phone number listed.
+          </p>
+          <p>
+            <strong>No warranty; limitation of liability.</strong> This form is
+            provided “as is” without warranty of any kind. To the fullest extent
+            permitted by law, PharmacyPulse and BeyondRx are not liable for any
+            delay, error, missed dose, denial of transfer, or other outcome
+            arising from the use of this form or any action taken or not taken
+            by a pharmacy.
+          </p>
+        </div>
+        <div
+          style="
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 0.625rem;
+            margin-top: 1rem;
+          "
+        >
+          <button
+            type="button"
+            onclick="closeTransferNoticesModal()"
+            style="
+              padding: 0.625rem 1rem;
+              border: 1px solid #cbd5e1;
+              border-radius: 9999px;
+              background: #fff;
+              color: #334155;
+              font-weight: 600;
+              cursor: pointer;
+            "
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            id="transfer-agree-notices"
+            style="
+              padding: 0.625rem 1rem;
+              border: 0;
+              border-radius: 9999px;
+              background: #008f82;
+              color: #fff;
+              font-weight: 700;
+              cursor: pointer;
+            "
+          >
+            I agree and continue
+          </button>
+        </div>
       </div>
-      <div role="dialog" aria-modal="true" aria-label="Missing pharmacy contact"
-        style="position:relative; background:#fff; border-radius:1rem; max-width:26rem; width:100%; padding:1.5rem; box-shadow:0 16px 48px rgba(0,0,0,0.25);">
-        <h3 style="margin:0 0 0.5rem 0; font-size:1rem; font-weight:800; color:#0f172a;">Cannot send — missing contact
+    </div>
+
+    <!-- Missing-contact blocking modal (fix numbers first) -->
+    <div
+      id="transfer-contact-modal"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9998;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      "
+    >
+      <div
+        onclick="closeTransferContactModal()"
+        style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.55)"
+      ></div>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Missing pharmacy contact"
+        style="
+          position: relative;
+          background: #fff;
+          border-radius: 1rem;
+          max-width: 26rem;
+          width: 100%;
+          padding: 1.5rem;
+          box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
+        "
+      >
+        <h3
+          style="
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+            font-weight: 800;
+            color: #0f172a;
+          "
+        >
+          Cannot send — missing contact
         </h3>
-        <p id="transfer-contact-msg" style="font-size:0.8125rem; color:#334155; line-height:1.5; margin:0 0 1rem 0;">
-          The current (sending) pharmacy needs both a phone and fax number before this request can be faxed. Please
-          correct the auto-filled contact above.
+        <p
+          id="transfer-contact-msg"
+          style="
+            font-size: 0.8125rem;
+            color: #334155;
+            line-height: 1.5;
+            margin: 0 0 1rem 0;
+          "
+        >
+          The current (sending) pharmacy needs both a phone and fax number
+          before this request can be faxed. Please correct the auto-filled
+          contact above.
         </p>
-        <button type="button" onclick="closeTransferContactModal()"
-          style="width:100%; padding:0.625rem; background:#008F82; color:#fff; border:none; border-radius:9999px; font-size:0.875rem; font-weight:700; cursor:pointer;">Got
-          it — I'll fix the numbers</button>
+        <button
+          type="button"
+          onclick="closeTransferContactModal()"
+          style="
+            width: 100%;
+            padding: 0.625rem;
+            background: #008f82;
+            color: #fff;
+            border: none;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            cursor: pointer;
+          "
+        >
+          Got it — I'll fix the numbers
+        </button>
       </div>
     </div>
 
     <!-- Caregiver prompt (pops when receiving pharmacy changes) -->
-    <div id="transfer-caregiver-modal"
-      style="display:none; position:fixed; inset:0; z-index:9998; align-items:center; justify-content:center; padding:1rem;">
-      <div onclick="closeTransferCaregiverModal()" style="position:absolute; inset:0; background:rgba(15,23,42,0.55);">
-      </div>
-      <div role="dialog" aria-modal="true" aria-label="Caregiver reminder"
-        style="position:relative; background:#fff; border-radius:1rem; max-width:26rem; width:100%; padding:1.5rem; box-shadow:0 16px 48px rgba(0,0,0,0.25);">
-        <h3 style="margin:0 0 0.5rem 0; font-size:1rem; font-weight:800; color:#0f172a;">Who is this transfer for?
+    <div
+      id="transfer-caregiver-modal"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9998;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      "
+    >
+      <div
+        onclick="closeTransferCaregiverModal()"
+        style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.55)"
+      ></div>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Caregiver reminder"
+        style="
+          position: relative;
+          background: #fff;
+          border-radius: 1rem;
+          max-width: 26rem;
+          width: 100%;
+          padding: 1.5rem;
+          box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
+        "
+      >
+        <h3
+          style="
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+            font-weight: 800;
+            color: #0f172a;
+          "
+        >
+          Who is this transfer for?
         </h3>
-        <p style="font-size:0.8125rem; color:#334155; line-height:1.5; margin:0 0 1rem 0;">
-          Caregiver? Enter the <strong>patient's</strong> name in “Patient full name” — not your own.
+        <p
+          style="
+            font-size: 0.8125rem;
+            color: #334155;
+            line-height: 1.5;
+            margin: 0 0 1rem 0;
+          "
+        >
+          Caregiver? Enter the <strong>patient's</strong> name in “Patient full
+          name” — not your own.
         </p>
-        <button type="button" onclick="closeTransferCaregiverModal()"
-          style="width:100%; padding:0.625rem; background:#008F82; color:#fff; border:none; border-radius:9999px; font-size:0.875rem; font-weight:700; cursor:pointer;">Got
-          it</button>
+        <button
+          type="button"
+          onclick="closeTransferCaregiverModal()"
+          style="
+            width: 100%;
+            padding: 0.625rem;
+            background: #008f82;
+            color: #fff;
+            border: none;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            cursor: pointer;
+          "
+        >
+          Got it
+        </button>
       </div>
     </div>
 
     <div
-      style="padding: 0.75rem 1rem; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 1rem; font-size: 0.75rem; color: #64748b; margin-bottom: 1rem">
-      <strong style="color: #0f172a">Privacy:</strong> this request contains only your contact details and the two
-      pharmacies you chose — never posted publicly.
+      style="
+        padding: 0.75rem 1rem;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-bottom: 1rem;
+      "
+    >
+      <strong style="color: #0f172a">Privacy:</strong> this request contains
+      only your contact details and the two pharmacies you chose — never posted
+      publicly.
     </div>
 
     <!-- Past requests live on their own page now -->
-    <a href="/transfers"
-      style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 1rem 1.25rem; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; margin-bottom: 1rem; text-decoration: none">
+    <a
+      href="/transfers"
+      style="
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 1rem 1.25rem;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 1rem;
+        margin-bottom: 1rem;
+        text-decoration: none;
+      "
+    >
       <span>
-        <strong style="display: block; color: #0f172a; font-size: 0.875rem;">My transfer requests{% if transfer_count %}
-          · {{ transfer_count }}{% endif %}</strong>
-        <span style="font-size: 0.75rem; color: #64748b;">Track fax delivery per pharmacy</span>
+        <strong style="display: block; color: #0f172a; font-size: 0.875rem"
+          >My transfer requests{% if transfer_count %} · {{ transfer_count }}{% endif %}</strong
+        >
+        <span style="font-size: 0.75rem; color: #64748b"
+          >Track fax delivery per pharmacy</span
+        >
       </span>
-      <span style="font-size: 0.875rem; font-weight: 700; color: #008F82; white-space: nowrap;">View →</span>
+      <span
+        style="
+          font-size: 0.875rem;
+          font-weight: 700;
+          color: #008f82;
+          white-space: nowrap;
+        "
+        >View →</span
+      >
     </a>
-
   </div>
 </div>
 {% include "pharmacypulse/partials/footer.html" %}
@@ -216,18 +842,30 @@
         toast = document.createElement('div');
         toast.id = 'transfer-toast';
         toast.setAttribute('role', 'alert');
-        toast.style.cssText = 'position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:9999;max-width:90vw;padding:0.875rem 1.25rem;background:#fffbeb;border:1.5px solid #f59e0b;border-radius:0.75rem;box-shadow:0 8px 24px rgba(0,0,0,0.15);font-size:0.8125rem;color:#92400e;display:flex;align-items:flex-start;gap:0.5rem;';
+        toast.style.cssText =
+          'position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:9999;max-width:90vw;padding:0.875rem 1.25rem;background:#fffbeb;border:1.5px solid #f59e0b;border-radius:0.75rem;box-shadow:0 8px 24px rgba(0,0,0,0.15);font-size:0.8125rem;color:#92400e;display:flex;align-items:flex-start;gap:0.5rem;';
         document.body.appendChild(toast);
       }
-      toast.innerHTML = '<span style="font-size:1rem;line-height:1.2;">⚠️</span><span>' + msg + '</span>';
+      toast.innerHTML =
+        '<span style="font-size:1rem;line-height:1.2;">⚠️</span><span>' +
+        msg +
+        '</span>';
       toast.style.display = 'flex';
       clearTimeout(window._transferToastTimer);
-      window._transferToastTimer = setTimeout(function () { toast.style.display = 'none'; }, 6000);
+      window._transferToastTimer = setTimeout(function () {
+        toast.style.display = 'none';
+      }, 6000);
     }
     function checkPharmacyContact(kind, name, fax, phone) {
       if (!name) return;
       if (!((fax || '').trim() || (phone || '').trim())) {
-        showTransferToast('Heads up: <strong>' + name.replace(/</g, '&lt;') + '</strong> (' + kind + ') has no fax or phone number on file. The transfer may be delayed — please confirm contact details with the pharmacy directly.');
+        showTransferToast(
+          'Heads up: <strong>' +
+            name.replace(/</g, '&lt;') +
+            '</strong> (' +
+            kind +
+            ') has no fax or phone number on file. The transfer may be delayed — please confirm contact details with the pharmacy directly.',
+        );
       }
     }
     function fillContact(prefix, addr, phone, fax) {
@@ -250,22 +888,56 @@
         if (hidden) hidden.value = '';
         fillContact(prefix, '', '', '');
         var q = input.value.trim();
-        if (q.length < 2) { dropdown.style.display = 'none'; return; }
+        if (q.length < 2) {
+          dropdown.style.display = 'none';
+          return;
+        }
         timer = setTimeout(function () {
           fetch('/api/flow/search?q=' + encodeURIComponent(q))
-            .then(function (r) { return r.json(); })
+            .then(function (r) {
+              return r.json();
+            })
             .then(function (data) {
               var results = data.results || [];
               if (results && !Array.isArray(results)) results = [results];
               var html = '';
               results.forEach(function (p) {
                 if (p.is_digital == 1) return;
-                var addr = ((p.address || '') + ', ' + (p.city || '') + ', ' + (p.state || '') + ' ' + (p.zip || '')).replace(/^, |, ,/g, '');
-                html += '<div data-id="' + p.id + '" data-name="' + (p.name || '').replace(/"/g, '&quot;') + '" data-fax="' + ((p.fax || '') + '').replace(/"/g, '&quot;') + '" data-phone="' + ((p.phone || '') + '').replace(/"/g, '&quot;') + '" data-addr="' + (addr || '').replace(/"/g, '&quot;') + '" style="padding:0.75rem 1rem;cursor:pointer;border-bottom:1px solid #f8fafc;font-size:0.8125rem">'
-                  + '<div style="font-weight:600;color:#0f172a">' + (p.name || '') + '</div>'
-                  + '<div style="font-size:0.6875rem;color:#94a3b8">' + (p.city || '') + ', ' + (p.state || '') + ' ' + (p.zip || '') + '</div></div>';
+                var addr = (
+                  (p.address || '') +
+                  ', ' +
+                  (p.city || '') +
+                  ', ' +
+                  (p.state || '') +
+                  ' ' +
+                  (p.zip || '')
+                ).replace(/^, |, ,/g, '');
+                html +=
+                  '<div data-id="' +
+                  p.id +
+                  '" data-name="' +
+                  (p.name || '').replace(/"/g, '&quot;') +
+                  '" data-fax="' +
+                  ((p.fax || '') + '').replace(/"/g, '&quot;') +
+                  '" data-phone="' +
+                  ((p.phone || '') + '').replace(/"/g, '&quot;') +
+                  '" data-addr="' +
+                  (addr || '').replace(/"/g, '&quot;') +
+                  '" style="padding:0.75rem 1rem;cursor:pointer;border-bottom:1px solid #f8fafc;font-size:0.8125rem">' +
+                  '<div style="font-weight:600;color:#0f172a">' +
+                  (p.name || '') +
+                  '</div>' +
+                  '<div style="font-size:0.6875rem;color:#94a3b8">' +
+                  (p.city || '') +
+                  ', ' +
+                  (p.state || '') +
+                  ' ' +
+                  (p.zip || '') +
+                  '</div></div>';
               });
-              if (!html) html = '<div style="padding:0.75rem 1rem;font-size:0.8125rem;color:#94a3b8">No physical pharmacies found</div>';
+              if (!html)
+                html =
+                  '<div style="padding:0.75rem 1rem;font-size:0.8125rem;color:#94a3b8">No physical pharmacies found</div>';
               dropdown.innerHTML = html;
               dropdown.style.display = 'block';
               dropdown.querySelectorAll('[data-id]').forEach(function (el) {
@@ -273,16 +945,31 @@
                   var prevId = hidden.value;
                   hidden.value = el.getAttribute('data-id');
                   input.value = el.getAttribute('data-name');
-                  fillContact(prefix, el.getAttribute('data-addr'), el.getAttribute('data-phone'), el.getAttribute('data-fax'));
+                  fillContact(
+                    prefix,
+                    el.getAttribute('data-addr'),
+                    el.getAttribute('data-phone'),
+                    el.getAttribute('data-fax'),
+                  );
                   dropdown.style.display = 'none';
-                  checkPharmacyContact(kind, el.getAttribute('data-name'), el.getAttribute('data-fax'), el.getAttribute('data-phone'));
-                  if (prefix === 'transfer-to' && hidden.value !== prevId) showCaregiverModal();
+                  checkPharmacyContact(
+                    kind,
+                    el.getAttribute('data-name'),
+                    el.getAttribute('data-fax'),
+                    el.getAttribute('data-phone'),
+                  );
+                  if (prefix === 'transfer-to' && hidden.value !== prevId)
+                    showCaregiverModal();
                 });
               });
             });
         }, 250);
       });
-      input.addEventListener('blur', function () { setTimeout(function () { dropdown.style.display = 'none'; }, 200); });
+      input.addEventListener('blur', function () {
+        setTimeout(function () {
+          dropdown.style.display = 'none';
+        }, 200);
+      });
     }
     window.closeTransferContactModal = function () {
       var m = document.getElementById('transfer-contact-modal');
@@ -292,6 +979,41 @@
       var m = document.getElementById('transfer-caregiver-modal');
       if (m) m.style.display = 'none';
     };
+    window.closeTransferNoticesModal = function () {
+      var m = document.getElementById('transfer-notices-modal');
+      if (m) m.style.display = 'none';
+      var checkbox = document.getElementById('transfer-consent-given');
+      if (checkbox) checkbox.focus();
+    };
+    function openTransferNoticesModal() {
+      var m = document.getElementById('transfer-notices-modal');
+      var agreeButton = document.getElementById('transfer-agree-notices');
+      if (m) m.style.display = 'flex';
+      if (agreeButton) agreeButton.focus();
+    }
+    var consentCheckbox = document.getElementById('transfer-consent-given');
+    var reviewNoticesButton = document.getElementById(
+      'transfer-review-notices',
+    );
+    var agreeNoticesButton = document.getElementById('transfer-agree-notices');
+    if (consentCheckbox) {
+      consentCheckbox.addEventListener('click', function (event) {
+        if (!consentCheckbox.checked) {
+          event.preventDefault();
+          openTransferNoticesModal();
+        }
+      });
+    }
+    if (reviewNoticesButton)
+      reviewNoticesButton.addEventListener('click', openTransferNoticesModal);
+    if (agreeNoticesButton)
+      agreeNoticesButton.addEventListener('click', function () {
+        if (consentCheckbox) consentCheckbox.checked = true;
+        window.closeTransferNoticesModal();
+      });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') window.closeTransferNoticesModal();
+    });
     function showCaregiverModal() {
       var m = document.getElementById('transfer-caregiver-modal');
       if (m) m.style.display = 'flex';
@@ -299,25 +1021,49 @@
     function showContactModal(missing) {
       var m = document.getElementById('transfer-contact-modal');
       var msg = document.getElementById('transfer-contact-msg');
-      if (msg) msg.textContent = 'The current (sending) pharmacy is missing ' + missing + ' before this request can be faxed. Please correct the auto-filled contact above.';
+      if (msg)
+        msg.textContent =
+          'The current (sending) pharmacy is missing ' +
+          missing +
+          ' before this request can be faxed. Please correct the auto-filled contact above.';
       if (m) m.style.display = 'flex';
     }
-    wire('transfer-from-search', 'transfer-from-dropdown', 'transfer-from-id', 'sending pharmacy', 'transfer-from');
-    wire('transfer-to-search', 'transfer-to-dropdown', 'transfer-to-id', 'receiving pharmacy', 'transfer-to');
-    checkPharmacyContact('sending pharmacy', "{{from_name|escapejs}}", "{{from_fax|escapejs}}", "{{from_phone|escapejs}}");
+    wire(
+      'transfer-from-search',
+      'transfer-from-dropdown',
+      'transfer-from-id',
+      'sending pharmacy',
+      'transfer-from',
+    );
+    wire(
+      'transfer-to-search',
+      'transfer-to-dropdown',
+      'transfer-to-id',
+      'receiving pharmacy',
+      'transfer-to',
+    );
+    checkPharmacyContact(
+      'sending pharmacy',
+      '{{from_name|escapejs}}',
+      '{{from_fax|escapejs}}',
+      '{{from_phone|escapejs}}',
+    );
     // Receiving pharmacy contact is informational only — never blocks submit.
     var form = document.getElementById('transfer-form');
-    if (form) form.addEventListener('submit', function (e) {
-      var phone = (document.getElementById('transfer-from-phone') || {}).value || '';
-      var fax = (document.getElementById('transfer-from-fax') || {}).value || '';
-      var missing = [];
-      if (!phone.trim()) missing.push('phone');
-      if (!fax.trim()) missing.push('fax');
-      if (missing.length) {
-        e.preventDefault();
-        showContactModal(missing.join(' and '));
-      }
-    });
+    if (form)
+      form.addEventListener('submit', function (e) {
+        var phone =
+          (document.getElementById('transfer-from-phone') || {}).value || '';
+        var fax =
+          (document.getElementById('transfer-from-fax') || {}).value || '';
+        var missing = [];
+        if (!phone.trim()) missing.push('phone');
+        if (!fax.trim()) missing.push('fax');
+        if (missing.length) {
+          e.preventDefault();
+          showContactModal(missing.join(' and '));
+        }
+      });
   })();
 </script>
 {% endblock %}

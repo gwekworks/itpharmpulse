@@ -1,12 +1,13 @@
 from django.urls import path
 
-from . import auth_views, flows, views, views_extra
+from . import auth_views, cookie_consent, flows, views, views_extra
 
 urlpatterns = [
     # ===== SEO + ops =====
     path("robots.txt", views.robots_txt, name="robots_txt"),
     path("sitemap.xml", views.sitemap_xml, name="sitemap_xml"),
     path("healthcheck", views_extra.healthcheck, name="healthcheck"),
+    path("cookie-consent", cookie_consent.save_cookie_consent, name="cookie_consent"),
 
     # ===== auth =====
     path("login", auth_views.login_view, name="login"),

@@ -23,7 +23,7 @@ confidence, wait times, and service ratings. Community-powered pharmacy transpar
   "@type": "Organization",
   "name": "PharmacyPulse",
   "url": "{{ brand.url }}",
-  "logo": "{{ brand.url }}/static/pharmacypulse/icon-512.png",
+  "logo": "{{ brand.url }}/static/pharmacypulse/logo.svg",
   "sameAs": []
 }
 </script>
@@ -520,7 +520,7 @@ confidence, wait times, and service ratings. Community-powered pharmacy transpar
   // falls back to IP-based geolocation for the hero cards.
   (function () {
     if (document.cookie.match(/(?:^|;\s*)pp_loc=/)) return;
-    if (sessionStorage.getItem('pp_loc_declined') === '1') return;
+    if (window.PP_COOKIE_CONSENT.functional && sessionStorage.getItem('pp_loc_declined') === '1') return;
     if (!navigator.geolocation) return;
     if (!navigator.permissions || !navigator.permissions.query) return;
     navigator.permissions.query({ name: 'geolocation' }).then(function (status) {
@@ -529,10 +529,12 @@ confidence, wait times, and service ratings. Community-powered pharmacy transpar
         function (pos) {
           var lat = pos.coords.latitude.toFixed(4);
           var lng = pos.coords.longitude.toFixed(4);
-          document.cookie = 'pp_loc=' + lat + ',' + lng + '; path=/; max-age=2592000; SameSite=Lax';
+          window.ppSetPreferenceCookie('pp_loc', lat + ',' + lng, 2592000);
           window.location.reload();
         },
-        function () { sessionStorage.setItem('pp_loc_declined', '1'); },
+        function () {
+          if (window.PP_COOKIE_CONSENT.functional) sessionStorage.setItem('pp_loc_declined', '1');
+        },
         { timeout: 5000, maximumAge: 600000 }
       );
     }).catch(function () { });

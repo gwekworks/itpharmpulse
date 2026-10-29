@@ -18,18 +18,3 @@ if(['/map','/list','/admin-analytics'].indexOf(window.location.pathname) !== -1
 }
 {% endif %}
 </script>
-<style>
-#cookie-banner { display:none; position:fixed; bottom:0; left:0; right:0; z-index:400; background:#0f172a; color:rgba(255,255,255,0.8); padding:0.875rem 1.25rem; font-size:0.75rem; }
-#cookie-banner a { color:#60a5fa; text-decoration:none; }
-#cookie-banner button { background:#008F82; color:white; border:none; padding:0.375rem 1rem; font-size:0.75rem; font-weight:600; cursor:pointer; margin-left:0.75rem; }
-</style>
-<script>
-document.addEventListener('DOMContentLoaded',function(){
-  if(!localStorage.getItem('pp_cookie_consent')){
-    var b=document.createElement('div');b.id='cookie-banner';
-    b.innerHTML='We use essential cookies to provide our service. We do not use tracking or advertising cookies. <a href="/privacy">Privacy Policy</a><button onclick="localStorage.setItem(\'pp_cookie_consent\',\'1\');this.parentElement.remove()">Got it</button>';
-    b.style.display='flex';b.style.alignItems='center';b.style.justifyContent='center';b.style.flexWrap='wrap';b.style.gap='0.5rem';
-    document.body.appendChild(b);
-  }
-});
-</script>

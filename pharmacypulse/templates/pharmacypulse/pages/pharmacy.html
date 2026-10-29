@@ -289,7 +289,7 @@
           </span>
         </div>
 
-        <a href="#" onclick="openReviewModal('{{ item.id }}', '{{ item.name|escapejs }}', '{{ item.city|default:'Local'|escapejs }} · {{ item.address|escapejs }}');return false"
+        <a href="#" onclick="openReviewModal('{{ item.id }}', '{{ item.name|escapejs }}', '{{ item.city|default:'Local'|escapejs }} · {{ item.address|escapejs }}', {% if item.is_digital %}true{% else %}false{% endif %});return false"
            class="pd-hero-cta"
            onmouseover="this.style.background='#5e3fa3';this.style.transform='translateY(-1px)'"
            onmouseout="this.style.background='#7454BE';this.style.transform='translateY(0)'">
@@ -415,6 +415,7 @@
       <span class="notranslate" translate="no" style="font-size:1.125rem;font-weight:800;color:#2563eb;line-height:1.1;">{% if item.total_reviews %}{{ item.avg_service_rating }}{% else %}&mdash;{% endif %}</span>
     </div>
 
+    {% if not item.is_digital %}
     <div class="pd-score-chip">
       <div class="pd-chip-header">
         <span class="pd-chip-label notranslate" translate="no">Distance</span>
@@ -426,6 +427,7 @@
       </div>
       <span class="notranslate" translate="no" style="font-size:1.125rem;font-weight:800;color:#6B7280;line-height:1.1;">{% if item.distance_mi is not None %}~{{ item.distance_mi|floatformat:1 }} mi{% else %}&mdash;{% endif %}</span>
     </div>
+    {% endif %}
 
   </div>
 </div>
@@ -458,7 +460,7 @@ document.addEventListener('click', function(e) {
     <!-- MAIN COLUMN -->
     <div class="pd-main">
 
-      {% if item.has_map %}
+      {% if item.has_map and not item.is_digital %}
       <button type="button" class="pd-directions-btn" onclick="pdDirOpen()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
         Get Directions
@@ -508,6 +510,7 @@ document.addEventListener('click', function(e) {
       </div>
       {% endif %}
 
+      {% if not item.is_digital %}
       <!-- Map -->
       <div class="pd-section">
         <div class="pd-map-wrap">
@@ -521,6 +524,7 @@ document.addEventListener('click', function(e) {
           {% endif %}
         </div>
       </div>
+      {% endif %}
 
       <!-- Community Feedback -->
       <div class="pd-section">
@@ -529,7 +533,7 @@ document.addEventListener('click', function(e) {
             <span class="pd-section-label">COMMUNITY FEEDBACK</span>
             <h2 class="pd-section-title">Patient Reviews</h2>
           </div>
-          <a href="#" onclick="openReviewModal('{{ item.id }}', '{{ item.name|escapejs }}', '{{ item.city|default:'Local'|escapejs }} · {{ item.address|escapejs }}');return false"
+          <a href="#" onclick="openReviewModal('{{ item.id }}', '{{ item.name|escapejs }}', '{{ item.city|default:'Local'|escapejs }} · {{ item.address|escapejs }}', {% if item.is_digital %}true{% else %}false{% endif %});return false"
              class="pd-review-section-link"
              style="display:inline-flex;align-items:center;gap:0.35rem;font-size:0.8125rem;font-weight:700;color:#7454BE;text-decoration:none;border:1.5px solid #7454BE;border-radius:9999px;padding:0.3rem 0.875rem;transition:all 0.15s;"
              onmouseover="this.style.background='#7454BE';this.style.color='#fff'"
@@ -547,12 +551,12 @@ document.addEventListener('click', function(e) {
               <div>
                 <span class="pd-review-name notranslate" translate="no">{{ item2.user_name }}</span>
                 <div class="pd-review-meta" style="display:flex;flex-wrap:wrap;align-items:center;gap:0.375rem;">
-                  {% if item2.visit_purpose %}
+                  {% if not is_digital and item2.visit_purpose %}
                     {% for badge in item2.visit_purpose|visit_purpose_badges %}
                     <span class="pd-review-type">{{ badge.icon }} {{ badge.label }}</span>
                     {% endfor %}
                   {% endif %}
-                  {% if item2.visit_timeframe %}
+                  {% if not is_digital and item2.visit_timeframe %}
                   <span class="pd-review-type" style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;">{{ item2.visit_timeframe|visit_timeframe_label }}</span>
                   {% endif %}
                   {% if item2.is_caregiver %}<span class="pd-review-type" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;">Caregiver</span>{% endif %}
@@ -562,7 +566,12 @@ document.addEventListener('click', function(e) {
             </div>
             <div class="pd-review-scores">
               <span class="pd-review-score">Stock <strong>{{ item2.stock_available|yesno:"5,3" }}/5</strong></span>
-              <span class="pd-review-score pd-review-score-wait">Wait <strong>{{ item2.wait_time_rating }}/5</strong></span>
+              {% if is_digital %}
+                {% if item2.phone_responsiveness %}<span class="pd-review-score">Phone <strong>{{ item2.phone_responsiveness }}/5</strong></span>{% endif %}
+                {% if item2.delivery_timeliness %}<span class="pd-review-score">Delivery <strong>{{ item2.delivery_timeliness }}/5</strong></span>{% endif %}
+              {% else %}
+                <span class="pd-review-score pd-review-score-wait">Wait <strong>{{ item2.wait_time_rating }}/5</strong></span>
+              {% endif %}
               <span class="pd-review-score">Care <strong>{{ item2.service_rating }}/5</strong></span>
             </div>
           </div>
@@ -658,7 +667,7 @@ document.addEventListener('click', function(e) {
 </div>
 {% endif %}
 
-{% for item in pharmacy %}{% if item.has_map %}
+{% for item in pharmacy %}
 <script>
 function toggleFlagClosedPanel(){var p=document.getElementById('flag-closed-panel');if(!p)return;var h=(p.style.display==='none'||p.style.display==='');p.style.display=h?'block':'none';if(h){var t=document.getElementById('flag-closed-ts');if(t)t.value=Math.floor(Date.now()/1000)-2;}}
 function pdCopyPhone(phone,btn){if(!navigator.clipboard){var ta=document.createElement('textarea');ta.value=phone;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);}else{navigator.clipboard.writeText(phone);}btn.classList.add('copied');btn.setAttribute('title','Copied!');setTimeout(function(){btn.classList.remove('copied');btn.setAttribute('title','Copy phone number');},2000);}
@@ -703,9 +712,9 @@ function triggerReviewPrompt(){
 }
 function pdToggleNavigation(){var p=document.getElementById('pd-directions-panel');var b=document.getElementById('pd-nav-btn-text');if(!p||!b)return;var o=p.style.display!=='none';p.style.display=o?'none':'block';b.textContent=o?'Start Navigation':'Hide Directions';if(pdMap)setTimeout(function(){google.maps.event.trigger(pdMap,'resize');},100);}
 function pdDirClose(){var modal=document.getElementById('pd-dir-modal');if(!modal)return;stopArrivalWatch();if(pdDirectionsRenderer){pdDirectionsRenderer.setMap(null);pdDirectionsRenderer=null;}pdMap=null;modal.classList.remove('pd-dir-open');document.body.style.overflow='';document.getElementById('pd-dir-frame').innerHTML='';}
-function pdRequestUserLocation(){if(!navigator.geolocation){alert('Geolocation not supported.');return;}navigator.geolocation.getCurrentPosition(function(pos){var lat=pos.coords.latitude.toFixed(4),lng=pos.coords.longitude.toFixed(4);document.cookie='pp_loc='+lat+','+lng+'; path=/; max-age=2592000; SameSite=Lax';location.reload();},function(){alert('Could not access location.');});}
+function pdRequestUserLocation(){if(!navigator.geolocation){alert('Geolocation not supported.');return;}navigator.geolocation.getCurrentPosition(function(pos){var lat=pos.coords.latitude.toFixed(4),lng=pos.coords.longitude.toFixed(4);window.ppSetPreferenceCookie('pp_loc',lat+','+lng,2592000);location.reload();},function(){alert('Could not access location.');});}
 </script>
-{% endif %}{% endfor %}
+{% endfor %}
 
 {% include "pharmacypulse/partials/footer.html" %}
 {% include "pharmacypulse/partials/bottom-nav.html" %}

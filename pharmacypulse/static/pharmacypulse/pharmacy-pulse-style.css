@@ -1840,6 +1840,13 @@ button.search-item.pp-loc-item.highlighted { background: #f0fdf4; }
   text-decoration: none;
   line-height: 1;
 }
+.pp-topbar-logo img {
+  display: block;
+  width: auto;
+  height: 34px;
+  max-width: min(100%, 220px);
+  flex: 0 1 auto;
+}
 .pp-topbar-logo-mark {
   width: 22px;
   height: 22px;
@@ -2801,25 +2808,26 @@ button.search-item.pp-loc-item.highlighted { background: #f0fdf4; }
   text-decoration: none;
   color: white;
 }
-.admin-sidebar-logo-mark {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, #008F82, #006B62);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+.admin-sidebar-logo a.admin-sidebar-logo-link {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0;
+  margin-bottom: 0;
 }
-.admin-sidebar-logo-name {
-  font-size: 0.9375rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+.admin-sidebar-logo-image {
+  display: block;
+  width: 190px;
+  max-width: 100%;
+  height: auto;
+  padding: 4px;
+  box-sizing: border-box;
+  background: #fff;
+  border-radius: 4px;
 }
 .admin-sidebar-logo-sub {
   font-size: 0.625rem;
-  color: #475569;
+  color: #cbd5e1;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -2869,56 +2877,6 @@ button.search-item.pp-loc-item.highlighted { background: #f0fdf4; }
   justify-content: center;
   padding: 0 3px;
   box-sizing: content-box;
-}
-
-/* ===== cookie-consent.css ===== */
-.pp-cookie-banner {
-  display: none;
-  position: fixed;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
-  max-width: 720px;
-  width: calc(100% - 2rem);
-  background: white;
-  border: 1px solid #E5E7EB;
-  border-radius: 14px;
-  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15);
-  padding: 1rem 1.25rem;
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-}
-.pp-cookie-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-.pp-cookie-body { flex: 1; min-width: 240px; }
-.pp-cookie-title {
-  margin: 0 0 0.25rem;
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #1A1A2E;
-}
-.pp-cookie-text {
-  margin: 0;
-  font-size: 0.75rem;
-  color: #6B7280;
-  line-height: 1.5;
-}
-.pp-cookie-text a { color: #008F82; text-decoration: underline; }
-.pp-cookie-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
-.pp-cookie-accept {
-  padding: 0.5rem 1rem;
-  background: #008F82;
-  color: white;
-  border: none;
-  border-radius: 9999px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
 }
 
 /* ===== list location modal ===== */

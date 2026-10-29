@@ -47,7 +47,7 @@ def page_pharmacist_dashboard(request):
 
     claimed_pharms_qs = Pharmacy.objects.filter(id__in=claimed_ids)
     claimed_reviews = Review.objects.filter(pharmacy__in=claimed_pharms_qs,
-                                            deleted_at__isnull=True)
+                                            deleted_at__isnull=True).select_related("pharmacy")
     approved_claimed = claimed_reviews.filter(moderation_status="approved")
     recent_reviews = list(claimed_reviews.order_by("-created_at")[:50])
 
@@ -230,7 +230,9 @@ def page_pharmacist_dashboard(request):
         "dist":          dist,
         "trend":         trend,
         "latest":        list(approved_claimed.order_by("-created_at")[:5].values(
-                             "user_name", "service_rating", "comment", "created_at")),
+                             "user_name", "service_rating", "comment", "created_at",
+                             "pharmacy__is_digital", "phone_responsiveness",
+                             "delivery_timeliness")),
         "stock":         [{"in_stock": stock_in, "out_of_stock": stock_out,
                            "total": stock_in + stock_out}],
         "resp_count":    [{"total": responses_used}],
@@ -264,7 +266,7 @@ def page_admin_dashboard(request):
 
     flagged_qs = Review.objects.filter(
         moderation_status__in=("pending", "flagged"), deleted_at__isnull=True
-    ).order_by("-created_at")[:4]
+    ).select_related("pharmacy").order_by("-created_at")[:4]
 
     pending_claims_qs = PharmacyClaim.objects.filter(status="pending").order_by("-created_at")[:4]
 
@@ -414,7 +416,8 @@ def page_admin_claims(request):
 def page_admin_moderation(request):
     from .common import get_review_moderation
     mod_enabled, mod_who = get_review_moderation()
-    flagged = Review.objects.filter(moderation_status__in=("pending", "flagged")).order_by("-created_at")
+    flagged = (Review.objects.filter(moderation_status__in=("pending", "flagged"))
+               .select_related("pharmacy").order_by("-created_at"))
     keywords = list(ModerationKeyword.objects.order_by("category", "keyword"))
     all_qs = (Review.objects.filter(deleted_at__isnull=True)
               .select_related("pharmacy").order_by("-created_at"))

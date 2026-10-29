@@ -69,7 +69,7 @@ window.PP_EN_ES = window.PP_EN_ES || {};
     var texts = attrs.map(function(a) { return a.original; });
     var cacheKey = 'pp_tx_attr_v1:' + lang + ':' + window.location.pathname;
     try {
-      var cached = sessionStorage.getItem(cacheKey);
+      var cached = window.PP_COOKIE_CONSENT.functional ? sessionStorage.getItem(cacheKey) : null;
       if (cached) {
         var translations = JSON.parse(cached);
         if (translations && translations.length === attrs.length) {
@@ -87,14 +87,16 @@ window.PP_EN_ES = window.PP_EN_ES || {};
     .then(function(data) {
       var translations = data.translations || [];
       attrs.forEach(function(a, i) { if (translations[i]) a.el.setAttribute(a.attr, translations[i]); });
-      try { sessionStorage.setItem(cacheKey, JSON.stringify(translations)); } catch(e) {}
+      if (window.PP_COOKIE_CONSENT.functional) {
+        try { sessionStorage.setItem(cacheKey, JSON.stringify(translations)); } catch(e) {}
+      }
     })
     .catch(function(err) { console.warn('PP Translate attrs error', err); });
   }
 
   function _ppRestoreFromCache(cacheKey) {
     try {
-      var cached = sessionStorage.getItem(cacheKey);
+      var cached = window.PP_COOKIE_CONSENT.functional ? sessionStorage.getItem(cacheKey) : null;
       if (!cached) return false;
       var data = JSON.parse(cached);
       if (!data || !data.nodes || !data.translations || !data.translations.length || data.nodes.length !== data.translations.length) {
@@ -121,14 +123,16 @@ window.PP_EN_ES = window.PP_EN_ES || {};
     .then(function(data) {
       var translations = data.translations || [];
       _ppApplyTranslations(nodes, texts, translations);
-      try { sessionStorage.setItem(cacheKey, JSON.stringify({ nodes: texts, translations: translations })); } catch(e) {}
+      if (window.PP_COOKIE_CONSENT.functional) {
+        try { sessionStorage.setItem(cacheKey, JSON.stringify({ nodes: texts, translations: translations })); } catch(e) {}
+      }
       if (onDone) onDone();
     })
     .catch(function(err) { console.warn('PP Translate error', err); if (onDone) onDone(); });
   }
 
   window.ppSetLang = function(lang) {
-    document.cookie = 'lang=' + lang + '; path=/; max-age=31536000; SameSite=Lax';
+    window.ppSetPreferenceCookie('lang', lang, 31536000);
     window.location.reload();
   };
 

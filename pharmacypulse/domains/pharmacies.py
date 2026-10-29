@@ -461,15 +461,17 @@ def page_pharmacy_detail(request, pharmacy_id=None):
         pharmacy_row["website"] = published_contact["website"] or ""
         pharmacy_row["is_digital"] = published_contact["is_digital"]
 
-    from ..geo import resolve as resolve_loc
-    auto_loc = resolve_loc(request)
     distance_mi = None
-    if auto_loc.lat is not None and auto_loc.lng is not None and p.latitude is not None and p.longitude is not None:
-        from math import radians, sin, cos, asin, sqrt
-        la1, lo1, la2, lo2 = map(radians, (auto_loc.lat, auto_loc.lng, p.latitude, p.longitude))
-        a = sin((la2 - la1) / 2)**2 + cos(la1) * cos(la2) * sin((lo2 - lo1) / 2)**2
-        km = 2 * 6371 * asin(sqrt(a))
-        distance_mi = round(km * 0.621371, 1)
+    is_digital = bool(pharmacy_row["is_digital"])
+    if not is_digital:
+        from ..geo import resolve as resolve_loc
+        auto_loc = resolve_loc(request)
+        if auto_loc.lat is not None and auto_loc.lng is not None and p.latitude is not None and p.longitude is not None:
+            from math import radians, sin, cos, asin, sqrt
+            la1, lo1, la2, lo2 = map(radians, (auto_loc.lat, auto_loc.lng, p.latitude, p.longitude))
+            a = sin((la2 - la1) / 2)**2 + cos(la1) * cos(la2) * sin((lo2 - lo1) / 2)**2
+            km = 2 * 6371 * asin(sqrt(a))
+            distance_mi = round(km * 0.621371, 1)
 
     pharmacy_row.update({
         "authorized_official_name": p.authorized_official_name or "",
@@ -481,14 +483,16 @@ def page_pharmacy_detail(request, pharmacy_id=None):
     # address (Google geocodes it client-side, no API key needed). URL-quoted
     # so ampersands/commas survive into the iframe src and link.
     from urllib.parse import quote
-    if p.latitude and p.longitude:
+    if is_digital:
+        map_query = ""
+    elif p.latitude and p.longitude:
         map_query = f"{p.latitude},{p.longitude}"
     else:
         map_query = ", ".join(x for x in
                               (p.address, p.city, p.state, p.zip) if x)
     pharmacy_row["map_query"] = quote(map_query) if map_query else ""
     pharmacy_row["map_addr"] = map_query
-    pharmacy_row["has_map"] = bool(map_query)
+    pharmacy_row["has_map"] = bool(map_query) and not is_digital
 
     services = list(p.services.values("service_type"))
     coverage = list(p.coverage_plans.order_by("plan_name").values(
@@ -504,7 +508,8 @@ def page_pharmacy_detail(request, pharmacy_id=None):
                      .order_by("-service_rating"))
     reviews = list(approved.order_by("-created_at")[:20].values(
         "id", "user_name", "service_rating", "wait_time_rating",
-        "stock_available", "comment", "is_caregiver",
+        "stock_available", "phone_responsiveness", "delivery_timeliness",
+        "visit_purpose", "visit_timeframe", "comment", "is_caregiver",
         "response_text", "response_date", "created_at",
     ))
 
@@ -516,6 +521,7 @@ def page_pharmacy_detail(request, pharmacy_id=None):
         "hours":     hours,
         "breakdown": breakdown,
         "reviews":   reviews,
+        "is_digital": is_digital,
         "flagged":   request.GET.get("flagged"),
         "error":     request.GET.get("error"),
     }

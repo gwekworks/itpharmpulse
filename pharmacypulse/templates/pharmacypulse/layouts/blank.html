@@ -4,13 +4,28 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token }}">
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-BG8R10ZK81"></script>
   <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-BG8R10ZK81');
+    (function() {
+      var measurementId = 'G-BG8R10ZK81';
+      window.ppSetAnalyticsConsent = function(allowed) {
+        window['ga-disable-' + measurementId] = !allowed;
+        if (!allowed) return;
+        if (document.querySelector('[data-pp-google-analytics]')) {
+          window.gtag('config', measurementId);
+          return;
+        }
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = window.gtag || function(){window.dataLayer.push(arguments);};
+        window.gtag('js', new Date());
+        window.gtag('config', measurementId);
+        var script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=' + measurementId;
+        script.dataset.ppGoogleAnalytics = 'true';
+        document.head.appendChild(script);
+      };
+      window.ppSetAnalyticsConsent({{ analytics_consent|yesno:"true,false" }});
+    })();
   </script>
   <title>{% block title %}{{ brand.site_name }}{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}{{ brand.description }}{% endblock %}">
@@ -29,20 +44,127 @@
   <meta name="twitter:title" content="{% block tw_title %}{{ brand.site_name }}{% endblock %}">
   <meta name="twitter:description" content="{% block tw_description %}{{ brand.description }}{% endblock %}">
   <meta name="twitter:image" content="{{ brand.url }}/static/pharmacypulse/icon-512.png">
-  <link rel="icon" type="image/svg+xml" href="/static/pharmacypulse/favicon.svg">
+  <link rel="icon" type="image/png" href="/static/pharmacypulse/favicon.png">
+  <link rel="shortcut icon" type="image/png" href="/static/pharmacypulse/favicon.png">
+  <link rel="apple-touch-icon" href="/static/pharmacypulse/favicon.png">
   <link rel="manifest" href="/static/pharmacypulse/manifest.webmanifest">
   <link rel="stylesheet" href="/static/pharmacypulse/tailwind.css?v=20260810">
   <link rel="stylesheet" href="/static/pharmacypulse/theme.css?v=20260810">
-  <link rel="stylesheet" href="/static/pharmacypulse/pharmacy-pulse-style.css?v=20260810">
+  <link rel="stylesheet" href="/static/pharmacypulse/pharmacy-pulse-style.css?v=20261029">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   {% block extra_head %}{% endblock %}
 </head>
 <body>
+<script>
+  window.PP_COOKIE_CONSENT = {
+    set: {{ cookie_consent_set|yesno:"true,false" }},
+    functional: {{ functional_consent|yesno:"true,false" }},
+    analytics: {{ analytics_consent|yesno:"true,false" }},
+    advertising: {{ advertising_preference|yesno:"true,false" }}
+  };
+  window.ppSetFunctionalConsent = function(allowed) {
+    window.PP_COOKIE_CONSENT.functional = allowed;
+    if (allowed) return;
+    try {
+      ['pp_text_size', 'pp_review_draft', 'ppListingStepperMinimized'].forEach(function(key) {
+        localStorage.removeItem(key);
+      });
+      for (var i = sessionStorage.length - 1; i >= 0; i--) {
+        var key = sessionStorage.key(i);
+        if (key && (key.indexOf('pp_tx') === 0 || key === 'pp_loc_declined')) {
+          sessionStorage.removeItem(key);
+        }
+      }
+    } catch (error) {
+      console.warn('Could not clear optional preference storage.', error);
+    }
+  };
+  document.addEventListener('submit', function(event) {
+    var form = event.target;
+    if (!form.matches('.pp-cookie-card, #pp-cookie-preferences-page')) return;
+    event.preventDefault();
+
+    var submitter = event.submitter;
+    var formData = new FormData(form);
+    if (submitter && submitter.name && !formData.has(submitter.name)) {
+      formData.append(submitter.name, submitter.value);
+    }
+    var buttons = form.querySelectorAll('button[type="submit"]');
+    buttons.forEach(function(button) { button.disabled = true; });
+    var status = form.querySelector('[data-cookie-status]');
+    if (status) {
+      status.textContent = '';
+      status.hidden = true;
+    }
+
+    fetch(form.action, {
+      method: 'POST',
+      body: formData,
+      credentials: 'same-origin',
+      headers: {'X-Requested-With': 'XMLHttpRequest'}
+    }).then(function(response) {
+      if (!response.ok) throw new Error('Cookie preferences could not be saved.');
+      return response.json();
+    }).then(function(preferences) {
+      window.PP_COOKIE_CONSENT.set = preferences.set;
+      window.PP_COOKIE_CONSENT.functional = preferences.functional;
+      window.PP_COOKIE_CONSENT.analytics = preferences.analytics;
+      window.PP_COOKIE_CONSENT.advertising = preferences.advertising;
+      window.ppSetFunctionalConsent(preferences.functional);
+      window.ppSetAnalyticsConsent(preferences.analytics);
+      window.dispatchEvent(new CustomEvent('pp-cookie-consent-updated'));
+
+      document.querySelectorAll('#pp-cookie-preferences-page input[name="functional"]').forEach(function(input) {
+        input.checked = preferences.functional;
+      });
+      document.querySelectorAll('#pp-cookie-preferences-page input[name="analytics"]').forEach(function(input) {
+        input.checked = preferences.analytics;
+      });
+      document.querySelectorAll('#pp-cookie-preferences-page input[name="advertising"]').forEach(function(input) {
+        input.checked = preferences.advertising;
+      });
+
+      var banner = document.querySelector('.pp-cookie-consent');
+      if (banner) banner.remove();
+      buttons.forEach(function(button) { button.disabled = false; });
+      if (status) {
+        status.hidden = false;
+        status.textContent = 'Cookie preferences saved.';
+      }
+    }).catch(function(error) {
+      if (status) {
+        status.hidden = false;
+        status.textContent = error.message || 'Cookie preferences could not be saved. Please try again.';
+      }
+      buttons.forEach(function(button) { button.disabled = false; });
+    });
+  });
+  window.ppSetPreferenceCookie = function(name, value, maxAge) {
+    var cookie = name + '=' + value + '; path=/; SameSite=Lax';
+    if (window.PP_COOKIE_CONSENT.functional) cookie += '; max-age=' + maxAge;
+    document.cookie = cookie;
+  };
+  if (!window.PP_COOKIE_CONSENT.functional) {
+    try {
+      ['pp_text_size', 'pp_review_draft', 'ppListingStepperMinimized'].forEach(function(key) {
+        localStorage.removeItem(key);
+      });
+      for (var i = sessionStorage.length - 1; i >= 0; i--) {
+        var key = sessionStorage.key(i);
+        if (key && (key.indexOf('pp_tx') === 0 || key === 'pp_loc_declined')) {
+          sessionStorage.removeItem(key);
+        }
+      }
+    } catch (error) {
+      console.warn('Could not clear optional preference storage.', error);
+    }
+  }
+</script>
 {% block content %}{% endblock %}
 {% include "pharmacypulse/partials/translation-scripts.html" %}
-{% if request.path != "/widget" %}{% include "pharmacypulse/partials/cookie-consent.html" %}{% endif %}
+{% if not cookie_consent_set and request.path != "/widget" %}{% include "pharmacypulse/partials/cookie-consent.html" %}{% endif %}
 {% if request.path != "/widget" and request.path != "/transfer" and request.path != "/transfers" and user.role != "admin" and user.role != "pharmacist" %}{% include "pharmacypulse/partials/ai-copilot.html" %}{% endif %}
 {% if request.path != "/widget" %}{% include "pharmacypulse/partials/text-size.html" %}{% endif %}
 {% if request.path != "/widget" %}{% include "pharmacypulse/partials/savings-popup.html" %}{% endif %}

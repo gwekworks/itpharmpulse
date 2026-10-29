@@ -112,10 +112,14 @@
       full.style.display = minimized ? "none" : "";
       mini.style.display = minimized ? "inline-flex" : "none";
       if (minBtn) minBtn.setAttribute("aria-expanded", minimized ? "false" : "true");
-      try { localStorage.setItem(KEY, minimized ? "1" : "0"); } catch (e) {}
+      if (window.PP_COOKIE_CONSENT.functional) {
+        try { localStorage.setItem(KEY, minimized ? "1" : "0"); } catch (e) {}
+      }
     }
     var startMini = false;
-    try { startMini = localStorage.getItem(KEY) === "1"; } catch (e) {}
+    if (window.PP_COOKIE_CONSENT.functional) {
+      try { startMini = localStorage.getItem(KEY) === "1"; } catch (e) {}
+    }
     if (startMini) setMini(true);
     if (minBtn) minBtn.addEventListener("click", function(){ setMini(true); });
     mini.addEventListener("click", function(){ setMini(false); });
@@ -250,11 +254,16 @@
         </div>
         <div style="font-size: 0.6875rem; color: #f59e0b; display: flex; align-items: center; gap: 0.375rem; flex-wrap: wrap; margin-top: 0.25rem;">
           <span>&#9733; {{ item2.service_rating }}/5</span>
+          {% if item2.pharmacy__is_digital %}
+            {% if item2.phone_responsiveness %}<span style="color:#64748b">Phone: {{ item2.phone_responsiveness }}/5</span>{% endif %}
+            {% if item2.delivery_timeliness %}<span style="color:#64748b">Delivery: {{ item2.delivery_timeliness }}/5</span>{% endif %}
+          {% else %}
           {% for badge in item2.visit_purpose_badges %}
           <span style="font-size: 0.625rem; font-weight: 600; padding: 0.0625rem 0.375rem; background: #E6F7F5; color: #006B62; border-radius: 9999px;">{{ badge.icon }} {{ badge.label }}</span>
           {% endfor %}
           {% if item2.visit_timeframe_label %}
           <span style="font-size: 0.625rem; font-weight: 500; padding: 0.0625rem 0.375rem; background: #f1f5f9; color: #475569; border-radius: 9999px; border: 1px solid #e2e8f0;">{{ item2.visit_timeframe_label }}</span>
+          {% endif %}
           {% endif %}
         </div>
         {% if item2.comment %}<p style="font-size: 0.75rem; color: #64748b; margin-top: 0.125rem; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden">{{ item2.comment }}</p>{% endif %}
@@ -409,12 +418,21 @@
         <div style="display:flex;gap:0.5rem;font-size:0.75rem;margin-bottom:0.5rem;flex-wrap:wrap;align-items:center">
           <span><span style="color:#f59e0b">&#9733;</span> <strong>{{ item2.service_rating }}</strong>/5</span>
           {% if item2.stock_available %}<span style="color:#008F82;font-weight:600">In stock</span>{% else %}<span style="color:#ef4444;font-weight:600">Out of stock</span>{% endif %}
-          <span style="color:#64748b">Wait: {{ item2.wait_time_rating }}/5</span>
+          {% if item2.is_digital %}
+            {% if item2.phone_responsiveness %}<span style="color:#64748b">Phone: {{ item2.phone_responsiveness }}/5</span>{% endif %}
+            {% if item2.delivery_timeliness %}<span style="color:#64748b">Delivery: {{ item2.delivery_timeliness }}/5</span>{% endif %}
+          {% else %}
+            <span style="color:#64748b">Wait: {{ item2.wait_time_rating }}/5</span>
+          {% endif %}
+          {% if not item2.is_digital %}
           {% for badge in item2.visit_purpose_badges %}
           <span style="font-size: 0.6875rem; font-weight: 600; padding: 0.125rem 0.5rem; background: #E6F7F5; color: #006B62; border-radius: 9999px;">{{ badge.icon }} {{ badge.label }}</span>
           {% endfor %}
-          {% if item2.visit_timeframe_label %}
-          <span style="font-size: 0.6875rem; font-weight: 500; padding: 0.125rem 0.5rem; background: #f1f5f9; color: #475569; border-radius: 9999px; border: 1px solid #e2e8f0;">{{ item2.visit_timeframe_label }}</span>
+          {% endif %}
+          {% if not item2.is_digital %}
+            {% if item2.visit_timeframe_label %}
+            <span style="font-size: 0.6875rem; font-weight: 500; padding: 0.125rem 0.5rem; background: #f1f5f9; color: #475569; border-radius: 9999px; border: 1px solid #e2e8f0;">{{ item2.visit_timeframe_label }}</span>
+            {% endif %}
           {% endif %}
         </div>
         {% if item2.comment %}<p style="font-size:0.8125rem;color:#475569;line-height:1.6;margin-bottom:0.75rem">{{ item2.comment }}</p>{% endif %}
@@ -452,12 +470,21 @@
       <div style="display: flex; gap: 0.5rem; font-size: 0.75rem; margin-bottom: 0.5rem; flex-wrap: wrap; align-items: center">
         <span><span style="color: #f59e0b">&#9733;</span> <strong>{{ item2.service_rating }}</strong>/5</span>
         {% if item2.stock_available %}<span style="color: #008F82; font-weight: 600">In stock</span>{% else %}<span style="color: #ef4444; font-weight: 600">Out of stock</span>{% endif %}
-        <span style="color: #64748b">Wait: {{ item2.wait_time_rating }}/5</span>
+        {% if item2.is_digital %}
+          {% if item2.phone_responsiveness %}<span style="color: #64748b">Phone: {{ item2.phone_responsiveness }}/5</span>{% endif %}
+          {% if item2.delivery_timeliness %}<span style="color: #64748b">Delivery: {{ item2.delivery_timeliness }}/5</span>{% endif %}
+        {% else %}
+          <span style="color: #64748b">Wait: {{ item2.wait_time_rating }}/5</span>
+        {% endif %}
+        {% if not item2.is_digital %}
         {% for badge in item2.visit_purpose_badges %}
         <span style="font-size: 0.6875rem; font-weight: 600; padding: 0.125rem 0.5rem; background: #E6F7F5; color: #006B62; border-radius: 9999px;">{{ badge.icon }} {{ badge.label }}</span>
         {% endfor %}
-        {% if item2.visit_timeframe_label %}
-        <span style="font-size: 0.6875rem; font-weight: 500; padding: 0.125rem 0.5rem; background: #f1f5f9; color: #475569; border-radius: 9999px; border: 1px solid #e2e8f0;">{{ item2.visit_timeframe_label }}</span>
+        {% endif %}
+        {% if not item2.is_digital %}
+          {% if item2.visit_timeframe_label %}
+          <span style="font-size: 0.6875rem; font-weight: 500; padding: 0.125rem 0.5rem; background: #f1f5f9; color: #475569; border-radius: 9999px; border: 1px solid #e2e8f0;">{{ item2.visit_timeframe_label }}</span>
+          {% endif %}
         {% endif %}
       </div>
       {% if item2.comment %}<p style="font-size: 0.8125rem; color: #475569; line-height: 1.6; margin-bottom: 0.75rem">{{ item2.comment }}</p>{% endif %}

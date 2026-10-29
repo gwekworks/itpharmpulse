@@ -41,21 +41,9 @@ def _row(label: str, value) -> tuple:
     return (label, str(value or "—"))
 
 
-IMPORTANT_NOTICE = """IMPORTANT NOTICE
-
-Not a prescription. This form is a patient-initiated request only. It is not a prescription, a prescription transfer, or an order to dispense, and it does not authorize any pharmacy to fill or release any medication.
-
-PharmacyPulse is not a pharmacy. PharmacyPulse (operated by BeyondRx) does not dispense, store, transfer, or verify prescriptions or prescription records, and does not provide medical or pharmacy advice.
-
-Patient-supplied information. All information on this form was entered by the patient or their representative. PharmacyPulse has not verified the identity of the patient, the accuracy of the information, or the existence, validity, or transferability of any prescription.
-
-Pharmacist responsibility. The receiving pharmacist must verify patient identity and complete any transfer in accordance with applicable federal and state laws, board of pharmacy rules, and pharmacy policy. Controlled substance prescriptions are subject to additional federal and state restrictions and may not be eligible for transfer. Each pharmacy retains sole professional discretion to accept or decline the request.
-
-Patient authorization. By generating this form, the patient directed PharmacyPulse to deliver it to the receiving pharmacy and consented to being contacted by that pharmacy at the phone number listed.
-
-No warranty; limitation of liability. This form is provided "as is" without warranty of any kind. To the fullest extent permitted by law, PharmacyPulse and BeyondRx are not liable for any delay, error, missed dose, denial of transfer, or other outcome arising from the use of this form or any action taken or not taken by a pharmacy.
-
-If you received this form in error, please destroy it and notify PharmacyPulse."""
+IMPORTANT_NOTICE = """CONFIDENTIALITY NOTICE
+This fax and any attachments may contain confidential health information intended only for the named recipient. If you are not the intended recipient, please do not review, copy, disclose, or distribute this information. Notify the sender immediately at [phone number] and securely destroy all copies. Thank you for protecting patient privacy.
+"""
 
 
 def _pharmacy_block(p, fallback_name: str, phone_override: str = "", fax_override: str = "") -> str:

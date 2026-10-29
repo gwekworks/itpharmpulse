@@ -187,7 +187,7 @@
   var modal = document.getElementById('loc-modal');
   if (!modal) return;                      // server didn't render it (has location)
   if (document.cookie.match(/(?:^|;\s*)pp_loc=/)) return;
-  if (sessionStorage.getItem('pp_loc_declined') === '1') return;
+  if (window.PP_COOKIE_CONSENT.functional && sessionStorage.getItem('pp_loc_declined') === '1') return;
   if (!navigator.geolocation) return;
 
   var enableBtn = document.getElementById('loc-enable');
@@ -198,7 +198,7 @@
   var textEl = modal.querySelector('.pp-loc-modal-text');
 
   function decline() {
-    sessionStorage.setItem('pp_loc_declined', '1');
+    if (window.PP_COOKIE_CONSENT.functional) sessionStorage.setItem('pp_loc_declined', '1');
     modal.hidden = true;
     document.body.classList.remove('pp-loc-modal-open');
   }
@@ -206,7 +206,7 @@
   function storeAndReload(pos) {
     var lat = pos.coords.latitude.toFixed(4);
     var lng = pos.coords.longitude.toFixed(4);
-    document.cookie = 'pp_loc=' + lat + ',' + lng + '; path=/; max-age=2592000; SameSite=Lax';
+    window.ppSetPreferenceCookie('pp_loc', lat + ',' + lng, 2592000);
     window.location.reload();
   }
 

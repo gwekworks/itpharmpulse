@@ -254,7 +254,12 @@
           {% else %}
           <div style="display: flex; gap: 0.5rem; font-size: 0.75rem">
             {% if item.stock_available %}<span style="color: #008F82; font-weight: 600">In stock</span>{% else %}<span style="color: #ef4444; font-weight: 600">Out of stock</span>{% endif %}
-            <span style="color: #6B7280">Wait: {{ item.wait_time_rating }}/5</span>
+            {% if item.is_digital %}
+              {% if item.phone_responsiveness %}<span style="color: #6B7280">Phone: {{ item.phone_responsiveness }}/5</span>{% endif %}
+              {% if item.delivery_timeliness %}<span style="color: #6B7280">Delivery: {{ item.delivery_timeliness }}/5</span>{% endif %}
+            {% else %}
+              <span style="color: #6B7280">Wait: {{ item.wait_time_rating }}/5</span>
+            {% endif %}
           </div>
           {% endif %}
         </div>

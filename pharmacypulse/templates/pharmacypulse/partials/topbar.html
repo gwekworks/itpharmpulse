@@ -6,24 +6,11 @@
       href="{% if user.is_authenticated %}/home{% else %}/{% endif %}"
       class="pp-topbar-logo notranslate"
     >
-      <span class="pp-topbar-logo-mark">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="white"
-          stroke-width="2.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <line x1="12" y1="5" x2="12" y2="19" />
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-      </span>
-      <span class="pp-topbar-logo-text notranslate" translate="no"
-        >Pharmacy<span class="pp-topbar-logo-accent">Pulse</span></span
-      >
+      <img
+        src="/static/pharmacypulse/logo.svg"
+        alt="PharmacyPulse"
+        height="34"
+      />
     </a>
     <nav class="pp-topbar-nav items-center gap-0.5">
       <a href="/list" id="top-list" class="pp-topbar-nav-link"
@@ -68,15 +55,14 @@
           >{% trans "Admin" %}</a
         >
         {% endif %}         {% if user.is_authenticated %}
-        {% if user.role == "user" %}
         <a
           href="/transfer"
+          id="top-transfer-rx"
           class="pp-topbar-desktop-only inline-flex items-center gap-1.5"
           style="padding: 0.625rem 0.75rem; font-size: 0.875rem; font-weight: 600; color: #008F82; text-decoration: none;"
         >
           <span>Transfer Rx</span>
         </a>
-        {% endif %}
         <!-- <span
           class="pp-topbar-desktop-only notranslate"
           translate="no"
@@ -201,9 +187,7 @@
           >
           {% endif %}           {% if user.is_authenticated %}
           <a href="/saved" class="pp-topbar-menu-link">{% trans "Saved" %}</a>
-          {% if user.role == "user" %}
-          <a href="/transfer" class="pp-topbar-menu-link">Transfer Rx</a>
-          {% endif %}
+          <a href="/transfer" id="menu-transfer-rx" class="pp-topbar-menu-link">Transfer Rx</a>
           <a href="/account" class="pp-topbar-menu-link"
             >{% trans "Account" %}</a
           >
@@ -275,7 +259,7 @@
   </div>
 </header>
 <script>
-  (function () {
+  if (window.PP_COOKIE_CONSENT.functional) (function () {
     document.addEventListener("click", function (e) {
       var menu = document.querySelector(".pp-topbar-hamburger");
       if (menu && menu.open && !menu.contains(e.target)) {
@@ -546,11 +530,6 @@
     "← Back": "← Volver",
     "← Back to home": "← Volver al inicio",
     "← Home": "← Inicio",
-
-    // Cookie banner
-    "We use cookies": "Usamos cookies",
-    "We use cookies for sessions, language preferences, saved comparisons, and basic analytics (Google Analytics) to understand how the site is used. We do not use cookies for ads or sell your data.":
-      "Usamos cookies para las sesiones, las preferencias de idioma, las comparaciones guardadas y los análisis básicos (Google Analytics) para comprender cómo se utiliza el sitio. No usamos cookies para anuncios ni vendemos sus datos.",
 
     // Find Your Pharmacy + auto-loc banner
     "Showing pharmacies near": "Mostrando farmacias cerca de",
@@ -1027,7 +1006,7 @@
       var cacheKey = "pp_tx_attr_v1:" + lang + ":" + window.location.pathname;
       // Try cache first
       try {
-        var cached = sessionStorage.getItem(cacheKey);
+        var cached = window.PP_COOKIE_CONSENT.functional ? sessionStorage.getItem(cacheKey) : null;
         if (cached) {
           var translations = JSON.parse(cached);
           if (translations && translations.length === attrs.length) {
@@ -1052,9 +1031,11 @@
           attrs.forEach(function (a, i) {
             if (translations[i]) a.el.setAttribute(a.attr, translations[i]);
           });
-          try {
-            sessionStorage.setItem(cacheKey, JSON.stringify(translations));
-          } catch (e) {}
+          if (window.PP_COOKIE_CONSENT.functional) {
+            try {
+              sessionStorage.setItem(cacheKey, JSON.stringify(translations));
+            } catch (e) {}
+          }
         })
         .catch(function (err) {
           console.warn("PP Translate attrs error", err);
@@ -1062,8 +1043,9 @@
     }
 
     function _ppRestoreFromCache(cacheKey) {
+      if (!window.PP_COOKIE_CONSENT.functional) return false;
       try {
-        var cached = sessionStorage.getItem(cacheKey);
+        var cached = window.PP_COOKIE_CONSENT.functional ? sessionStorage.getItem(cacheKey) : null;
         if (!cached) return false;
         var data = JSON.parse(cached);
         if (!data || !data.nodes || !data.translations) return false;
@@ -1141,16 +1123,18 @@
           );
           _ppApplyTranslations(nodes, texts, translations);
           // Cache for the rest of this session
-          try {
-            sessionStorage.setItem(
-              cacheKey,
-              JSON.stringify({
-                nodes: texts,
-                translations: translations,
-              }),
-            );
-          } catch (e) {
-            /* sessionStorage full or blocked — ignore */
+          if (window.PP_COOKIE_CONSENT.functional) {
+            try {
+              sessionStorage.setItem(
+                cacheKey,
+                JSON.stringify({
+                  nodes: texts,
+                  translations: translations,
+                }),
+              );
+            } catch (e) {
+              /* sessionStorage full or blocked — ignore */
+            }
           }
           if (onDone) onDone();
         })
@@ -1161,8 +1145,7 @@
     }
 
     window.ppSetLang = function (lang) {
-      document.cookie =
-        "lang=" + lang + "; path=/; max-age=31536000; SameSite=Lax";
+      window.ppSetPreferenceCookie("lang", lang, 31536000);
       // Set cookie then reload — Django LocaleMiddleware picks up the cookie on
       // the next request and re-renders all trans-tagged strings server-side.
       // The client-side API translation runs immediately after the reload from cache.

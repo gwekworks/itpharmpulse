@@ -57,6 +57,9 @@ def submit_transfer(request):
     def g(name):
         return (request.POST.get(name) or "").strip()
 
+    if g("consent_given") != "1":
+        return _back(error="Review and agree to the transfer notices before submitting.")
+
     try:
         from_id = int(g("from_pharmacy_id") or 0)
         to_id = int(g("to_pharmacy_id") or 0)
@@ -82,9 +85,8 @@ def submit_transfer(request):
     dob = parse_date(dob_raw)
     if not dob:
         return _back(error="Birth date must be YYYY-MM-DD.")
-    # Patient-initiated request only (not a prescription): no medication,
-    # signature, or consent checkbox collected. Generating the form implies
-    # direction to deliver + consent to be contacted at the listed phone.
+    # Patient-initiated request only (not a prescription); explicit consent
+    # authorizes delivery and contact at the listed phone number.
     medication_name = ""
     medication_type = "non_controlled"
     signature = patient_name

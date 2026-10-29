@@ -141,6 +141,14 @@ class ApplicationSmokeTests(TestCase):
         pharm.publish_status = "published"
         pharm.save(update_fields=["publish_status"])
 
+    def test_pharmacy_search_includes_online_classification(self):
+        response = self.client.get("/api/flow/search", {"q": "Smoke Online"})
+        result = next(
+            result for result in response.json()["results"]
+            if result["id"] == self.online.id
+        )
+        self.assertEqual(result["is_digital"], 1)
+
     def test_publish_sync_preserves_admin_edited_rows(self):
         """sync_publish_pharmacies creates missing rows, refreshes untouched
         rows, and never overwrites rows the admin has edited."""
@@ -190,6 +198,53 @@ class ApplicationSmokeTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Digital Prescription Access Platforms")
         self.assertNotContains(response, "Online Pharmacies")
+
+    def test_transfer_menu_is_only_shown_to_authenticated_users(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'id="top-transfer-rx"')
+        self.assertNotContains(response, 'id="menu-transfer-rx"')
+
+        self.client.force_login(self.user)
+        response = self.client.get("/home")
+        self.assertContains(response, 'id="top-transfer-rx"')
+        self.assertContains(response, 'id="menu-transfer-rx"')
+
+    def test_copilot_widget_remains_hidden_on_transfer_pages(self):
+        self.client.force_login(self.user)
+        for path in ("/transfer", "/transfers"):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 200)
+                self.assertNotContains(response, 'class="pp-sticky-btn pp-sticky-copilot"')
+                self.assertNotContains(response, 'id="pp-ai-modal"')
+
+    def test_transfer_notices_are_in_agreement_modal_with_confidentiality_inline(self):
+        self.client.force_login(self.user)
+        response = self.client.get("/transfer")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "CONFIDENTIALITY NOTICE")
+        self.assertContains(response, 'id="transfer-consent-given"')
+        self.assertContains(response, 'id="transfer-notices-modal"')
+        self.assertContains(response, "Not a prescription.")
+        self.assertContains(response, "I agree and continue")
+
+    def test_transfer_submission_requires_agreement_to_notices(self):
+        self.client.force_login(self.user)
+        transfer_count = self.user.prescription_transfers.count()
+        response = self.client.post("/api/flow/transfer/submit", {
+            "from_pharmacy_id": self.pharmacy.id,
+            "to_pharmacy_id": self.online.id,
+            "patient_full_name": "Pat Ient",
+            "patient_dob": "1990-01-01",
+            "patient_phone": "2155550100",
+            "from_phone": "2155550101",
+            "from_fax": "2155550102",
+        }, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.user.prescription_transfers.count(), transfer_count)
+        self.assertContains(response, "Review and agree to the transfer notices")
 
     def test_list_location_banner_and_distance_sort(self):
         """/list asks the visitor to enable location when none is available,
@@ -683,6 +738,10 @@ class ApplicationSmokeTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'href="https://online.example.test"')
         self.assertContains(response, "online.example.test")
+        self.assertNotContains(response, "pd-map-wrap")
+        self.assertNotContains(response, "pd-dir-modal")
+        self.assertNotContains(response, "Get Directions")
+        self.assertNotContains(response, "What is Distance?")
 
     def test_pharmacy_detail_map_falls_back_to_address(self):
         """A pharmacy without coordinates still renders a working map using its
@@ -741,6 +800,8 @@ class ApplicationSmokeTests(TestCase):
                 "stock_available": 1,
                 "wait_time_rating": 5,
                 "service_rating": 5,
+                "phone_responsiveness": 4,
+                "delivery_timeliness": 5,
                 "comment": "Fast service",
             },
         )
@@ -761,6 +822,8 @@ class ApplicationSmokeTests(TestCase):
             "stock_available": 1,
             "wait_time_rating": 4,
             "service_rating": 4,
+            "phone_responsiveness": 4,
+            "delivery_timeliness": 5,
         }
 
         # First review succeeds.
@@ -796,6 +859,70 @@ class ApplicationSmokeTests(TestCase):
         resp = self.client.post("/api/flow/submit-review", dict(base, comment="From another user"))
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Review.objects.filter(pharmacy_id=self.online.id, user=other).count(), 1)
+
+    def test_online_review_saves_online_ratings_without_visit_timeframe(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            "/api/flow/submit-review",
+            {
+                "pharmacy_id": self.online.id,
+                "pharmacy_name": self.online.name,
+                "stock_available": 2,
+                "service_rating": 4,
+                "phone_responsiveness": 2,
+                "delivery_timeliness": 5,
+                "visit_purpose": "refill",
+                "visit_timeframe": "yesterday",
+            },
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            HTTP_ACCEPT="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        review = Review.objects.get(pharmacy=self.online, user=self.user)
+        self.assertEqual(review.phone_responsiveness, 2)
+        self.assertEqual(review.delivery_timeliness, 5)
+        self.assertIsNone(review.visit_purpose)
+        self.assertIsNone(review.visit_timeframe)
+
+    def test_online_review_requires_both_online_ratings(self):
+        response = self.client.post(
+            "/api/flow/submit-review",
+            {
+                "pharmacy_id": self.online.id,
+                "pharmacy_name": self.online.name,
+                "phone_responsiveness": 4,
+            },
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            HTTP_ACCEPT="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(response.json()["ok"])
+        self.assertFalse(Review.objects.filter(pharmacy=self.online).exists())
+
+    def test_physical_review_keeps_visit_questions_and_wait_rating(self):
+        response = self.client.post(
+            "/api/flow/submit-review",
+            {
+                "pharmacy_id": self.pharmacy.id,
+                "pharmacy_name": self.pharmacy.name,
+                "stock_available": 1,
+                "wait_time_rating": 2,
+                "service_rating": 4,
+                "visit_purpose": "new_rx,vaccine",
+                "visit_timeframe": "yesterday",
+                "phone_responsiveness": 1,
+                "delivery_timeliness": 1,
+            },
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            HTTP_ACCEPT="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        review = Review.objects.get(pharmacy=self.pharmacy, user=None)
+        self.assertEqual(review.wait_time_rating, 2)
+        self.assertEqual(review.visit_purpose, "new_rx,vaccine")
+        self.assertEqual(review.visit_timeframe, "yesterday")
+        self.assertIsNone(review.phone_responsiveness)
+        self.assertIsNone(review.delivery_timeliness)
 
     def test_pharmacist_flows_work(self):
         self.client.force_login(self.pharmacist)

@@ -121,7 +121,7 @@
   };
 
   function openAI() {
-    if (hasOpened) return;
+    if (!window.PP_COOKIE_CONSENT.set || hasOpened) return;
     var modal = document.getElementById('pp-ai-modal');
     if (modal) {
       modal.classList.add('pp-ai-open');
@@ -131,12 +131,14 @@
 
   function resetTimer() {
     clearTimeout(timer);
+    if (!window.PP_COOKIE_CONSENT.set) return;
     timer = setTimeout(openAI, IDLE_MS);
   }
 
   ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(function(evt) {
     document.addEventListener(evt, resetTimer, { passive: true });
   });
+  window.addEventListener('pp-cookie-consent-updated', resetTimer);
 
   resetTimer();
 })();

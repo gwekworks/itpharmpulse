@@ -69,7 +69,6 @@ cd "/mnt/d/Program Files/xamp/htdocs/Niishcloud PharmacyPulse"
 
 python -m venv .venv ; .\.venv\Scripts\Activate.ps1
 
-
 python3 -m venv .venv
 source .venv/bin/activate # Windows (Git Bash): source .venv/Scripts/activate # Windows (cmd): .venv\Scripts\activate
 
@@ -77,18 +76,15 @@ source .venv/bin/activate # Windows (Git Bash): source .venv/Scripts/activate # 
 
 pip install -r requirements.txt
 
-
 # 3. Database (SQLite is default, no Postgres needed)
 
 python manage.py migrate
 
 python manage.py sync_publish_pharmacies
 
-
 # 4. Seed demo data (optional but recommended)
 
 python manage.py seed_demo --reset
-
 
 # 5. Run it
 
@@ -118,16 +114,16 @@ as unpublished; review them using the Unpublished filter before publishing.
 
 -
 
-
 ### Add Dummy Users
+
 1. Run it with:
 
 python manage.py seed_dummy_users
 
 2. Role - Email - Password
-   admin		admin@test.com		AdminPass123!
-   pharmacist	pharmacist@test.com	PharmPass123!
-   user		user@test.com		UserPass123!
+   admin admin@test.com AdminPass123!
+   pharmacist pharmacist@test.com PharmPass123!
+   user user@test.com UserPass123!
 
 #### Ops you can run on Heruko CLI
 
@@ -138,23 +134,24 @@ heroku run python manage.py migrate -a pharmacypulse-staging
 heroku run python manage.py seed_dummy_users -a pharmacypulse-staging
 
 4. Dabase to delete user
-heroku run python manage.py shell -a pharmacypulse-byondrx
+   heroku run python manage.py shell -a pharmacypulse-byondrx
 
 from django.contrib.auth import get_user_model
 
 # 4.1. Fetch the active user model dynamically
+
 User = get_user_model()
 
 # 4.22. Delete the user
-User.objects.filter(email='user@test.com').delete()
 
+User.objects.filter(email='user@test.com').delete()
 
 heroku run python manage.py sync_publish_pharmacies -a pharmacypulse-staging
 
+heroku run python manage.py migrate -a pharmacypulse-staging
 
 heroku run python manage.py migrate -a pharmacypulse-byondrx
 
-
 heroku pg:copy pharmacypulse-staging::DATABASE_URL DATABASE_URL -a pharmacypulse-byondrx
 
-.wp-block-tenup-modal__dialog:not([aria-hidden=true]) .wp-block-tenup-modal.has-slideout-enabled
+.wp-block-tenup-modal\_\_dialog:not([aria-hidden=true]) .wp-block-tenup-modal.has-slideout-enabled

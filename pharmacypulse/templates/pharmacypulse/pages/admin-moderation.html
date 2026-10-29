@@ -108,13 +108,20 @@
             <!-- Ratings row -->
             <div class="flex gap-3 mb-3 text-xs flex-wrap items-center" style="color: #64748b">
               <span>Service: <span class="star-filled font-semibold">★</span> <span style="color: #0f172a; font-weight: 600">{{ item.service_rating }}/5</span></span>
-              <span>Wait: <span style="color: #0f172a; font-weight: 600">{{ item.wait_time_rating }}/5</span></span>
+              {% if item.is_digital %}
+                {% if item.phone_responsiveness %}<span>Phone: <span style="color: #0f172a; font-weight: 600">{{ item.phone_responsiveness }}/5</span></span>{% endif %}
+                {% if item.delivery_timeliness %}<span>Delivery: <span style="color: #0f172a; font-weight: 600">{{ item.delivery_timeliness }}/5</span></span>{% endif %}
+              {% else %}
+                <span>Wait: <span style="color: #0f172a; font-weight: 600">{{ item.wait_time_rating }}/5</span></span>
+              {% endif %}
               <span>Stock: {% if item.stock_available %}<span style="color: #16a34a; font-weight: 600">In stock</span>{% else %}<span style="color: #dc2626; font-weight: 600">Out of stock</span>{% endif %}</span>
-              {% for badge in item.visit_purpose_badges %}
-              <span style="font-size: 0.6875rem; font-weight: 600; padding: 0.125rem 0.5rem; background: #E6F7F5; color: #006B62; border-radius: 9999px;">{{ badge.icon }} {{ badge.label }}</span>
-              {% endfor %}
-              {% if item.visit_timeframe_label %}
-              <span style="font-size: 0.6875rem; font-weight: 500; padding: 0.125rem 0.5rem; background: #f1f5f9; color: #475569; border-radius: 9999px; border: 1px solid #e2e8f0;">{{ item.visit_timeframe_label }}</span>
+              {% if not item.is_digital %}
+                {% for badge in item.visit_purpose_badges %}
+                <span style="font-size: 0.6875rem; font-weight: 600; padding: 0.125rem 0.5rem; background: #E6F7F5; color: #006B62; border-radius: 9999px;">{{ badge.icon }} {{ badge.label }}</span>
+                {% endfor %}
+                {% if item.visit_timeframe_label %}
+                <span style="font-size: 0.6875rem; font-weight: 500; padding: 0.125rem 0.5rem; background: #f1f5f9; color: #475569; border-radius: 9999px; border: 1px solid #e2e8f0;">{{ item.visit_timeframe_label }}</span>
+                {% endif %}
               {% endif %}
             </div>
 

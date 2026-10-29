@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from django.conf import settings
 
+from .cookie_consent import cookie_consent_context
 from .models.community import SavedComparison
 
 
@@ -31,4 +32,5 @@ def app_context(request):
         "user_snapshot": user_snapshot,
         "google_places_key": settings.GOOGLE_PLACES_KEY,
         "saved_compare_count": saved_compare_count,
+        **cookie_consent_context(request),
     }
