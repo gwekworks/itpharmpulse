@@ -414,13 +414,36 @@ def page_admin_claims(request):
 
 
 def page_admin_moderation(request):
+    from django.core.paginator import Paginator
     from .common import get_review_moderation
     mod_enabled, mod_who = get_review_moderation()
+    
+    # Get status filter from query string
+    param_status = request.GET.get("status", "").strip()
+    
+    # Build flagged reviews query (for counts/sidebar)
     flagged = (Review.objects.filter(moderation_status__in=("pending", "flagged"))
                .select_related("pharmacy").order_by("-created_at"))
+    
     keywords = list(ModerationKeyword.objects.order_by("category", "keyword"))
-    all_qs = (Review.objects.filter(deleted_at__isnull=True)
-              .select_related("pharmacy").order_by("-created_at"))
+    
+    # Build base query
+    all_qs = Review.objects.filter(deleted_at__isnull=True).select_related("pharmacy")
+    
+    # Apply status filter if specified
+    if param_status and param_status in ("pending", "flagged", "approved", "rejected"):
+        all_qs = all_qs.filter(moderation_status=param_status)
+    # If no filter and moderation is enabled, show reviews needing action
+    elif not param_status and mod_enabled:
+        all_qs = all_qs.filter(moderation_status__in=("pending", "flagged"))
+    
+    all_qs = all_qs.order_by("-created_at")
+    
+    # Pagination: 20 reviews per page
+    page_number = request.GET.get("page", 1)
+    paginator = Paginator(all_qs, 20)
+    page_obj = paginator.get_page(page_number)
+    
     return {
         "flagged": [_review_dict(r) for r in flagged],
         "flagged_count": Row({"total": flagged.count()}),
@@ -428,9 +451,12 @@ def page_admin_moderation(request):
                       for k in keywords],
         "all_reviews": [{**_review_dict(r),
                          "pharm_name": (r.pharmacy.name if r.pharmacy_id else "")}
-                        for r in all_qs],
+                        for r in page_obj],
         "mod_enabled": mod_enabled,
         "mod_who": mod_who,
+        "param_status": param_status,  # Pass to template for active tab highlighting
+        "page_obj": page_obj,  # For pagination controls
+        "paginator": paginator,
     }
 
 
