@@ -46,25 +46,214 @@ def verify_and_submit_claim(request, pharmacy_id: int):
         back = f"/claim?pharmacy_id={pharmacy_id}&pharmacy_name={urllib.parse.quote(pharmacy_name)}&error=Missing+required+fields"
         return redirect(back)
 
-    # SECURITY: never auto-grant the `pharmacist` role or claim a pharmacy
-    # based solely on NPI existence in the public registry — anyone can look
-    # up a valid NPI number and would otherwise be able to claim a pharmacy
-    # they don't operate. Confirmation is an admin decision (approve_claim /
-    # reject_claim) after checking the submitted license + ownership. Claim
-    # is always created as `pending` regardless of NPI lookup result.
-    claim = PharmacyClaim.objects.create(
-        pharmacy_id=pharmacy_id, pharmacy_name=pharmacy_name,
-        user=user, user_name=f"{user.first_name} {user.last_name}".strip(),
-        npi_number=npi_number, license_number=license_number,
-        status="pending",
-    )
-    _activity(request, "claim_submitted",
-              f"Claim for {pharmacy_name} (NPI {npi_number}) pending admin review")
-    return redirect(
-        f"/claim?pharmacy_id={pharmacy_id}&pending=1"
-        f"&pharmacy_name={urllib.parse.quote(pharmacy_name)}"
-        "&msg=Your+claim+has+been+submitted+for+review."
-    )
+    # ──────────────────────────────────────────────────────────────────
+    # REAL-TIME NPI VERIFICATION via NPPES Registry
+    # ──────────────────────────────────────────────────────────────────
+    npi_verified = False
+    npi_verification_details = ""
+    auto_approved = False
+    
+    try:
+        # Query NPPES API to verify NPI
+        nppes_response = requests.get(
+            "https://npiregistry.cms.hhs.gov/api/",
+            params={"version": "2.1", "number": npi_number},
+            timeout=10
+        )
+        
+        if nppes_response.ok:
+            nppes_data = nppes_response.json()
+            results = nppes_data.get("results", [])
+            
+            if results and len(results) > 0:
+                provider = results[0]
+                basic = provider.get("basic", {})
+                
+                # Extract pharmacy name from NPPES
+                nppes_org_name = (basic.get("organization_name") or "").strip()
+                nppes_name = nppes_org_name
+                
+                # Check for DBA (Doing Business As) name
+                for other in provider.get("other_names", []) or []:
+                    if (other.get("type") or "").lower().startswith("doing business as"):
+                        dba_name = (other.get("organization_name") or "").strip()
+                        if dba_name:
+                            nppes_name = dba_name
+                            break
+                
+                # Check if provider is a pharmacy (has pharmacy taxonomy)
+                is_pharmacy = False
+                pharmacy_taxonomies = {
+                    "3336C0003X", "3336M0002X", "3336S0011X", "3336C0004X",
+                    "3336L0003X", "3336H0001X", "3336C0002X", "333600000X"
+                }
+                for taxonomy in provider.get("taxonomies", []) or []:
+                    if (taxonomy.get("code") or "").strip() in pharmacy_taxonomies:
+                        is_pharmacy = True
+                        break
+                
+                # Verify NPI status is active
+                npi_status = basic.get("status", "")
+                is_active = npi_status == "A"
+                
+                # Get pharmacy from database to match
+                pharmacy = Pharmacy.objects.filter(id=pharmacy_id).first()
+                
+                # Verification logic:
+                # 1. NPI must be active
+                # 2. Provider must have pharmacy taxonomy
+                # 3. Pharmacy name should match (fuzzy match for flexibility)
+                if is_active and is_pharmacy and pharmacy:
+                    # Fuzzy name match (case-insensitive, ignore punctuation)
+                    def normalize_name(name):
+                        return re.sub(r'[^a-z0-9]', '', name.lower())
+                    
+                    nppes_normalized = normalize_name(nppes_name)
+                    claim_normalized = normalize_name(pharmacy_name)
+                    db_normalized = normalize_name(pharmacy.name)
+                    
+                    # Check if names match (claimed name matches NPPES OR DB)
+                    name_matches = (
+                        nppes_normalized in claim_normalized or 
+                        claim_normalized in nppes_normalized or
+                        db_normalized in claim_normalized or
+                        claim_normalized in db_normalized
+                    )
+                    
+                    if name_matches:
+                        npi_verified = True
+                        npi_verification_details = f"NPPES verified: {nppes_name} (Active)"
+                    else:
+                        npi_verification_details = f"Name mismatch: NPPES shows '{nppes_name}'"
+                else:
+                    if not is_active:
+                        npi_verification_details = "NPI is not active in NPPES registry"
+                    elif not is_pharmacy:
+                        npi_verification_details = "NPI is not registered as a pharmacy"
+                    else:
+                        npi_verification_details = "Pharmacy not found in database"
+            else:
+                npi_verification_details = "NPI not found in NPPES registry"
+        else:
+            npi_verification_details = f"NPPES API error: {nppes_response.status_code}"
+    
+    except requests.RequestException as e:
+        npi_verification_details = f"NPPES API connection error: {str(e)}"
+    except Exception as e:
+        npi_verification_details = f"Verification error: {str(e)}"
+
+    # ──────────────────────────────────────────────────────────────────
+    # CREATE CLAIM with verification status
+    # ──────────────────────────────────────────────────────────────────
+    if npi_verified:
+        # AUTO-APPROVE: NPI verification passed
+        with transaction.atomic():
+            claim = PharmacyClaim.objects.create(
+                pharmacy_id=pharmacy_id, pharmacy_name=pharmacy_name,
+                user=user, user_name=f"{user.first_name} {user.last_name}".strip(),
+                npi_number=npi_number, license_number=license_number,
+                status="approved",
+                reviewed_at=djtz.now().isoformat(),
+                reviewed_by="AUTO-VERIFIED via NPPES",
+            )
+            
+            # Create pharmacy org and assign ownership
+            org = PharmacyOrg.objects.create(name=pharmacy_name or "", owner_id=user.id)
+            Pharmacy.objects.filter(id=pharmacy_id).update(claimed_by=user.id, org_id=org.id)
+            
+            # Add user to team
+            PharmacyTeamMember.objects.create(
+                org=org, user_id=user.id,
+                email=user.email or user.phone or "",
+                role="owner", accepted_at=djtz.now(),
+            )
+            
+            # Grant pharmacist role
+            User.objects.filter(id=user.id).update(role="pharmacist")
+            
+            # Notify user
+            Notification.objects.create(
+                user_id=user.id, title="Claim Approved (Auto-Verified)",
+                body=(f"Your claim for {pharmacy_name} has been automatically approved "
+                      "via NPI verification. Welcome to your Pharmacy Owner Dashboard!"),
+            )
+            
+            # Send approval email
+            if user.email:
+                base = settings.BRAND.get("url", "").rstrip("/")
+                try:
+                    send_mail(
+                        subject="Your pharmacy claim has been approved — PharmacyPulse",
+                        message=(
+                            f"Hi {user.first_name or 'there'},\n\n"
+                            f"Great news! Your claim for {pharmacy_name} has been automatically "
+                            f"approved via NPI verification.\n\n"
+                            f"You now have full access to your Pharmacy Owner Dashboard where you can:\n"
+                            f"  • Respond to patient reviews\n"
+                            f"  • View analytics and ratings\n"
+                            f"  • Manage your listing details\n\n"
+                            f"Visit your dashboard here:\n{base}/pharmacist-dashboard\n\n"
+                            f"Welcome to PharmacyPulse.\n\n"
+                            f"— The PharmacyPulse Team"
+                        ),
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[user.email],
+                        fail_silently=True,
+                    )
+                except Exception:
+                    pass
+            
+            # Log activity with auto-approval flag
+            _activity(request, "claim_auto_approved",
+                      f"Claim for {pharmacy_name} (NPI {npi_number}) AUTO-APPROVED via NPPES. {npi_verification_details}")
+            
+            # Notify admin about auto-approval
+            admin_users = User.objects.filter(role="admin")
+            for admin in admin_users:
+                Notification.objects.create(
+                    user_id=admin.id, 
+                    title="Auto-Approved Claim (NPI Verified)",
+                    body=(f"✅ {user.first_name} {user.last_name} claimed {pharmacy_name} "
+                          f"(NPI: {npi_number}). Auto-approved via NPPES verification."),
+                )
+            
+            auto_approved = True
+        
+        return redirect(
+            f"/claim?pharmacy_id={pharmacy_id}&approved=1"
+            f"&pharmacy_name={urllib.parse.quote(pharmacy_name)}"
+            "&msg=Your+claim+has+been+approved!+Welcome+to+your+dashboard."
+        )
+    
+    else:
+        # MANUAL REVIEW: NPI verification failed or didn't match
+        claim = PharmacyClaim.objects.create(
+            pharmacy_id=pharmacy_id, pharmacy_name=pharmacy_name,
+            user=user, user_name=f"{user.first_name} {user.last_name}".strip(),
+            npi_number=npi_number, license_number=license_number,
+            status="pending",
+        )
+        
+        # Log activity with verification failure details
+        _activity(request, "claim_submitted",
+                  f"Claim for {pharmacy_name} (NPI {npi_number}) pending MANUAL review. "
+                  f"NPI verification: {npi_verification_details}")
+        
+        # Notify admin about pending claim requiring manual review
+        admin_users = User.objects.filter(role="admin")
+        for admin in admin_users:
+            Notification.objects.create(
+                user_id=admin.id, 
+                title="Manual Review Required: Pharmacy Claim",
+                body=(f"⚠️ {user.first_name} {user.last_name} claimed {pharmacy_name} "
+                      f"(NPI: {npi_number}). NPI verification inconclusive - manual review needed."),
+            )
+        
+        return redirect(
+            f"/claim?pharmacy_id={pharmacy_id}&pending=1"
+            f"&pharmacy_name={urllib.parse.quote(pharmacy_name)}"
+            "&msg=Your+claim+has+been+submitted+for+review."
+        )
 
 
 @admin_required

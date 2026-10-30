@@ -76,12 +76,14 @@ def submit_transfer(request):
     if not from_p or not to_p:
         return _back(error="One of the selected pharmacies was not found.")
 
-    patient_name = g("patient_full_name")
+    patient_first_name = g("patient_first_name")
+    patient_last_name = g("patient_last_name")
+    patient_name = f"{patient_first_name} {patient_last_name}".strip()
     dob_raw = g("patient_dob")
     patient_phone = g("patient_phone")
 
-    if not (patient_name and dob_raw and patient_phone):
-        return _back(error="Patient name, birth date, and phone are required.")
+    if not (patient_first_name and patient_last_name and dob_raw and patient_phone):
+        return _back(error="Patient first name, last name, birth date, and phone are required.")
     dob = parse_date(dob_raw)
     if not dob:
         return _back(error="Birth date must be YYYY-MM-DD.")

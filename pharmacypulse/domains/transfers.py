@@ -15,6 +15,8 @@ def page_transfer(request):
     to_p = Pharmacy.objects.filter(id=to_id).first() if to_id else None
 
     prefill_name = ""
+    prefill_first_name = ""
+    prefill_last_name = ""
     prefill_phone = ""
     prefill_dob = ""
     prefill_address = ""
@@ -23,6 +25,8 @@ def page_transfer(request):
         u = request.user
         full_name = f"{u.first_name or ''} {u.last_name or ''}".strip()
         prefill_name = full_name
+        prefill_first_name = u.first_name or ""
+        prefill_last_name = u.last_name or ""
         prefill_phone = u.phone or ""
         # User stores only name/phone/ZIP — DOB + street address come from
         # the patient's most recent transfer request, if any.
@@ -31,6 +35,13 @@ def page_transfer(request):
         if latest:
             if not prefill_name:
                 prefill_name = latest.patient_full_name or ""
+                # Split the full name if we don't have first/last from user
+                if prefill_name and not (prefill_first_name and prefill_last_name):
+                    name_parts = prefill_name.split(None, 1)  # Split on first space
+                    if len(name_parts) == 2:
+                        prefill_first_name, prefill_last_name = name_parts
+                    elif len(name_parts) == 1:
+                        prefill_first_name = name_parts[0]
             if not prefill_phone:
                 prefill_phone = latest.patient_phone or ""
             if latest.patient_dob:
@@ -62,6 +73,8 @@ def page_transfer(request):
         "to_phone": (to_p.phone or "") if to_p else "",
         "to_fax": (getattr(to_p, "fax_number", "") or "") if to_p else "",
         "prefill_name": prefill_name,
+        "prefill_first_name": prefill_first_name,
+        "prefill_last_name": prefill_last_name,
         "prefill_phone": prefill_phone,
         "prefill_dob": prefill_dob,
         "prefill_address": prefill_address,
