@@ -251,7 +251,7 @@
         </div>
 
         <script>
-          // Hide fax field if it's auto-populated, show if empty
+          // Hide fax field by default, show only if pharmacy selected and has no fax
           (function() {
             var faxField = document.getElementById('transfer-from-fax');
             var phoneField = document.getElementById('transfer-from-phone');
@@ -259,14 +259,15 @@
             if (faxField && phoneField) {
               var hasFax = faxField.value && faxField.value.trim() !== '';
               
-              if (hasFax) {
-                // Hide fax field but keep value for form submission
-                faxField.style.display = 'none';
-                // Make phone field take full width
-                if (phoneField.parentElement) {
-                  phoneField.parentElement.style.gridTemplateColumns = '1fr';
-                }
+              // Always hide fax field initially
+              faxField.style.display = 'none';
+              // Make phone field take full width
+              if (phoneField.parentElement) {
+                phoneField.parentElement.style.gridTemplateColumns = '1fr';
               }
+              
+              // If fax is populated (from server or prefilled), keep it hidden
+              // It will only show when user selects a pharmacy with no fax (handled in fillContact)
             }
           })();
         </script>

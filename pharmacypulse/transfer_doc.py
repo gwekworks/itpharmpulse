@@ -42,7 +42,7 @@ def _row(label: str, value) -> tuple:
 
 
 IMPORTANT_NOTICE = """CONFIDENTIALITY NOTICE
-This fax and any attachments may contain confidential health information intended only for the named recipient. If you are not the intended recipient, please do not review, copy, disclose, or distribute this information. Notify the sender immediately at 818-381-0231 and securely destroy all copies. Thank you for protecting patient privacy.
+This fax and any attachments may contain confidential health information intended only for the named recipient. If you are not the intended recipient, please do not review, copy, disclose, or distribute this information. Notify the sender immediately at [phone number] and securely destroy all copies. Thank you for protecting patient privacy.
 """
 
 
