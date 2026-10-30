@@ -461,6 +461,7 @@ document.addEventListener('click', function(e) {
     <div class="pd-main">
 
       {% if item.has_map and not item.is_digital %}
+      {% comment %}
       <button type="button" class="pd-directions-btn" onclick="pdDirOpen()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
         Get Directions
@@ -508,6 +509,7 @@ document.addEventListener('click', function(e) {
           </div>
         </div>
       </div>
+      {% endcomment %}
       {% endif %}
 
       {% if not item.is_digital %}

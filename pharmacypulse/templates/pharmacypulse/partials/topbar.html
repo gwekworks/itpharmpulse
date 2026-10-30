@@ -259,7 +259,8 @@
   </div>
 </header>
 <script>
-  if (window.PP_COOKIE_CONSENT.functional) (function () {
+  // Mobile menu: close when clicking outside (always enabled, not dependent on cookies)
+  (function () {
     document.addEventListener("click", function (e) {
       var menu = document.querySelector(".pp-topbar-hamburger");
       if (menu && menu.open && !menu.contains(e.target)) {
