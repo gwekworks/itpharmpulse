@@ -246,13 +246,13 @@
       </div>
 
       <div id="rv-phone-section" style="display:none">
-        <div class="rv-section-label"><span class="rv-num">1.</span> 📞 PHONE RESPONSIVENESS</div>
+        <div class="rv-section-label"><span class="rv-num">1.</span> 📞 PHONE RESPONSIVENESS <span class="rv-label-hint" style="margin-left:auto">How long until a real person answered?</span></div>
         <div class="rv-chips" id="rv-phone">
-          <label class="rv-chip" data-val="1"><input type="radio" name="phone_responsiveness" value="1">1 · Hard to reach</label>
-          <label class="rv-chip" data-val="2"><input type="radio" name="phone_responsiveness" value="2">2 · Slow</label>
-          <label class="rv-chip selected" data-val="3"><input type="radio" name="phone_responsiveness" value="3" checked>3 · Okay</label>
-          <label class="rv-chip" data-val="4"><input type="radio" name="phone_responsiveness" value="4">4 · Responsive</label>
-          <label class="rv-chip" data-val="5"><input type="radio" name="phone_responsiveness" value="5">5 · Very responsive</label>
+          <label class="rv-chip" data-val="5"><input type="radio" name="phone_responsiveness" value="5">Under 1 minute</label>
+          <label class="rv-chip" data-val="4"><input type="radio" name="phone_responsiveness" value="4">1–2 minutes</label>
+          <label class="rv-chip selected" data-val="3"><input type="radio" name="phone_responsiveness" value="3" checked>2–5 minutes</label>
+          <label class="rv-chip" data-val="2"><input type="radio" name="phone_responsiveness" value="2">Over 5 minutes</label>
+          <label class="rv-chip" data-val="1"><input type="radio" name="phone_responsiveness" value="1">Never reached anyone</label>
         </div>
       </div>
 
@@ -268,12 +268,30 @@
 
       <div id="rv-delivery-section" style="display:none">
         <div class="rv-section-label"><span class="rv-num">2.</span> 📦 ON-TIME DELIVERY</div>
-        <div class="rv-chips" id="rv-delivery">
-          <label class="rv-chip" data-val="1"><input type="radio" name="delivery_timeliness" value="1">1 · Much later</label>
-          <label class="rv-chip" data-val="2"><input type="radio" name="delivery_timeliness" value="2">2 · Later</label>
-          <label class="rv-chip selected" data-val="3"><input type="radio" name="delivery_timeliness" value="3" checked>3 · As expected</label>
-          <label class="rv-chip" data-val="4"><input type="radio" name="delivery_timeliness" value="4">4 · Earlier</label>
-          <label class="rv-chip" data-val="5"><input type="radio" name="delivery_timeliness" value="5">5 · Much earlier</label>
+        
+        <!-- First question: Did it arrive as promised? -->
+        <div style="margin-bottom: 1rem">
+          <p style="font-size: 0.875rem; color: #475569; margin-bottom: 0.5rem; font-weight: 500">Arrived as promised?</p>
+          <div style="display: flex; gap: 0.5rem">
+            <label class="rv-chip selected" data-val="yes" style="flex: 1">
+              <input type="radio" name="delivery_ontime" value="yes" checked>
+              ✅ Yes
+            </label>
+            <label class="rv-chip" data-val="no" style="flex: 1">
+              <input type="radio" name="delivery_ontime" value="no">
+              ❌ No
+            </label>
+          </div>
+        </div>
+
+        <!-- Second question: How late? (shown only if "No") -->
+        <div id="rv-delivery-late" style="display: none">
+          <p style="font-size: 0.875rem; color: #475569; margin-bottom: 0.5rem; font-weight: 500">How late?</p>
+          <div class="rv-chips" id="rv-delivery">
+            <label class="rv-chip" data-val="3"><input type="radio" name="delivery_late_days" value="3">1 day</label>
+            <label class="rv-chip" data-val="2"><input type="radio" name="delivery_late_days" value="2">2-3 days</label>
+            <label class="rv-chip" data-val="1"><input type="radio" name="delivery_late_days" value="1">4+ days</label>
+          </div>
         </div>
       </div>
 
@@ -605,6 +623,27 @@
   wireChips('rv-stock');
   wireChips('rv-timeframe');
 
+  /* --- Delivery ontime Yes/No chips (special handling to toggle late section) --- */
+  document.querySelectorAll('input[name="delivery_ontime"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+      rvToggleDeliveryLate(this.value === 'no');
+      dirty = true;
+    });
+    // Also handle clicks on the parent chip label
+    var chip = radio.closest('.rv-chip');
+    if (chip) {
+      chip.addEventListener('click', function() {
+        // Remove selected from siblings
+        var parent = chip.parentElement;
+        parent.querySelectorAll('.rv-chip').forEach(function(c) { c.classList.remove('selected'); });
+        chip.classList.add('selected');
+        radio.checked = true;
+        rvToggleDeliveryLate(radio.value === 'no');
+        dirty = true;
+      });
+    }
+  });
+
   /* --- Heart selector (Step 1, Empathetic Care) --- */
   var careEl = document.getElementById('rv-care');
   if (careEl) {
@@ -858,6 +897,22 @@
     }
   });
 
+  /* --- Toggle delivery late options --- */
+  window.rvToggleDeliveryLate = function(show) {
+    var lateSection = document.getElementById('rv-delivery-late');
+    if (lateSection) {
+      lateSection.style.display = show ? 'block' : 'none';
+      // If hiding, clear the selection
+      if (!show) {
+        var radios = document.querySelectorAll('#rv-delivery input[name="delivery_late_days"]');
+        radios.forEach(function(r) { r.checked = false; });
+        document.querySelectorAll('#rv-delivery .rv-chip').forEach(function(c) {
+          c.classList.remove('selected');
+        });
+      }
+    }
+  };
+
   /* --- Submit review via AJAX (sign-in required — guests must create an
   account at step 3 before the final submission) --- */
   window.rvSubmit = function() { doSubmit(); };
@@ -891,7 +946,19 @@
     body.append('is_caregiver', '0');
     if (isDigital) {
       body.append('phone_responsiveness', selectedValue(document.getElementById('rv-phone'), 'phone_responsiveness'));
-      body.append('delivery_timeliness', selectedValue(document.getElementById('rv-delivery'), 'delivery_timeliness'));
+      
+      // For delivery, check if it was on time
+      var ontimeRadio = document.querySelector('input[name="delivery_ontime"]:checked');
+      var ontime = ontimeRadio ? ontimeRadio.value : 'yes';
+      
+      if (ontime === 'yes') {
+        // Arrived on time = rating 5
+        body.append('delivery_timeliness', '5');
+      } else {
+        // Was late, get the specific delay
+        var lateValue = selectedValue(document.getElementById('rv-delivery'), 'delivery_late_days');
+        body.append('delivery_timeliness', lateValue || '2'); // Default to 2-3 days if not specified
+      }
     } else {
       var purposeBoxes = document.querySelectorAll('#rv-purpose input[name="visit_purpose"]:checked');
       var purposes = Array.prototype.map.call(purposeBoxes, function(i){ return i.value; });
