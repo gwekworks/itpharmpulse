@@ -3009,6 +3009,35 @@ html, body { overflow-x: hidden; overflow-x: clip; }
    while staying below full-screen overlays/modals. */
 .pp-topbar { z-index: 90; }
 
+/* Collapse the authenticated navigation into the account dropdown at
+   intermediate desktop widths where the full row does not fit. */
+.pp-topbar-account-dropdown { display: none; }
+@media (min-width: 1024px) and (max-width: 1700px) {
+  .pp-topbar-account-dropdown { display: block; }
+  .pp-topbar-range-hidden { display: none !important; }
+  .pp-topbar-desktop-only.pp-topbar-range-hidden { display: none !important; }
+}
+.pp-topbar-account-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  list-style: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pp-topbar-account-trigger::-webkit-details-marker { display: none; }
+.pp-topbar-account-trigger::marker { content: ""; }
+.pp-topbar-account-trigger:hover {
+  color: #008F82;
+  background: #F3F4F6;
+  border-radius: 8px;
+}
+
 /* Main nav links: hidden on mobile (burger menu takes over), shown on
    desktop. Uses a custom class rather than Tailwind's `.hidden` because the
    app CSS redefines `.hidden` with `!important`. */
