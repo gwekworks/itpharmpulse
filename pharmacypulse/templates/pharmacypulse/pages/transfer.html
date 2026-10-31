@@ -49,9 +49,6 @@
         >
           Request Prescription Transfer
         </h1>
-        <p style="font-size: 0.75rem; color: #64748b">
-          Patient request — pharmacists complete the transfer per USA rules.
-        </p>
       </div>
     </div>
 
@@ -97,14 +94,23 @@
         margin-bottom: 1rem;
       "
     >
-      <strong style="display: block; margin-bottom: 0.25rem"
-        >How the transfers work</strong
+      <strong style="display: block; margin-bottom: 0.5rem; font-size: 0.8125rem;"
+        >How it works</strong
       >
-      <span
-        >1) You authorize the move. 2) The two pharmacies transfer
-        <strong>pharmacist-to-pharmacist</strong> — the original is voided so it
-        can't be filled twice.</span
-      >
+      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <div style="display: flex; gap: 0.5rem;">
+          <span style="font-weight: 700; color: #1e40af; flex-shrink: 0;">Step 1:</span>
+          <span style="line-height: 1.5;">Submit your transfer request.</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <span style="font-weight: 700; color: #1e40af; flex-shrink: 0;">Step 2:</span>
+          <span style="line-height: 1.5;">A pharmacist contacts you to collect the necessary details.</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <span style="font-weight: 700; color: #1e40af; flex-shrink: 0;">Step 3:</span>
+          <span style="line-height: 1.5;">Both pharmacies complete the transfer, pharmacist to pharmacist.</span>
+        </div>
+      </div>
     </div>
 
     <!-- Transfer form -->
@@ -244,6 +250,28 @@
           </p>
         </div>
 
+        <script>
+          // Hide fax field by default, show only if pharmacy selected and has no fax
+          (function() {
+            var faxField = document.getElementById('transfer-from-fax');
+            var phoneField = document.getElementById('transfer-from-phone');
+            
+            if (faxField && phoneField) {
+              var hasFax = faxField.value && faxField.value.trim() !== '';
+              
+              // Always hide fax field initially
+              faxField.style.display = 'none';
+              // Make phone field take full width
+              if (phoneField.parentElement) {
+                phoneField.parentElement.style.gridTemplateColumns = '1fr';
+              }
+              
+              // If fax is populated (from server or prefilled), keep it hidden
+              // It will only show when user selects a pharmacy with no fax (handled in fillContact)
+            }
+          })();
+        </script>
+
         <label
           style="
             display: block;
@@ -299,7 +327,7 @@
         </div>
 
         <div
-          style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem"
+          style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.375rem;"
         >
           <div>
             <label
@@ -310,36 +338,24 @@
                 color: #0f172a;
                 margin-bottom: 0.375rem;
               "
-              >Patient full name</label
+              >Patient first name</label
             >
             <input
               type="text"
-              name="patient_full_name"
+              name="patient_first_name"
               required
-              value="{{prefill_name}}"
-              placeholder="Patient's full legal name"
+              value="{{prefill_first_name}}"
+              placeholder="First name"
               style="
                 width: 100%;
                 padding: 0.625rem 0.875rem;
                 border: 1.5px solid #e5e7eb;
                 border-radius: 0.75rem;
                 font-size: 0.875rem;
-                margin-bottom: 0.375rem;
                 box-sizing: border-box;
                 color: #0f172a;
               "
             />
-            <p
-              style="
-                font-size: 0.6875rem;
-                color: #64748b;
-                margin: 0 0 1rem 0;
-                line-height: 1.4;
-              "
-            >
-              Caregiver? Enter the <strong>patient's</strong> name here — not
-              your own.
-            </p>
           </div>
           <div>
             <label
@@ -350,26 +366,64 @@
                 color: #0f172a;
                 margin-bottom: 0.375rem;
               "
-              >Birth date</label
+              >Patient last name</label
             >
             <input
-              type="date"
-              name="patient_dob"
+              type="text"
+              name="patient_last_name"
               required
-              value="{{prefill_dob}}"
+              value="{{prefill_last_name}}"
+              placeholder="Last name"
               style="
                 width: 100%;
                 padding: 0.625rem 0.875rem;
                 border: 1.5px solid #e5e7eb;
                 border-radius: 0.75rem;
                 font-size: 0.875rem;
-                margin-bottom: 1rem;
                 box-sizing: border-box;
                 color: #0f172a;
               "
             />
           </div>
         </div>
+        <p
+          style="
+            font-size: 0.6875rem;
+            color: #64748b;
+            margin: 0 0 1rem 0;
+            line-height: 1.4;
+          "
+        >
+          Caregiver? Enter the <strong>patient's</strong> name here — not
+          your own.
+        </p>
+
+        <label
+          style="
+            display: block;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 0.375rem;
+          "
+          >Birth date</label
+        >
+        <input
+          type="date"
+          name="patient_dob"
+          required
+          value="{{prefill_dob}}"
+          style="
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+            color: #0f172a;
+          "
+        />
 
         <label
           style="
@@ -875,6 +929,26 @@
       if (a) a.value = addr || '';
       if (ph) ph.value = phone || '';
       if (fx) fx.value = fax || '';
+      
+      // Show/hide fax field for "from" pharmacy only
+      if (prefix === 'transfer-from' && fx && ph) {
+        var hasFax = fax && fax.trim() !== '';
+        if (hasFax) {
+          // Hide fax field when auto-populated
+          fx.style.display = 'none';
+          // Make phone field take full width
+          if (ph.parentElement) {
+            ph.parentElement.style.gridTemplateColumns = '1fr';
+          }
+        } else {
+          // Show fax field when empty
+          fx.style.display = '';
+          // Restore two-column layout
+          if (ph.parentElement) {
+            ph.parentElement.style.gridTemplateColumns = '1fr 1fr';
+          }
+        }
+      }
     }
     function wire(inputId, dropId, hiddenId, kind, prefix) {
       var input = document.getElementById(inputId);

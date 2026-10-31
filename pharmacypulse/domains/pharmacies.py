@@ -610,6 +610,9 @@ def page_claim(request):
         "pharmacy_name": p.name if p else request.GET.get("pharmacy_name", ""),
         "existing_claim": existing,
         "error": request.GET.get("error"),
+        "param_approved": request.GET.get("approved") == "1",
+        "param_pending": request.GET.get("pending") == "1",
+        "param_error": request.GET.get("error", ""),
     }
 
 

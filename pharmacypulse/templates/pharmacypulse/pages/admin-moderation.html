@@ -139,7 +139,8 @@
             </div>
             {% endif %}
 
-            <!-- Action buttons -->
+            <!-- Action buttons - only show for pending/flagged reviews -->
+            {% if item.moderation_status == "pending" or item.moderation_status == "flagged" %}
             <div class="flex gap-2 pt-1">
               <form method="POST" action="/api/flow/moderate-review/{{ item.id }}" style="display:inline">
                 {% csrf_token %}
@@ -164,6 +165,7 @@
                   Reject
                 </button>
               </form>
+              {% if item.moderation_status != "flagged" %}
               <form method="POST" action="/api/flow/moderate-review/{{ item.id }}" style="display:inline">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="flagged">
@@ -171,7 +173,9 @@
                   ⚑ Flag
                 </button>
               </form>
+              {% endif %}
             </div>
+            {% endif %}
           </div>
           {% endfor %}
 
@@ -183,6 +187,31 @@
           </div>
           {% endif %}
         </div>
+
+        <!-- Pagination -->
+        {% if paginator.num_pages > 1 %}
+        <div class="flex items-center justify-center gap-2 mt-6">
+          {% if page_obj.has_previous %}
+          <a href="?{% if param_status %}status={{ param_status }}&{% endif %}page={{ page_obj.previous_page_number }}" 
+             class="px-3 py-1.5 text-sm rounded no-underline" 
+             style="background: #f1f5f9; color: #475569">
+            ← Previous
+          </a>
+          {% endif %}
+
+          <span class="text-sm" style="color: #64748b">
+            Page {{ page_obj.number }} of {{ paginator.num_pages }}
+          </span>
+
+          {% if page_obj.has_next %}
+          <a href="?{% if param_status %}status={{ param_status }}&{% endif %}page={{ page_obj.next_page_number }}" 
+             class="px-3 py-1.5 text-sm rounded no-underline" 
+             style="background: #f1f5f9; color: #475569">
+            Next →
+          </a>
+          {% endif %}
+        </div>
+        {% endif %}
 
       </div><!-- /max-w-6xl -->
     </div><!-- /admin-pg-body -->

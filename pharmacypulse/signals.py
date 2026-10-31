@@ -70,7 +70,12 @@ def review_pre_save(sender, instance: Review, **kwargs):
 
 def _recompute_pharmacy_stats(pharmacy_id: int):
     """Replicates the SQL in hooks.yaml on_insert/on_update reviews."""
-    qs = Review.objects.filter(pharmacy_id=pharmacy_id, deleted_at__isnull=True)
+    # Only count approved reviews - reviews in moderation shouldn't affect stats
+    qs = Review.objects.filter(
+        pharmacy_id=pharmacy_id, 
+        deleted_at__isnull=True,
+        moderation_status="approved"
+    )
     total = qs.count()
     agg = qs.aggregate(
         avg_service=Avg("service_rating"), avg_wait=Avg("wait_time_rating")

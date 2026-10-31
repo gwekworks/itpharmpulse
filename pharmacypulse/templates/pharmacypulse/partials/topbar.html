@@ -58,7 +58,7 @@
         <a
           href="/transfer"
           id="top-transfer-rx"
-          class="pp-topbar-desktop-only inline-flex items-center gap-1.5"
+          class="pp-topbar-desktop-only pp-topbar-range-hidden inline-flex items-center gap-1.5"
           style="padding: 0.625rem 0.75rem; font-size: 0.875rem; font-weight: 600; color: #008F82; text-decoration: none;"
         >
           <span>Transfer Rx</span>
@@ -70,7 +70,7 @@
         >Hello{% if user.first_name %}, {{ user.first_name }}{% endif %}</span> -->
         <a
           href="/saved"
-          class="inline-flex items-center gap-1.5 pp-topbar-saved-btn"
+          class="inline-flex items-center gap-1.5 pp-topbar-saved-btn pp-topbar-range-hidden"
         >
           <svg
             width="14"
@@ -91,14 +91,62 @@
             >{{ saved_compare_count }}</span
           >{% endif %}
         </a>
-        <a href="/account" data-nav="account" id="top-account" class="relative">
+        <a
+          href="/account"
+          data-nav="account"
+          id="top-account"
+          class="relative pp-topbar-range-hidden"
+        >
           <span class="pp-bottom-icon">👤</span>
           {% if notification_count %}<span class="pp-bottom-badge"
             >{{notification_count}}</span
           >{% endif %}
           <span>{% trans "Account" %}</span>
         </a>
-        <form method="POST" action="/logout" style="display: inline">
+        <details class="pp-topbar-account-dropdown relative">
+          <summary id="top-account-menu" class="pp-topbar-account-trigger">
+            <span class="pp-bottom-icon">👤</span>
+            {% if notification_count %}<span class="pp-bottom-badge"
+              >{{notification_count}}</span
+            >{% endif %}
+            <span>{% trans "Account" %}</span>
+          </summary>
+          <div class="pp-topbar-menu">
+            <a href="/account" class="pp-topbar-menu-link"
+              >{% trans "My Account" %}</a
+            >
+            <a href="/transfer" class="pp-topbar-menu-link">Transfer Rx</a>
+            <a href="/saved" class="pp-topbar-menu-link">
+              {% trans "Saved" %}
+              {% if saved_compare_count %}<span class="pp-topbar-saved-badge"
+                >{{ saved_compare_count }}</span
+              >{% endif %}
+            </a>
+            <form method="POST" action="/logout" style="margin: 0">
+              {% csrf_token %}
+              <button
+                type="submit"
+                class="pp-topbar-menu-link"
+                style="
+                  width: 100%;
+                  text-align: left;
+                  background: none;
+                  border: none;
+                  cursor: pointer;
+                  font: inherit;
+                "
+              >
+                {% trans "Log out" %}
+              </button>
+            </form>
+          </div>
+        </details>
+        <form
+          method="POST"
+          action="/logout"
+          class="pp-topbar-range-hidden"
+          style="display: inline"
+        >
           {% csrf_token %}
           <button
             type="submit"
@@ -259,7 +307,8 @@
   </div>
 </header>
 <script>
-  if (window.PP_COOKIE_CONSENT.functional) (function () {
+  // Mobile menu: close when clicking outside (always enabled, not dependent on cookies)
+  (function () {
     document.addEventListener("click", function (e) {
       var menu = document.querySelector(".pp-topbar-hamburger");
       if (menu && menu.open && !menu.contains(e.target)) {
