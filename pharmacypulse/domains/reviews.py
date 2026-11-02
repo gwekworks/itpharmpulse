@@ -119,6 +119,7 @@ def page_write_review(request):
 
 def page_for_pharmacies(request):
     approved = Review.objects.filter(deleted_at__isnull=True, moderation_status="approved")
+    pharmacy_count = published_pharmacies().count()
     biz_reviews = []
     for r in approved.select_related("pharmacy", "user").order_by("-created_at")[:4]:
         biz_reviews.append({
@@ -135,10 +136,10 @@ def page_for_pharmacies(request):
             "created_at": r.created_at,
         })
     return {
-        "active_pharmacies": Row({"total": Pharmacy.objects.filter(status="active").count()}),
+        "active_pharmacies": Row({"total": pharmacy_count}),
         "total_reviews": Row({"total": approved.count()}),
         # Hero stat tiles read {{biz_pharm.0.n}} / {{biz_rev.0.n}} / {{biz_users.0.n}}.
-        "biz_pharm":   [{"n": Pharmacy.objects.filter(status="active").count()}],
+        "biz_pharm":   [{"n": pharmacy_count}],
         "biz_rev":     [{"n": approved.count()}],
         "biz_users":   [{"n": User.objects.filter(deactivated_at__isnull=True).count()}],
         "biz_reviews": biz_reviews,
