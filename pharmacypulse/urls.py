@@ -90,6 +90,8 @@ urlpatterns = [
     # path("map", views.pharmacy_map, name="map"),  # hidden — returns 404
     path("online", views.online_pharmacies, name="online"),
     path("pharmacy", views.pharmacy_detail, name="pharmacy"),
+    path("pharmacy-qr/<int:pharmacy_id>.svg", views_extra.pharmacy_qr_svg,
+         name="pharmacy_qr_svg"),
     
     # SEO-friendly pharmacy URLs ('/pharmacy/<id>/<slug>/'); the numeric id is
     # canonical and the slug is descriptive. The plain /pharmacy route above
@@ -102,7 +104,7 @@ urlpatterns = [
     path("transfer", views.transfer, name="transfer"),
     path("transfers", views.transfers, name="transfers"),
     # path("shortages", views.shortages, name="shortages"),
-    path("insights", views.insights, name="insights"),
+    # path("insights", views.insights, name="insights"),  # hidden — returns 404
     path("for-pharmacies", views.for_pharmacies, name="for_pharmacies"),
     path("pharmacist-dashboard", views.pharmacist_dashboard, name="pharmacist_dashboard"),
     path("widget", views.widget, name="widget"),

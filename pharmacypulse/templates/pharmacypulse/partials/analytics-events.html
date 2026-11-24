@@ -1,0 +1,77 @@
+{% comment %}
+  Google Analytics event tracking, wired by watching clicks and form submits
+  page-wide so individual templates don't need tracking code.
+
+  Events go through window.ppTrack (layouts/blank.html), which does nothing
+  unless GA_MEASUREMENT_ID is set and the visitor accepted analytics cookies.
+  Only event names and coarse labels are sent — never search text, locations,
+  names, or prescription details.
+
+  Two events fire from their own templates because they only happen after a
+  fetch() succeeds: submit_review (partials/review-modal.html) and
+  add_to_compare (pages/list.html).
+{% endcomment %}
+<script>
+(function () {
+  if (!window.ppTrack) return;
+  var track = window.ppTrack;
+  var path = window.location.pathname;
+
+  document.addEventListener('click', function (event) {
+    var el = event.target.closest && event.target.closest('a, button');
+    if (!el) return;
+    var href = el.getAttribute('href') || '';
+
+    if (href.indexOf('tel:') === 0) return track('click_call');
+    if (el.classList.contains('pd-directions-btn')) {
+      return track('click_directions', {directions_target: 'panel'});
+    }
+    if (href.indexOf('google.com/maps/dir') !== -1) {
+      return track('click_directions', {directions_target: 'google_maps'});
+    }
+    if (href.indexOf('/api/flow/create-checkout') === 0) return track('begin_checkout');
+    if (href.indexOf('/auth/google/start') === 0) {
+      return track(path === '/signup' ? 'sign_up' : 'login', {method: 'google'});
+    }
+    if (el.classList.contains('pp-sticky-copilot')) return track('open_ai_copilot');
+    if (el.classList.contains('search-item')) {
+      return track('search', {search_type: 'autocomplete'});
+    }
+    if (el.closest('.search-footer') && href.indexOf('/list') === 0) {
+      return track('search', {search_type: 'text'});
+    }
+    // A pharmacy's own website, linked from its detail page.
+    if (path.indexOf('/pharmacy') === 0 && el.tagName === 'A' && el.hostname &&
+        el.hostname !== window.location.hostname) {
+      return track('click_website', {link_domain: el.hostname});
+    }
+  });
+
+  function hasValue(form, name) {
+    var field = form.elements[name];
+    return !!(field && field.value && String(field.value).trim());
+  }
+  function searchType(form) {
+    var text = hasValue(form, 'q');
+    var location = hasValue(form, 'loc');
+    if (text && location) return 'text_and_location';
+    if (text) return 'text';
+    if (location) return 'location';
+    return 'filters';
+  }
+
+  document.addEventListener('submit', function (event) {
+    // Page scripts cancel submits that fail their own checks (e.g. the
+    // transfer form's missing-contact modal); don't count those.
+    if (event.defaultPrevented) return;
+    var form = event.target;
+    var action = form.getAttribute('action') || '';
+    if (action === '/list') track('search', {search_type: searchType(form)});
+    else if (action === '/signup') track('sign_up', {method: 'email'});
+    else if (action === '/login') track('login', {method: 'email'});
+    else if (action === '/api/flow/transfer/submit') track('transfer_submit');
+    else if (action.indexOf('/api/flow/verify-claim/') === 0) track('claim_submit');
+    else if (action === '/api/flow/newsletter/subscribe') track('newsletter_subscribe');
+  });
+})();
+</script>

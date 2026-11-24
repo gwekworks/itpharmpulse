@@ -31,6 +31,7 @@ def app_context(request):
         "role_scopes": settings.ROLE_SCOPES,
         "user_snapshot": user_snapshot,
         "google_places_key": settings.GOOGLE_PLACES_KEY,
+        "ga_measurement_id": settings.GA_MEASUREMENT_ID,
         "saved_compare_count": saved_compare_count,
         **cookie_consent_context(request),
     }
