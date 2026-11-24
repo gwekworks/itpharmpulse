@@ -1041,6 +1041,7 @@
       return resp.json().then(function(payload) { return {status: resp.status, payload: payload}; });
     }).then(function(res) {
       if (res.payload && res.payload.ok) {
+        if (window.ppTrack) window.ppTrack('submit_review');
         submitted = true;
         dirty = false;
         rvSuccess();

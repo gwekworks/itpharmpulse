@@ -269,6 +269,7 @@ function toggleFavorite(btn){
   }).then(function(r){return r.json()}).then(function(d){
     if(d.ok){
       btn.classList.toggle('lp-star-saved');
+      if(!isSaved && window.ppTrack) window.ppTrack('add_to_compare');
     }
   });
 }

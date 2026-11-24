@@ -6,18 +6,58 @@
   <meta name="csrf-token" content="{{ csrf_token }}">
   <script>
     (function() {
-      var measurementId = 'G-BG8R10ZK81';
+      // Comes from the GA_MEASUREMENT_ID env var; empty means GA is off.
+      var measurementId = '{{ ga_measurement_id|escapejs }}';
+
+      // Only these query parameters are sent to GA. Everything else (search
+      // text, typed locations, coordinates, emails, tokens, OAuth codes) is
+      // stripped so personal or health-related data never reaches Google.
+      var GA_SAFE_PARAMS = ['id', 'pharmacy_id', 'ids', 'to_id', 'from_id',
+        'to_pharmacy_id', 'from_pharmacy_id', 'sort', 'ownership', 'service',
+        'page', 'tab'];
+      var GA_CAMPAIGN_PARAM = /^(utm_[a-z]+|gclid|gbraid|wbraid|dclid)$/;
+      function ppGaCleanUrl(href) {
+        try {
+          var url = new URL(href, window.location.origin);
+          if (url.origin !== window.location.origin) return href;
+          // Password-reset links carry a one-time token in the path.
+          if (url.pathname.indexOf('/reset-password/') === 0) url.pathname = '/reset-password/';
+          var kept = new URLSearchParams();
+          url.searchParams.forEach(function(value, key) {
+            if (GA_SAFE_PARAMS.indexOf(key) !== -1 || GA_CAMPAIGN_PARAM.test(key)) kept.append(key, value);
+          });
+          url.search = kept.toString();
+          url.hash = '';
+          return url.toString();
+        } catch (error) {
+          return window.location.origin + '/';
+        }
+      }
+      var gaPageParams = {page_location: ppGaCleanUrl(window.location.href)};
+      if (document.referrer) gaPageParams.page_referrer = ppGaCleanUrl(document.referrer);
+
+      // Send a GA event. Does nothing unless GA is configured and the visitor
+      // accepted analytics cookies. Never pass personal or health details.
+      window.ppTrack = function(name, params) {
+        if (!measurementId || typeof window.gtag !== 'function') return;
+        if (window['ga-disable-' + measurementId]) return;
+        var payload = {page_location: gaPageParams.page_location};
+        for (var key in (params || {})) payload[key] = params[key];
+        window.gtag('event', name, payload);
+      };
+
       window.ppSetAnalyticsConsent = function(allowed) {
+        if (!measurementId) return;
         window['ga-disable-' + measurementId] = !allowed;
         if (!allowed) return;
         if (document.querySelector('[data-pp-google-analytics]')) {
-          window.gtag('config', measurementId);
+          window.gtag('config', measurementId, gaPageParams);
           return;
         }
         window.dataLayer = window.dataLayer || [];
         window.gtag = window.gtag || function(){window.dataLayer.push(arguments);};
         window.gtag('js', new Date());
-        window.gtag('config', measurementId);
+        window.gtag('config', measurementId, gaPageParams);
         var script = document.createElement('script');
         script.async = true;
         script.src = 'https://www.googletagmanager.com/gtag/js?id=' + measurementId;
@@ -164,6 +204,7 @@
 </script>
 {% block content %}{% endblock %}
 {% include "pharmacypulse/partials/translation-scripts.html" %}
+{% if request.path != "/widget" %}{% include "pharmacypulse/partials/analytics-events.html" %}{% endif %}
 {% if not cookie_consent_set and request.path != "/widget" %}{% include "pharmacypulse/partials/cookie-consent.html" %}{% endif %}
 {% if request.path != "/widget" and request.path != "/transfer" and request.path != "/transfers" and user.role != "admin" and user.role != "pharmacist" %}{% include "pharmacypulse/partials/ai-copilot.html" %}{% endif %}
 {% if request.path != "/widget" %}{% include "pharmacypulse/partials/text-size.html" %}{% endif %}
